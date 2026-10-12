@@ -4,6 +4,6 @@ import { waitlistSchema } from '../server/validation.js'
 
 export default {
   fetch(request: Request): Promise<Response> {
-    return handleSubmission(request, waitlistSchema, MAX_WAITLIST_BYTES, (store, input) => store.createWaitlist(input))
+    return handleSubmission(request, waitlistSchema, MAX_WAITLIST_BYTES, 'waitlist', (store, input) => store.createWaitlist(input))
   },
 }

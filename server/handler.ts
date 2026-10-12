@@ -1,11 +1,13 @@
 import type { ZodType } from 'zod'
 import { createSubmissionStore, getSupabaseConfig, type CreateResult, type SubmissionStore } from './database.js'
 import { acknowledgedResponse, createdResponse, errorResponse, readLimitedJson, validationFields } from './http.js'
+import { verifyTurnstileToken } from './turnstile.js'
 
 export async function handleSubmission<T>(
   request: Request,
   schema: ZodType<T>,
   maxBytes: number,
+  action: string,
   save: (store: SubmissionStore, input: T) => Promise<CreateResult>,
 ): Promise<Response> {
   if (request.method !== 'POST') {
@@ -16,7 +18,22 @@ export async function handleSubmission<T>(
     const body = await readLimitedJson(request, maxBytes)
     if (body.ok === false) return body.response
 
-    const parsed = schema.safeParse(body.value)
+    if (typeof body.value !== 'object' || body.value === null || Array.isArray(body.value)) {
+      return errorResponse(400, 'INVALID_REQUEST', 'Invalid submission.')
+    }
+    const { turnstileToken, ...input } = body.value as Record<string, unknown>
+    if (typeof turnstileToken !== 'string' || turnstileToken.length === 0 || turnstileToken.length > 2_048) {
+      return errorResponse(400, 'VERIFICATION_FAILED', 'Verification failed. Please try again.')
+    }
+    const verification = await verifyTurnstileToken(turnstileToken, action)
+    if (verification === 'invalid') {
+      return errorResponse(400, 'VERIFICATION_FAILED', 'Verification failed. Please try again.')
+    }
+    if (verification === 'unavailable') {
+      return errorResponse(503, 'SERVICE_UNAVAILABLE', 'Verification is temporarily unavailable. Please try again.')
+    }
+
+    const parsed = schema.safeParse(input)
     if (!parsed.success) {
       return errorResponse(400, 'INVALID_REQUEST', 'Invalid submission.', validationFields(parsed.error.issues))
     }

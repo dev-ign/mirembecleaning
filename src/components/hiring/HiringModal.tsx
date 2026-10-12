@@ -118,7 +118,7 @@ export function HiringModal({ open, onDismiss }: HiringModalProps) {
             <span className="hiring-badge"><img src={calendarIcon} alt="" aria-hidden="true" />January 2027 launch</span>
           </div>
         </header>
-        <HiringApplicationForm onAccepted={handleAccepted} />
+        <HiringApplicationForm active={open} onAccepted={handleAccepted} />
       </div>
       )}
     </dialog>,

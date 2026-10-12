@@ -1,6 +1,7 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useCallback, useRef, useState, type FormEvent } from 'react'
 import chevronIcon from '../../assets/icons/hiring-chevron.svg'
 import radioOutline from '../../assets/icons/hiring-radio-outline.svg'
+import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } from '../TurnstileWidget'
 import { HiringRequestError, phoneDigits, submitHiringApplication, validateHiringApplication } from '../../services/hiringApplicationService'
 import {
   availabilityOptions,
@@ -42,6 +43,7 @@ function TextField({ name, label, value, placeholder, autoComplete, type = 'text
         autoComplete={autoComplete}
         placeholder={placeholder}
         value={value}
+        maxLength={name === 'email' ? 254 : name === 'phone' ? 32 : name === 'city' ? 100 : 80}
         required
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `hiring-${name}-error` : undefined}
@@ -98,16 +100,35 @@ const validationOrder: HiringField[] = [
 ]
 
 interface HiringApplicationFormProps {
+  active: boolean
   onAccepted: (record: HiringApplicationRecord) => void
 }
 
-export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps) {
+export function HiringApplicationForm({ active, onAccepted }: HiringApplicationFormProps) {
   const [form, setForm] = useState<HiringApplicationInput>(() => ({ ...initialHiringApplication, languages: [] }))
   const [errors, setErrors] = useState<HiringErrors>({})
   const [status, setStatus] = useState<SubmissionStatus>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [verificationStatus, setVerificationStatus] = useState<TurnstileStatus>('loading')
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null)
   const pending = useRef(false)
+  const verificationErrorActive = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
+  const handleVerificationChange = useCallback((nextStatus: TurnstileStatus, token = '') => {
+    setVerificationStatus(nextStatus)
+    setTurnstileToken(token)
+    if (nextStatus === 'error') {
+      verificationErrorActive.current = true
+      setStatus((current) => current === 'submitting' ? current : 'error')
+      setSubmitError('Verification could not load. Try again.')
+    } else if (nextStatus === 'verified' && verificationErrorActive.current) {
+      verificationErrorActive.current = false
+      setStatus((current) => current === 'error' ? 'idle' : current)
+      setSubmitError('')
+    }
+  }, [])
+  const verificationPending = verificationStatus === 'loading' || verificationStatus === 'ready'
 
   function updateField<K extends HiringField>(field: K, value: HiringApplicationInput[K]) {
     const nextForm = { ...form, [field]: value }
@@ -133,7 +154,14 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (pending.current) return
+    if (pending.current || !active) return
+    if (verificationStatus === 'error' || verificationStatus === 'expired') {
+      verificationErrorActive.current = false
+      setStatus('idle')
+      setSubmitError('')
+      turnstileRef.current?.reset()
+      return
+    }
 
     const nextErrors = validateHiringApplication(form)
     setErrors(nextErrors)
@@ -144,19 +172,23 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
       target?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
       return
     }
+    if (verificationStatus !== 'verified' || !turnstileToken) return
 
     pending.current = true
     setStatus('submitting')
     try {
-      const record = await submitHiringApplication(form)
+      const record = await submitHiringApplication(form, turnstileToken)
       onAccepted(record)
     } catch (error) {
+      pending.current = false
+      verificationErrorActive.current = error instanceof HiringRequestError && error.kind === 'verification'
       setStatus('error')
       setSubmitError(error instanceof HiringRequestError && error.kind === 'invalid'
         ? 'Please review your answers and try again.'
-        : 'We couldn’t submit your application. Please try again.')
-    } finally {
-      pending.current = false
+        : error instanceof HiringRequestError && error.kind === 'verification'
+          ? 'Verification failed. Please try again.'
+          : 'We couldn’t submit your application. Please try again.')
+      turnstileRef.current?.reset()
     }
   }
 
@@ -221,10 +253,11 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
         </section>
       </div>
       <footer className="hiring-footer">
+        {active && <TurnstileWidget ref={turnstileRef} action="applicants" onStatusChange={handleVerificationChange} />}
         {status === 'error' && <p className="hiring-submit-error" role="alert">{submitError}</p>}
-        <button className="hiring-submit" type="submit" aria-disabled={status === 'submitting'}>
-          {status === 'submitting' && <span className="loading-spinner" aria-hidden="true" />}
-          <span aria-live="polite">{status === 'submitting' ? 'Submitting…' : 'Submit Application'}</span>
+        <button className="hiring-submit" type="submit" disabled={status === 'submitting' || verificationPending} aria-disabled={status === 'submitting' || verificationPending}>
+          {(status === 'submitting' || verificationPending) && <span className="loading-spinner" aria-hidden="true" />}
+          <span aria-live="polite">{status === 'submitting' ? 'Submitting…' : verificationPending ? 'Verifying…' : verificationStatus === 'error' || verificationStatus === 'expired' ? 'Retry verification' : 'Submit Application'}</span>
         </button>
       </footer>
     </form>

@@ -12,7 +12,7 @@ import { isValidEmail } from '../shared/email'
 export { isValidEmail } from '../shared/email'
 
 export class HiringRequestError extends Error {
-  constructor(public readonly kind: 'invalid' | 'unavailable') {
+  constructor(public readonly kind: 'invalid' | 'unavailable' | 'verification') {
     super('Hiring application request failed')
   }
 }
@@ -53,7 +53,7 @@ export function validateHiringApplication(input: HiringApplicationInput): Hiring
   return errors
 }
 
-export async function submitHiringApplication(input: HiringApplicationInput): Promise<HiringApplicationRecord> {
+export async function submitHiringApplication(input: HiringApplicationInput, turnstileToken: string): Promise<HiringApplicationRecord> {
   if (Object.keys(validateHiringApplication(input)).length > 0) throw new HiringRequestError('invalid')
 
   const normalized: HiringApplicationInput = {
@@ -72,7 +72,7 @@ export async function submitHiringApplication(input: HiringApplicationInput): Pr
     response = await fetch('/api/applicants', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(normalized),
+      body: JSON.stringify({ ...normalized, turnstileToken }),
     })
   } catch {
     throw new HiringRequestError('unavailable')
@@ -84,6 +84,9 @@ export async function submitHiringApplication(input: HiringApplicationInput): Pr
   } catch {
     throw new HiringRequestError('unavailable')
   }
+  if (response.status === 400 && typeof payload === 'object' && payload !== null && 'error' in payload
+    && typeof payload.error === 'object' && payload.error !== null && 'code' in payload.error
+    && payload.error.code === 'VERIFICATION_FAILED') throw new HiringRequestError('verification')
   if (response.status === 400) throw new HiringRequestError('invalid')
   if (response.status !== 201 || typeof payload !== 'object' || payload === null || !('ok' in payload)
     || payload.ok !== true || !('data' in payload) || typeof payload.data !== 'object' || payload.data === null

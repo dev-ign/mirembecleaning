@@ -6,6 +6,7 @@ import zip from '../api/waitlist/zip.js'
 import applicants from '../api/applicants.js'
 import { applicantSchema, waitlistSchema, zipUpdateSchema } from './validation.js'
 import { createZipToken, verifyZipToken } from './zipToken.js'
+import { verifyTurnstileToken } from './turnstile.js'
 
 const SAVED_ID = '00000000-0000-4000-8000-000000000001'
 const { fromMock, insertMock, singleMock, updateMock, eqMock, maybeSingleMock } = vi.hoisted(() => ({
@@ -23,6 +24,7 @@ vi.mock('@supabase/supabase-js', () => ({
     }),
   })),
 }))
+vi.mock('./turnstile.js', () => ({ verifyTurnstileToken: vi.fn() }))
 
 const applicant = {
   first_name: ' Ari ',
@@ -39,11 +41,11 @@ const applicant = {
   preferred_availability: 'part_time',
 }
 
-function post(path: string, value: unknown) {
+function post(path: string, value: unknown, token = 'test-token') {
   return new Request(`http://localhost/api/${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(value),
+    body: JSON.stringify(path === 'waitlist/zip' ? value : { ...(value as object), ...(token ? { turnstileToken: token } : {}) }),
   })
 }
 
@@ -51,6 +53,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.stubEnv('SUPABASE_URL', '')
   vi.stubEnv('SUPABASE_SECRET_KEY', '')
+  vi.mocked(verifyTurnstileToken).mockResolvedValue('valid')
   singleMock.mockResolvedValue({ data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' }, error: null })
   maybeSingleMock.mockResolvedValue({ data: { zip_code: '02108-1234' }, error: null })
 })
@@ -83,6 +86,38 @@ describe('Vercel submission functions', () => {
         error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST for this endpoint.' },
       })
     }
+  })
+
+  it('requires a Turnstile token for both public submissions before any database access', async () => {
+    for (const [path, handler, value] of [
+      ['waitlist', waitlist, { email: 'person@example.com' }],
+      ['applicants', applicants, applicant],
+    ] as const) {
+      const response = await handler.fetch(post(path, value, ''))
+      expect(response.status).toBe(400)
+      expect((await response.json()).error.code).toBe('VERIFICATION_FAILED')
+    }
+    expect(verifyTurnstileToken).not.toHaveBeenCalled()
+    expect(fromMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects invalid or expired verification for both submissions without writing', async () => {
+    vi.mocked(verifyTurnstileToken).mockResolvedValue('invalid')
+    const waitlistResponse = await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))
+    const applicantResponse = await applicants.fetch(post('applicants', applicant))
+    expect(waitlistResponse.status).toBe(400)
+    expect(applicantResponse.status).toBe(400)
+    expect((await waitlistResponse.json()).error.message).toBe('Verification failed. Please try again.')
+    expect(verifyTurnstileToken).toHaveBeenNthCalledWith(1, 'test-token', 'waitlist')
+    expect(verifyTurnstileToken).toHaveBeenNthCalledWith(2, 'test-token', 'applicants')
+    expect(fromMock).not.toHaveBeenCalled()
+  })
+
+  it('fails closed when Turnstile verification is unavailable', async () => {
+    vi.mocked(verifyTurnstileToken).mockResolvedValue('unavailable')
+    expect((await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))).status).toBe(503)
+    expect((await applicants.fetch(post('applicants', applicant))).status).toBe(503)
+    expect(fromMock).not.toHaveBeenCalled()
   })
 
   it('rejects invalid waitlist payloads and extra client-supplied fields', async () => {
@@ -125,12 +160,12 @@ describe('Vercel submission functions', () => {
 
     const declared = await applicants.fetch(new Request('http://localhost/api/applicants', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': '9000' },
+      headers: { 'Content-Type': 'application/json', 'Content-Length': '13000' },
       body: '{}',
     }))
     expect(declared.status).toBe(413)
 
-    const streamed = await waitlist.fetch(post('waitlist', { email: `${'a'.repeat(3_000)}@example.com` }))
+    const streamed = await waitlist.fetch(post('waitlist', { email: `${'a'.repeat(5_000)}@example.com` }))
     expect(streamed.status).toBe(413)
     expect((await streamed.json()).error.code).toBe('PAYLOAD_TOO_LARGE')
   })

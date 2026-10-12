@@ -1,7 +1,7 @@
 import type { CreateWaitlistInput, UpdateWaitlistZipInput, WaitlistRecord } from '../types/waitlist'
 
 export class WaitlistRequestError extends Error {
-  constructor(public readonly kind: 'invalid' | 'unavailable' | 'invalid_token') {
+  constructor(public readonly kind: 'invalid' | 'unavailable' | 'invalid_token' | 'verification') {
     super('Waitlist request failed')
   }
 }
@@ -18,20 +18,23 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-export async function createWaitlistEntry(input: CreateWaitlistInput): Promise<WaitlistRecord> {
+export async function createWaitlistEntry(input: CreateWaitlistInput, turnstileToken: string): Promise<WaitlistRecord> {
   const email = input.email.trim().toLowerCase()
   let response: Response
   try {
     response = await fetch('/api/waitlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, turnstileToken }),
     })
   } catch {
     throw new WaitlistRequestError('unavailable')
   }
 
   const payload = await readResponse(response)
+  if (response.status === 400 && isObject(payload) && isObject(payload.error) && payload.error.code === 'VERIFICATION_FAILED') {
+    throw new WaitlistRequestError('verification')
+  }
   if (response.status === 400) throw new WaitlistRequestError('invalid')
   if (!isObject(payload) || payload.ok !== true || !isObject(payload.data)) {
     throw new WaitlistRequestError('unavailable')

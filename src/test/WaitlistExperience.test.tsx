@@ -1,9 +1,24 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WaitlistExperience } from '../components/WaitlistExperience'
 import { createWaitlistEntry, updateWaitlistZip } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
+
+let autoVerifyWaitlist = true
+let emitWaitlistVerification: ((status: string, token?: string) => void) | undefined
+
+vi.mock('../components/TurnstileWidget', async () => {
+  const { forwardRef, useEffect, useImperativeHandle } = await import('react')
+  return {
+    TurnstileWidget: forwardRef<{ reset: () => void }, { onStatusChange: (status: string, token?: string) => void }>(function MockTurnstile({ onStatusChange }, ref) {
+      emitWaitlistVerification = onStatusChange
+      useImperativeHandle(ref, () => ({ reset: () => { onStatusChange('loading'); onStatusChange('verified', 'retry-token') } }), [onStatusChange])
+      useEffect(() => { onStatusChange('ready'); if (autoVerifyWaitlist) onStatusChange('verified', 'test-token') }, [onStatusChange])
+      return null
+    }),
+  }
+})
 
 vi.mock('../services/waitlistService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/waitlistService')>()
@@ -28,12 +43,35 @@ async function joinWaitlist(user: ReturnType<typeof userEvent.setup>) {
 describe('waitlist experience', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    autoVerifyWaitlist = true
+    emitWaitlistVerification = undefined
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: vi.fn().mockReturnValue({ matches: true }),
     })
     vi.mocked(createWaitlistEntry).mockResolvedValue(createdRecord)
     vi.mocked(updateWaitlistZip).mockImplementation(async ({ zip_code }) => ({ ...createdRecord, zip_code }))
+  })
+
+  it('waits for verification without an error and retries failed or expired checks', async () => {
+    autoVerifyWaitlist = false
+    const user = userEvent.setup()
+    render(<WaitlistExperience />)
+    await user.type(screen.getByLabelText('Email address'), 'person@example.com')
+    expect(screen.getByRole('button', { name: 'Verifying...' })).toBeDisabled()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(createWaitlistEntry).not.toHaveBeenCalled()
+
+    act(() => emitWaitlistVerification?.('error'))
+    expect(screen.getByRole('alert')).toHaveTextContent('Verification could not load')
+    await user.click(screen.getByRole('button', { name: 'Retry verification' }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    act(() => emitWaitlistVerification?.('expired'))
+    expect(screen.getByRole('button', { name: 'Retry verification' })).toBeEnabled()
+    await user.click(screen.getByRole('button', { name: 'Retry verification' }))
+    expect(createWaitlistEntry).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
+    expect(createWaitlistEntry).toHaveBeenCalledExactlyOnceWith(expect.any(Object), 'retry-token')
   })
 
   it('rejects empty and invalid email without creating a record', async () => {
@@ -57,7 +95,7 @@ describe('waitlist experience', () => {
     fireEvent.change(email, { target: { value: '  Person@Example.com  ' } })
     await user.type(email, '{enter}')
 
-    expect(createWaitlistEntry).toHaveBeenCalledExactlyOnceWith({ email: 'person@example.com', source: 'landing_page' })
+    expect(createWaitlistEntry).toHaveBeenCalledExactlyOnceWith({ email: 'person@example.com', source: 'landing_page' }, 'test-token')
     const heading = await screen.findByRole('heading', { name: /on the list/i })
     await waitFor(() => expect(heading).toHaveFocus())
   })
@@ -89,6 +127,8 @@ describe('waitlist experience', () => {
     await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
     expect(await screen.findByRole('heading', { name: /on the list/i })).toBeInTheDocument()
     expect(createWaitlistEntry).toHaveBeenCalledTimes(2)
+    expect(createWaitlistEntry).toHaveBeenNthCalledWith(1, expect.any(Object), 'test-token')
+    expect(createWaitlistEntry).toHaveBeenNthCalledWith(2, expect.any(Object), 'retry-token')
   })
 
   it('shows the full success state only after create succeeds, with focus and optional ZIP', async () => {
