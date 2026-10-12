@@ -75,10 +75,10 @@ export function FounderNote() {
           <h2 id="founder-heading" ref={headingRef} tabIndex={-1}>We Believe Peace Begins At Home.</h2>
           <div className="founder-paragraphs">
             <p>
-              As homeowners, parents, and landlords, we know firsthand how difficult it can be to find cleaning help that's reliable, thoughtful, and fairly priced.
+              As busy professionals, homeowners, landlords, and children of aging parents & grandparents, we know firsthand how difficult it can be to find cleaning help that's reliable, thoughtful, and fairly priced.
             </p>
             <p>
-              So we created Mirembe—the cleaning company we always wished we could call. A family-owned business built on care, trust, and the belief that every home deserves a little more peace.
+              So we created Mirembe, the cleaning company we always wished we could call. A family-owned business built on care, trust, and the belief that every home deserves a little more peace.
             </p>
             <p className="founder-meaning">“Mirembe” means peace and tranquility.</p>
           </div>
