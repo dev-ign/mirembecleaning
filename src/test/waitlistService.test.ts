@@ -21,18 +21,18 @@ describe('waitlist API service', () => {
 
   it('sends only normalized email and returns a stored record on 201', async () => {
     mockResponse(201, { ok: true, data: { id: record.id, created_at: record.created_at, zip_token: record.zip_token } })
-    const created = await createWaitlistEntry({ email: '  PERSON@Example.com  ', source: 'landing_page' })
+    const created = await createWaitlistEntry({ email: '  PERSON@Example.com  ', source: 'landing_page' }, 'test-token')
     expect(created).toEqual(record)
     expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/waitlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'person@example.com' }),
+      body: JSON.stringify({ email: 'person@example.com', turnstileToken: 'test-token' }),
     })
   })
 
   it('accepts a duplicate acknowledgment without inventing a row ID or ZIP token', async () => {
     mockResponse(200, { ok: true, data: { acknowledged: true } })
-    const acknowledged = await createWaitlistEntry({ email: 'person@example.com', source: 'landing_page' })
+    const acknowledged = await createWaitlistEntry({ email: 'person@example.com', source: 'landing_page' }, 'test-token')
     expect(acknowledged).toEqual({ ...record, id: null, zip_token: null, created_at: null })
     await expect(updateWaitlistZip({ record: acknowledged, zip_code: '02108' }))
       .rejects.toMatchObject({ kind: 'invalid_token' })
@@ -40,20 +40,24 @@ describe('waitlist API service', () => {
   })
 
   it('rejects validation errors, outages, malformed success responses, and network failures', async () => {
+    mockResponse(400, { ok: false, error: { code: 'VERIFICATION_FAILED' } })
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }, 'spent-token'))
+      .rejects.toMatchObject({ kind: 'verification' })
+
     mockResponse(400, { ok: false, error: { code: 'INVALID_REQUEST' } })
-    await expect(createWaitlistEntry({ email: 'bad', source: 'landing_page' }))
+    await expect(createWaitlistEntry({ email: 'bad', source: 'landing_page' }, 'test-token'))
       .rejects.toMatchObject({ kind: 'invalid' })
 
     mockResponse(503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } })
-    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }, 'test-token'))
       .rejects.toBeInstanceOf(WaitlistRequestError)
 
     mockResponse(201, { ok: true, data: { id: record.id } })
-    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }, 'test-token'))
       .rejects.toMatchObject({ kind: 'unavailable' })
 
     vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'))
-    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }, 'test-token'))
       .rejects.toMatchObject({ kind: 'unavailable' })
   })
 

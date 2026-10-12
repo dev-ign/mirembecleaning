@@ -30,7 +30,7 @@ describe('hiring application service', () => {
 
   it('posts every normalized form field and accepts only a persisted 201', async () => {
     mockResponse(201, { ok: true, data: { id: 'application-1', created_at: '2026-10-11T14:00:00Z' } })
-    const record = await submitHiringApplication(validInput)
+    const record = await submitHiringApplication(validInput, 'test-token')
 
     expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/applicants', {
       method: 'POST',
@@ -43,6 +43,7 @@ describe('hiring application service', () => {
         phone: '8605550134',
         city: 'Hartford',
         other_language: 'French',
+        turnstileToken: 'test-token',
       }),
     })
     expect(record).toEqual({
@@ -82,21 +83,24 @@ describe('hiring application service', () => {
   })
 
   it('rejects invalid input before sending and reports server validation errors', async () => {
-    await expect(submitHiringApplication({ ...validInput, email: 'invalid' })).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
+    await expect(submitHiringApplication({ ...validInput, email: 'invalid' }, 'test-token')).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
     expect(fetch).not.toHaveBeenCalled()
 
     mockResponse(400, { ok: false, error: { code: 'INVALID_REQUEST' } })
-    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
+    await expect(submitHiringApplication(validInput, 'test-token')).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
+
+    mockResponse(400, { ok: false, error: { code: 'VERIFICATION_FAILED' } })
+    await expect(submitHiringApplication(validInput, 'spent-token')).rejects.toMatchObject({ kind: 'verification' } satisfies Partial<HiringRequestError>)
   })
 
   it('does not fabricate success on outages, malformed responses, or network failures', async () => {
     mockResponse(503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } })
-    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
+    await expect(submitHiringApplication(validInput, 'test-token')).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
 
     mockResponse(201, { ok: true, data: { id: 'missing-timestamp' } })
-    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
+    await expect(submitHiringApplication(validInput, 'test-token')).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
 
     vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'))
-    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
+    await expect(submitHiringApplication(validInput, 'test-token')).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
   })
 })

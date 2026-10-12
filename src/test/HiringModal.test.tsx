@@ -1,10 +1,25 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { submitHiringApplication } from '../services/hiringApplicationService'
 import { createWaitlistEntry } from '../services/waitlistService'
 import type { HiringApplicationInput, HiringApplicationRecord } from '../types/hiring'
+
+let autoVerifyHiring = true
+let emitHiringVerification: ((status: string, token?: string) => void) | undefined
+
+vi.mock('../components/TurnstileWidget', async () => {
+  const { forwardRef, useEffect, useImperativeHandle } = await import('react')
+  return {
+    TurnstileWidget: forwardRef<{ reset: () => void }, { action: string; onStatusChange: (status: string, token?: string) => void }>(function MockTurnstile({ action, onStatusChange }, ref) {
+      if (action === 'applicants') emitHiringVerification = onStatusChange
+      useImperativeHandle(ref, () => ({ reset: () => { onStatusChange('loading'); onStatusChange('verified', 'retry-token') } }), [onStatusChange])
+      useEffect(() => { onStatusChange('ready'); if (action !== 'applicants' || autoVerifyHiring) onStatusChange('verified', 'test-token'); return () => onStatusChange('loading') }, [action, onStatusChange])
+      return action === 'applicants' ? <div data-testid="hiring-turnstile" /> : null
+    }),
+  }
+})
 
 vi.mock('../services/hiringApplicationService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/hiringApplicationService')>()
@@ -73,6 +88,8 @@ function fillValidForm(dialog: HTMLElement) {
 describe('hiring modal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    autoVerifyHiring = true
+    emitHiringVerification = undefined
     vi.mocked(submitHiringApplication).mockResolvedValue(record)
     vi.mocked(createWaitlistEntry).mockResolvedValue({
       id: 'waitlist-1',
@@ -88,17 +105,38 @@ describe('hiring modal', () => {
     })
   })
 
+  it('waits for verification and allows a failed challenge to be retried', async () => {
+    autoVerifyHiring = false
+    const user = userEvent.setup()
+    render(<App />)
+    const dialog = await openModal(user)
+    fillValidForm(dialog)
+    expect(screen.getByRole('button', { name: 'Verifying…' })).toBeDisabled()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(submitHiringApplication).not.toHaveBeenCalled()
+
+    act(() => emitHiringVerification?.('error'))
+    expect(screen.getByRole('alert')).toHaveTextContent('Verification could not load')
+    await user.click(screen.getByRole('button', { name: 'Retry verification' }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Submit Application' }))
+    expect(submitHiringApplication).toHaveBeenCalledExactlyOnceWith(expect.any(Object), 'retry-token')
+  })
+
   it('opens with focus, locks background scroll, and preserves a draft after close', async () => {
     const user = userEvent.setup()
     render(<App />)
+    expect(screen.queryByTestId('hiring-turnstile')).not.toBeInTheDocument()
     const trigger = screen.getByRole('button', { name: 'Interested in joining our cleaning team?' })
     const dialog = await openModal(user)
+    expect(screen.getByTestId('hiring-turnstile')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Join the Mirembe team.' })).toHaveFocus()
     expect(dialog).toHaveAttribute('open')
     expect(document.body.style.overflow).toBe('hidden')
     await user.type(screen.getByRole('textbox', { name: 'First name' }), 'Ari')
     await user.click(screen.getByRole('button', { name: 'Close application form' }))
     expect(dialog).not.toHaveAttribute('open')
+    expect(screen.queryByTestId('hiring-turnstile')).not.toBeInTheDocument()
     expect(document.body.style.overflow).toBe('')
     expect(trigger).toHaveFocus()
 
@@ -244,7 +282,7 @@ describe('hiring modal', () => {
       first_name: 'Ari', email: 'ari@example.com', state: 'CT', has_vehicle: false,
       cleaning_experience: 'under_1_year', languages: ['english', 'spanish'],
       travel_distance: '20_miles', preferred_availability: 'part_time',
-    } satisfies Partial<HiringApplicationInput>))
+    } satisfies Partial<HiringApplicationInput>), 'test-token')
     await user.click(screen.getByRole('button', { name: 'Close' }))
     await openModal(user)
     expect(screen.getByRole('heading', { name: "We've received your application." })).toHaveFocus()
@@ -272,6 +310,8 @@ describe('hiring modal', () => {
     await user.click(screen.getByRole('button', { name: 'Submit Application' }))
     expect(await screen.findByRole('heading', { name: "We've received your application." })).toBeInTheDocument()
     expect(submitHiringApplication).toHaveBeenCalledTimes(2)
+    expect(submitHiringApplication).toHaveBeenNthCalledWith(1, expect.any(Object), 'test-token')
+    expect(submitHiringApplication).toHaveBeenNthCalledWith(2, expect.any(Object), 'retry-token')
   })
 
   it('keeps the form in place until acceptance, then exits before the compact confirmation', async () => {

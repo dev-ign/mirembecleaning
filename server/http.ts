@@ -1,10 +1,10 @@
 import type { ZodIssue } from 'zod'
 
-export const MAX_WAITLIST_BYTES = 2_048
-export const MAX_APPLICANT_BYTES = 8_192
+export const MAX_WAITLIST_BYTES = 4_096
+export const MAX_APPLICANT_BYTES = 12_288
 
 type ErrorCode = 'INVALID_REQUEST' | 'METHOD_NOT_ALLOWED' | 'DUPLICATE' | 'PAYLOAD_TOO_LARGE'
-  | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE'
+  | 'RATE_LIMITED' | 'INTERNAL_ERROR' | 'SERVICE_UNAVAILABLE' | 'VERIFICATION_FAILED'
 
 export function errorResponse(status: 400 | 405 | 409 | 413 | 429 | 500 | 503, code: ErrorCode, message: string, fields?: string[]): Response {
   return Response.json({ ok: false, error: { code, message, ...(fields ? { fields } : {}) } }, {

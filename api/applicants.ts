@@ -4,6 +4,6 @@ import { applicantSchema } from '../server/validation.js'
 
 export default {
   fetch(request: Request): Promise<Response> {
-    return handleSubmission(request, applicantSchema, MAX_APPLICANT_BYTES, (store, input) => store.createApplicant(input))
+    return handleSubmission(request, applicantSchema, MAX_APPLICANT_BYTES, 'applicants', (store, input) => store.createApplicant(input))
   },
 }
