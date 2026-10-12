@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import type { ApplicantSubmission, WaitlistSubmission } from './validation'
-import { createZipToken } from './zipToken'
+import type { ApplicantSubmission, WaitlistSubmission } from './validation.js'
+import { createZipToken } from './zipToken.js'
 
 export interface SupabaseConfig {
   url: string

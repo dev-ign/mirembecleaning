@@ -1,6 +1,6 @@
-import { handleSubmission } from '../server/handler'
-import { MAX_WAITLIST_BYTES } from '../server/http'
-import { waitlistSchema } from '../server/validation'
+import { handleSubmission } from '../server/handler.js'
+import { MAX_WAITLIST_BYTES } from '../server/http.js'
+import { waitlistSchema } from '../server/validation.js'
 
 export default {
   fetch(request: Request): Promise<Response> {

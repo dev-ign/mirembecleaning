@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isValidEmail } from '../src/shared/email'
+import { isValidEmail } from '../src/shared/email.js'
 
 const email = z.string().trim().toLowerCase().max(254).refine(isValidEmail)
 const shortText = (limit: number) => z.string().trim().min(1).max(limit)

@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod'
-import { createSubmissionStore, getSupabaseConfig, type CreateResult, type SubmissionStore } from './database'
-import { acknowledgedResponse, createdResponse, errorResponse, readLimitedJson, validationFields } from './http'
+import { createSubmissionStore, getSupabaseConfig, type CreateResult, type SubmissionStore } from './database.js'
+import { acknowledgedResponse, createdResponse, errorResponse, readLimitedJson, validationFields } from './http.js'
 
 export async function handleSubmission<T>(
   request: Request,
@@ -14,7 +14,7 @@ export async function handleSubmission<T>(
 
   try {
     const body = await readLimitedJson(request, maxBytes)
-    if (!body.ok) return body.response
+    if (body.ok === false) return body.response
 
     const parsed = schema.safeParse(body.value)
     if (!parsed.success) {

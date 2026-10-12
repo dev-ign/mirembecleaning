@@ -1,11 +1,11 @@
 // @vitest-environment node
 import { createClient } from '@supabase/supabase-js'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import waitlist from '../api/waitlist'
-import zip from '../api/waitlist/zip'
-import applicants from '../api/applicants'
-import { applicantSchema, waitlistSchema, zipUpdateSchema } from './validation'
-import { createZipToken, verifyZipToken } from './zipToken'
+import waitlist from '../api/waitlist.js'
+import zip from '../api/waitlist/zip.js'
+import applicants from '../api/applicants.js'
+import { applicantSchema, waitlistSchema, zipUpdateSchema } from './validation.js'
+import { createZipToken, verifyZipToken } from './zipToken.js'
 
 const SAVED_ID = '00000000-0000-4000-8000-000000000001'
 const { fromMock, insertMock, singleMock, updateMock, eqMock, maybeSingleMock } = vi.hoisted(() => ({

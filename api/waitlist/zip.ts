@@ -1,7 +1,7 @@
-import { createSubmissionStore, getSupabaseConfig } from '../../server/database'
-import { errorResponse, MAX_WAITLIST_BYTES, readLimitedJson, validationFields, zipUpdatedResponse } from '../../server/http'
-import { zipUpdateSchema } from '../../server/validation'
-import { verifyZipToken } from '../../server/zipToken'
+import { createSubmissionStore, getSupabaseConfig } from '../../server/database.js'
+import { errorResponse, MAX_WAITLIST_BYTES, readLimitedJson, validationFields, zipUpdatedResponse } from '../../server/http.js'
+import { zipUpdateSchema } from '../../server/validation.js'
+import { verifyZipToken } from '../../server/zipToken.js'
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -11,7 +11,7 @@ export default {
 
     try {
       const body = await readLimitedJson(request, MAX_WAITLIST_BYTES)
-      if (!body.ok) return body.response
+      if (body.ok === false) return body.response
 
       const parsed = zipUpdateSchema.safeParse(body.value)
       if (!parsed.success) {
