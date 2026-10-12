@@ -1,58 +1,79 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createWaitlistEntry, failNextWaitlistOperation, updateWaitlistZip } from '../services/waitlistService'
+import { createWaitlistEntry, updateWaitlistZip, WaitlistRequestError } from '../services/waitlistService'
+import type { WaitlistRecord } from '../types/waitlist'
 
-async function settle<T>(operation: Promise<T>) {
-  await vi.advanceTimersByTimeAsync(300)
-  return operation
+const record: WaitlistRecord = {
+  id: '00000000-0000-4000-8000-000000000001',
+  email: 'person@example.com',
+  zip_code: null,
+  zip_token: 'signed-token',
+  source: 'landing_page',
+  created_at: '2026-10-11T00:00:00Z',
 }
 
-async function rejects(operation: Promise<unknown>, message: string) {
-  const assertion = expect(operation).rejects.toThrow(message)
-  await vi.advanceTimersByTimeAsync(300)
-  await assertion
+function mockResponse(status: number, data: unknown) {
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json(data, { status }))
 }
 
-describe('mock waitlist service', () => {
-  beforeEach(() => vi.useFakeTimers())
-  afterEach(() => vi.useRealTimers())
+describe('waitlist API service', () => {
+  beforeEach(() => vi.stubGlobal('fetch', vi.fn()))
+  afterEach(() => vi.unstubAllGlobals())
 
-  it('creates a typed record with a UUID, normalized email, timestamp, and empty ZIP', async () => {
-    const record = await settle(createWaitlistEntry({ email: '  Person@Example.com  ', source: 'landing_page' }))
-
-    expect(record).toEqual({
-      id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
-      email: 'person@example.com',
-      zip_code: null,
-      source: 'landing_page',
-      created_at: expect.any(String),
+  it('sends only normalized email and returns a stored record on 201', async () => {
+    mockResponse(201, { ok: true, data: { id: record.id, created_at: record.created_at, zip_token: record.zip_token } })
+    const created = await createWaitlistEntry({ email: '  PERSON@Example.com  ', source: 'landing_page' })
+    expect(created).toEqual(record)
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'person@example.com' }),
     })
-    expect(new Date(record.created_at).toISOString()).toBe(record.created_at)
   })
 
-  it('updates that record by ID while preserving its original fields and leading zeros', async () => {
-    const created = await settle(createWaitlistEntry({ email: 'owner@example.com', source: 'landing_page' }))
-    const updated = await settle(updateWaitlistZip({ id: created.id, zip_code: '02108' }))
-    const edited = await settle(updateWaitlistZip({ id: created.id, zip_code: '06001' }))
-
-    expect(updated).toEqual({ ...created, zip_code: '02108' })
-    expect(updated.id).toBe(created.id)
-    expect(edited).toEqual({ ...created, zip_code: '06001' })
+  it('accepts a duplicate acknowledgment without inventing a row ID or ZIP token', async () => {
+    mockResponse(200, { ok: true, data: { acknowledged: true } })
+    const acknowledged = await createWaitlistEntry({ email: 'person@example.com', source: 'landing_page' })
+    expect(acknowledged).toEqual({ ...record, id: null, zip_token: null, created_at: null })
+    await expect(updateWaitlistZip({ record: acknowledged, zip_code: '02108' }))
+      .rejects.toMatchObject({ kind: 'invalid_token' })
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('rejects invalid input and missing record IDs', async () => {
-    await rejects(createWaitlistEntry({ email: 'invalid', source: 'landing_page' }), 'valid email')
-    await rejects(updateWaitlistZip({ id: 'missing', zip_code: '02108' }), 'not found')
-    await rejects(updateWaitlistZip({ id: 'missing', zip_code: '1234' }), 'five-digit')
+  it('rejects validation errors, outages, malformed success responses, and network failures', async () => {
+    mockResponse(400, { ok: false, error: { code: 'INVALID_REQUEST' } })
+    await expect(createWaitlistEntry({ email: 'bad', source: 'landing_page' }))
+      .rejects.toMatchObject({ kind: 'invalid' })
+
+    mockResponse(503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } })
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+      .rejects.toBeInstanceOf(WaitlistRequestError)
+
+    mockResponse(201, { ok: true, data: { id: record.id } })
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+      .rejects.toMatchObject({ kind: 'unavailable' })
+
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'))
+    await expect(createWaitlistEntry({ email: record.email, source: 'landing_page' }))
+      .rejects.toMatchObject({ kind: 'unavailable' })
   })
 
-  it('supports one-shot create and update failures without corrupting the record', async () => {
-    failNextWaitlistOperation('create')
-    await rejects(createWaitlistEntry({ email: 'owner@example.com', source: 'landing_page' }), 'creation failed')
+  it('uses the signed registration token to save ZIP and accepts ZIP+4', async () => {
+    mockResponse(200, { ok: true, data: { zip_code: '02108-1234' } })
+    const updated = await updateWaitlistZip({ record, zip_code: '021081234' })
+    expect(updated).toEqual({ ...record, zip_code: '02108-1234' })
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/waitlist/zip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ registration_token: 'signed-token', zip_code: '021081234' }),
+    })
+  })
 
-    const created = await settle(createWaitlistEntry({ email: 'owner@example.com', source: 'landing_page' }))
-    failNextWaitlistOperation('update')
-    await rejects(updateWaitlistZip({ id: created.id, zip_code: '02108' }), 'ZIP update failed')
-    const updated = await settle(updateWaitlistZip({ id: created.id, zip_code: '02108' }))
-    expect(updated).toEqual({ ...created, zip_code: '02108' })
+  it('keeps ZIP errors separate from the accepted registration', async () => {
+    mockResponse(400, { ok: false, error: { code: 'INVALID_REQUEST' } })
+    await expect(updateWaitlistZip({ record, zip_code: '02108' }))
+      .rejects.toMatchObject({ kind: 'invalid_token' })
+    mockResponse(503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } })
+    await expect(updateWaitlistZip({ record, zip_code: '02108' }))
+      .rejects.toMatchObject({ kind: 'unavailable' })
   })
 })

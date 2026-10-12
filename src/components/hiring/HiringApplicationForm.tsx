@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import chevronIcon from '../../assets/icons/hiring-chevron.svg'
 import radioOutline from '../../assets/icons/hiring-radio-outline.svg'
-import { phoneDigits, submitHiringApplication, validateHiringApplication } from '../../services/hiringApplicationService'
+import { HiringRequestError, phoneDigits, submitHiringApplication, validateHiringApplication } from '../../services/hiringApplicationService'
 import {
   availabilityOptions,
   experienceOptions,
@@ -105,6 +105,7 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
   const [form, setForm] = useState<HiringApplicationInput>(() => ({ ...initialHiringApplication, languages: [] }))
   const [errors, setErrors] = useState<HiringErrors>({})
   const [status, setStatus] = useState<SubmissionStatus>('idle')
+  const [submitError, setSubmitError] = useState('')
   const pending = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -112,7 +113,10 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
     const nextForm = { ...form, [field]: value }
     setForm(nextForm)
     setErrors((current) => ({ ...current, [field]: current[field] ? validateHiringApplication(nextForm)[field] : undefined }))
-    if (status === 'error') setStatus('idle')
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
+    }
   }
 
   function validateField(field: HiringField) {
@@ -146,8 +150,11 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
     try {
       const record = await submitHiringApplication(form)
       onAccepted(record)
-    } catch {
+    } catch (error) {
       setStatus('error')
+      setSubmitError(error instanceof HiringRequestError && error.kind === 'invalid'
+        ? 'Please review your answers and try again.'
+        : 'We couldn’t submit your application. Please try again.')
     } finally {
       pending.current = false
     }
@@ -214,7 +221,7 @@ export function HiringApplicationForm({ onAccepted }: HiringApplicationFormProps
         </section>
       </div>
       <footer className="hiring-footer">
-        {status === 'error' && <p className="hiring-submit-error" role="alert">We couldn’t submit your application. Please try again.</p>}
+        {status === 'error' && <p className="hiring-submit-error" role="alert">{submitError}</p>}
         <button className="hiring-submit" type="submit" aria-disabled={status === 'submitting'}>
           {status === 'submitting' && <span className="loading-spinner" aria-hidden="true" />}
           <span aria-live="polite">{status === 'submitting' ? 'Submitting…' : 'Submit Application'}</span>

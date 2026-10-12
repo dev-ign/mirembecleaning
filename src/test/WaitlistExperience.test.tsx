@@ -5,15 +5,16 @@ import { WaitlistExperience } from '../components/WaitlistExperience'
 import { createWaitlistEntry, updateWaitlistZip } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
 
-vi.mock('../services/waitlistService', () => ({
-  createWaitlistEntry: vi.fn(),
-  updateWaitlistZip: vi.fn(),
-}))
+vi.mock('../services/waitlistService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../services/waitlistService')>()
+  return { ...actual, createWaitlistEntry: vi.fn(), updateWaitlistZip: vi.fn() }
+})
 
 const createdRecord: WaitlistRecord = {
   id: 'existing-record',
   email: 'person@example.com',
   zip_code: null,
+  zip_token: 'test-zip-token',
   source: 'landing_page',
   created_at: '2026-10-10T14:00:00.000Z',
 }
@@ -126,7 +127,7 @@ describe('waitlist experience', () => {
     expect(screen.queryByLabelText('ZIP code (optional)')).not.toBeInTheDocument()
     expect(container.querySelector('.zip-collection.is-exiting')).not.toBeInTheDocument()
     expect(container.querySelector('.zip-saved-state img')).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'))
-    expect(updateWaitlistZip).toHaveBeenCalledExactlyOnceWith({ id: createdRecord.id, zip_code: '02108' })
+    expect(updateWaitlistZip).toHaveBeenCalledExactlyOnceWith({ record: createdRecord, zip_code: '02108' })
     expect(createWaitlistEntry).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('heading', { name: /on the list/i })).toBeInTheDocument()
   })
@@ -149,8 +150,8 @@ describe('waitlist experience', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }))
     await screen.findByText('Zip code saved. Thank you!')
 
-    expect(updateWaitlistZip).toHaveBeenNthCalledWith(1, { id: createdRecord.id, zip_code: '02108' })
-    expect(updateWaitlistZip).toHaveBeenNthCalledWith(2, { id: createdRecord.id, zip_code: '06001' })
+    expect(updateWaitlistZip).toHaveBeenNthCalledWith(1, { record: createdRecord, zip_code: '02108' })
+    expect(updateWaitlistZip).toHaveBeenNthCalledWith(2, { record: { ...createdRecord, zip_code: '02108' }, zip_code: '06001' })
     expect(createWaitlistEntry).toHaveBeenCalledTimes(1)
     expect(container.querySelector('.success-icon')).toBe(icon)
     await user.click(screen.getByRole('button', { name: 'Edit ZIP' }))

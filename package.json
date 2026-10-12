@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && tsc -p tsconfig.api.json && vite build",
+    "typecheck:api": "tsc -p tsconfig.api.json",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run"
@@ -14,8 +15,10 @@
     "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/montserrat": "^5.3.0",
+    "@supabase/supabase-js": "2.117.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

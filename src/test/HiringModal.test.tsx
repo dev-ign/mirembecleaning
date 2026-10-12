@@ -3,11 +3,17 @@ import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { submitHiringApplication } from '../services/hiringApplicationService'
+import { createWaitlistEntry } from '../services/waitlistService'
 import type { HiringApplicationInput, HiringApplicationRecord } from '../types/hiring'
 
 vi.mock('../services/hiringApplicationService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../services/hiringApplicationService')>()
   return { ...actual, submitHiringApplication: vi.fn() }
+})
+
+vi.mock('../services/waitlistService', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../services/waitlistService')>()
+  return { ...actual, createWaitlistEntry: vi.fn() }
 })
 
 const record: HiringApplicationRecord = {
@@ -68,6 +74,14 @@ describe('hiring modal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(submitHiringApplication).mockResolvedValue(record)
+    vi.mocked(createWaitlistEntry).mockResolvedValue({
+      id: 'waitlist-1',
+      email: 'customer@example.com',
+      zip_code: null,
+      zip_token: 'test-zip-token',
+      source: 'landing_page',
+      created_at: '2026-10-10T15:00:00.000Z',
+    })
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: vi.fn().mockReturnValue({ matches: true }),

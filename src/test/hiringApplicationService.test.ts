@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { failNextHiringApplication, isValidEmail, normalizePhone, phoneDigits, submitHiringApplication, validateHiringApplication } from '../services/hiringApplicationService'
+import { HiringRequestError, isValidEmail, normalizePhone, phoneDigits, submitHiringApplication, validateHiringApplication } from '../services/hiringApplicationService'
 import { initialHiringApplication, type HiringApplicationInput } from '../types/hiring'
 
 const validInput: HiringApplicationInput = {
@@ -18,39 +18,50 @@ const validInput: HiringApplicationInput = {
   preferred_availability: 'part_time',
 }
 
-async function settle<T>(operation: Promise<T>) {
-  await vi.advanceTimersByTimeAsync(300)
-  return operation
+function mockResponse(status: number, payload: unknown) {
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json(payload, { status }))
 }
 
-describe('mock hiring application service', () => {
-  beforeEach(() => vi.useFakeTimers())
-  afterEach(() => vi.useRealTimers())
+describe('hiring application service', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+  afterEach(() => vi.unstubAllGlobals())
 
-  it('normalizes contact data and returns a separate application record', async () => {
-    const record = await settle(submitHiringApplication(validInput))
+  it('posts every normalized form field and accepts only a persisted 201', async () => {
+    mockResponse(201, { ok: true, data: { id: 'application-1', created_at: '2026-10-11T14:00:00Z' } })
+    const record = await submitHiringApplication(validInput)
+
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/applicants', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validInput,
+        first_name: 'Ari',
+        last_name: 'Rivera',
+        email: 'ari@example.com',
+        phone: '8605550134',
+        city: 'Hartford',
+        other_language: 'French',
+      }),
+    })
     expect(record).toEqual({
       ...validInput,
-      first_name: 'Ari',
-      last_name: 'Rivera',
-      email: 'ari@example.com',
-      phone: '8605550134',
-      city: 'Hartford',
-      other_language: 'French',
-      id: expect.stringMatching(/^[0-9a-f-]{36}$/i),
-      source: 'landing_page',
-      created_at: expect.any(String),
+      first_name: 'Ari', last_name: 'Rivera', email: 'ari@example.com',
+      phone: '8605550134', city: 'Hartford', other_language: 'French',
+      id: 'application-1', source: 'landing_page', created_at: '2026-10-11T14:00:00Z',
     })
-    expect(new Date(record.created_at).toISOString()).toBe(record.created_at)
-    expect(record.has_vehicle).toBe(false)
     expect(record.languages).toEqual(['english', 'spanish', 'other'])
+    expect(record.has_vehicle).toBe(false)
   })
 
   it('requires every answer, keeps No distinct from unanswered, and checks Other', () => {
     const missing = validateHiringApplication(initialHiringApplication)
     expect(missing.has_vehicle).toBe('Choose Yes or No.')
     expect(missing.languages).toBe('Select at least one language.')
-    expect(validateHiringApplication({ ...validInput, other_language: '' }).other_language).toBe('Specify the other language.')
+    expect(validateHiringApplication({ ...validInput, other_language: '' }).other_language).toContain('Specify the other language')
+    expect(validateHiringApplication({ ...validInput, languages: ['english', 'english'] }).languages).toBeDefined()
+    expect(validateHiringApplication({ ...validInput, first_name: 'x'.repeat(81) }).first_name).toBeDefined()
     expect(validateHiringApplication(validInput)).toEqual({})
     expect(normalizePhone('1-860-555-0134')).toBe('8605550134')
     expect(normalizePhone('123')).toBeNull()
@@ -70,18 +81,22 @@ describe('mock hiring application service', () => {
     }
   })
 
-  it('rejects invalid input and permits retry after a one-shot failure', async () => {
-    const invalid = submitHiringApplication({ ...validInput, email: 'invalid' })
-    const invalidAssertion = expect(invalid).rejects.toThrow('incomplete or invalid')
-    await vi.advanceTimersByTimeAsync(300)
-    await invalidAssertion
+  it('rejects invalid input before sending and reports server validation errors', async () => {
+    await expect(submitHiringApplication({ ...validInput, email: 'invalid' })).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
+    expect(fetch).not.toHaveBeenCalled()
 
-    failNextHiringApplication()
-    const failed = submitHiringApplication(validInput)
-    const failedAssertion = expect(failed).rejects.toThrow('submission failed')
-    await vi.advanceTimersByTimeAsync(300)
-    await failedAssertion
+    mockResponse(400, { ok: false, error: { code: 'INVALID_REQUEST' } })
+    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'invalid' } satisfies Partial<HiringRequestError>)
+  })
 
-    expect(await settle(submitHiringApplication(validInput))).toHaveProperty('id')
+  it('does not fabricate success on outages, malformed responses, or network failures', async () => {
+    mockResponse(503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } })
+    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
+
+    mockResponse(201, { ok: true, data: { id: 'missing-timestamp' } })
+    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
+
+    vi.mocked(fetch).mockRejectedValueOnce(new Error('offline'))
+    await expect(submitHiringApplication(validInput)).rejects.toMatchObject({ kind: 'unavailable' } satisfies Partial<HiringRequestError>)
   })
 })

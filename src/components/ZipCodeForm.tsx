@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type AnimationEvent, type FormEvent } from 'react'
 import savedIcon from '../assets/icons/zip-saved.svg'
-import { updateWaitlistZip } from '../services/waitlistService'
+import { updateWaitlistZip, WaitlistRequestError } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
 
 type ZipSaveStatus = 'idle' | 'saving' | 'exiting' | 'saved' | 'error'
-const ZIP_REGEX = /^\d{5}$/
+const ZIP_REGEX = /^\d{5}(?:-?\d{4})?$/
 
 interface ZipCodeFormProps {
   record: WaitlistRecord
@@ -14,6 +14,7 @@ interface ZipCodeFormProps {
 export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
   const [zipInput, setZipInput] = useState(record.zip_code ?? '')
   const [status, setStatus] = useState<ZipSaveStatus>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [touched, setTouched] = useState(false)
   const savePending = useRef(false)
@@ -46,12 +47,15 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
     setStatus('saving')
 
     try {
-      const updatedRecord = await updateWaitlistZip({ id: record.id, zip_code: zipInput })
+      const updatedRecord = await updateWaitlistZip({ record, zip_code: zipInput })
       onSaved(updatedRecord)
       setIsEditing(false)
       setStatus(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'saved' : 'exiting')
-    } catch {
+    } catch (error) {
       setStatus('error')
+      setErrorMessage(error instanceof WaitlistRequestError && error.kind === 'invalid_token'
+        ? 'ZIP updates are unavailable for this registration.'
+        : 'We couldn’t save your ZIP code. Please try again.')
     } finally {
       savePending.current = false
     }
@@ -113,7 +117,7 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
                 type="text"
                 inputMode="numeric"
                 autoComplete="postal-code"
-                maxLength={5}
+                maxLength={10}
                 placeholder="Your ZIP code (optional)"
                 value={zipInput}
                 readOnly={status === 'saving' || status === 'exiting'}
@@ -137,10 +141,10 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
             </div>
           </form>
           {showFormatError && status !== 'error' && (
-            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">Enter a five-digit ZIP code.</p>
+            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">Enter a five-digit ZIP code or ZIP+4.</p>
           )}
           {status === 'error' && (
-            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">We couldn’t save your ZIP code. Please try again.</p>
+            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">{errorMessage}</p>
           )}
         </div>
       )}

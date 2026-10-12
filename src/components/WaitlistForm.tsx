@@ -1,6 +1,6 @@
 import { useRef, useState, type AnimationEvent, type FormEvent } from 'react'
 import mailIcon from '../assets/icons/mail.svg'
-import { createWaitlistEntry } from '../services/waitlistService'
+import { createWaitlistEntry, WaitlistRequestError } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
 
 type FormStatus = 'idle' | 'invalid' | 'submitting' | 'error'
@@ -39,10 +39,13 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
     try {
       const record = await createWaitlistEntry({ email: normalizedEmail, source: 'landing_page' })
       onCreated(record)
-    } catch {
+    } catch (error) {
       submitPending.current = false
-      setStatus('error')
-      setMessage('We couldn’t add you right now. Please try again.')
+      const invalid = error instanceof WaitlistRequestError && error.kind === 'invalid'
+      setStatus(invalid ? 'invalid' : 'error')
+      setMessage(invalid
+        ? 'Enter a valid email address to join the waitlist.'
+        : 'We couldn’t add you right now. Please try again.')
     }
   }
 

@@ -1,11 +1,12 @@
 export type WaitlistSource = 'landing_page'
 
 export interface WaitlistRecord {
-  id: string
+  id: string | null
   email: string
   zip_code: string | null
+  zip_token: string | null
   source: WaitlistSource
-  created_at: string
+  created_at: string | null
 }
 
 export interface CreateWaitlistInput {
@@ -14,6 +15,6 @@ export interface CreateWaitlistInput {
 }
 
 export interface UpdateWaitlistZipInput {
-  id: string
+  record: WaitlistRecord
   zip_code: string
 }

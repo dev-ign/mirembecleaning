@@ -1,63 +1,78 @@
 import type { CreateWaitlistInput, UpdateWaitlistZipInput, WaitlistRecord } from '../types/waitlist'
 
-// Development-only storage. Refreshing the page clears these records.
-const mockRecords = new Map<string, WaitlistRecord>()
-const failNext = { create: false, update: false }
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const ZIP_REGEX = /^\d{5}$/
-
-function simulateLatency() {
-  return new Promise<void>((resolve) => globalThis.setTimeout(resolve, 300))
+export class WaitlistRequestError extends Error {
+  constructor(public readonly kind: 'invalid' | 'unavailable' | 'invalid_token') {
+    super('Waitlist request failed')
+  }
 }
 
-/** Allows a test to exercise either error path without changing UI code. */
-export function failNextWaitlistOperation(operation: 'create' | 'update') {
-  failNext[operation] = true
+async function readResponse(response: Response): Promise<unknown> {
+  try {
+    return await response.json() as unknown
+  } catch {
+    throw new WaitlistRequestError('unavailable')
+  }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 export async function createWaitlistEntry(input: CreateWaitlistInput): Promise<WaitlistRecord> {
-  await simulateLatency()
-
-  if (failNext.create) {
-    failNext.create = false
-    throw new Error('Mock waitlist creation failed')
-  }
-
   const email = input.email.trim().toLowerCase()
-  if (!EMAIL_REGEX.test(email)) {
-    throw new Error('A valid email address is required')
+  let response: Response
+  try {
+    response = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+  } catch {
+    throw new WaitlistRequestError('unavailable')
   }
 
-  const record: WaitlistRecord = {
-    id: crypto.randomUUID(),
-    email,
-    zip_code: null,
-    source: input.source,
-    created_at: new Date().toISOString(),
+  const payload = await readResponse(response)
+  if (response.status === 400) throw new WaitlistRequestError('invalid')
+  if (!isObject(payload) || payload.ok !== true || !isObject(payload.data)) {
+    throw new WaitlistRequestError('unavailable')
   }
 
-  mockRecords.set(record.id, record)
-  return { ...record }
+  if (response.status === 201 && typeof payload.data.id === 'string'
+    && typeof payload.data.created_at === 'string' && typeof payload.data.zip_token === 'string') {
+    return {
+      id: payload.data.id,
+      email,
+      zip_code: null,
+      zip_token: payload.data.zip_token,
+      source: 'landing_page',
+      created_at: payload.data.created_at,
+    }
+  }
+  if (response.status === 200 && payload.data.acknowledged === true) {
+    return { id: null, email, zip_code: null, zip_token: null, source: 'landing_page', created_at: null }
+  }
+  throw new WaitlistRequestError('unavailable')
 }
 
-export async function updateWaitlistZip(input: UpdateWaitlistZipInput): Promise<WaitlistRecord> {
-  await simulateLatency()
+export async function updateWaitlistZip({ record, zip_code }: UpdateWaitlistZipInput): Promise<WaitlistRecord> {
+  if (!record.zip_token) throw new WaitlistRequestError('invalid_token')
 
-  if (failNext.update) {
-    failNext.update = false
-    throw new Error('Mock ZIP update failed')
+  let response: Response
+  try {
+    response = await fetch('/api/waitlist/zip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ registration_token: record.zip_token, zip_code }),
+    })
+  } catch {
+    throw new WaitlistRequestError('unavailable')
   }
 
-  if (!ZIP_REGEX.test(input.zip_code)) {
-    throw new Error('A five-digit ZIP code is required')
+  const payload = await readResponse(response)
+  if (response.status === 400) throw new WaitlistRequestError('invalid_token')
+  if (response.status === 200 && isObject(payload) && payload.ok === true
+    && isObject(payload.data) && typeof payload.data.zip_code === 'string') {
+    return { ...record, zip_code: payload.data.zip_code }
   }
-
-  const existing = mockRecords.get(input.id)
-  if (!existing) {
-    throw new Error('Waitlist entry was not found')
-  }
-
-  const updated = { ...existing, zip_code: input.zip_code }
-  mockRecords.set(input.id, updated)
-  return { ...updated }
+  throw new WaitlistRequestError('unavailable')
 }
