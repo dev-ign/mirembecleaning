@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { processEmailJobs } from './worker.js'
 import { sendEmailJob } from './send.js'
 
@@ -7,10 +7,6 @@ const rpc = vi.fn()
 vi.mock('../database.js', () => ({
   getSupabaseConfig: () => ({ url: 'https://example.supabase.co', secretKey: 'test' }),
   createServiceClient: () => ({ rpc }),
-}))
-vi.mock('./config.js', () => ({
-  getEmailConfig: () => ({ apiKey: 'test', from: 'Mirembe <no-reply@mirembecleaning.com>',
-    careersFrom: 'Careers <no-reply@mirembecleaning.com>', notificationEmail: 'mirembecleaning@gmail.com' }),
 }))
 vi.mock('./send.js', async (importOriginal) => ({ ...(await importOriginal<typeof import('./send.js')>()), sendEmailJob: vi.fn() }))
 
@@ -24,9 +20,14 @@ const claimed = {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv('RESEND_API_KEY', 'test')
+  vi.stubEnv('RESEND_FROM_EMAIL', '<no-reply@mirembecleaning.com>')
+  vi.stubEnv('RESEND_CAREERS_EMAIL', '<no-reply@mirembecleaning.com>')
+  vi.stubEnv('MIREMBE_NOTIFICATION_EMAIL', 'mirembecleaning@gmail.com')
   rpc.mockResolvedValue({ data: true, error: null })
   rpc.mockResolvedValueOnce({ data: [claimed], error: null })
 })
+afterEach(() => vi.unstubAllEnvs())
 
 describe('email outbox processor', () => {
   it('claims, sends, and records a Resend message ID with the lease token', async () => {

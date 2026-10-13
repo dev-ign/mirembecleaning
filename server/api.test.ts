@@ -9,6 +9,7 @@ import { applicantSchema, waitlistSchema, zipUpdateSchema } from './validation.j
 import { createZipToken, verifyZipToken } from './zipToken.js'
 import { verifyTurnstileToken } from './turnstile.js'
 import { processEmailJobs } from './email/worker.js'
+import { processSheetJobs } from './sheets/worker.js'
 
 const SAVED_ID = '00000000-0000-4000-8000-000000000001'
 const SUBMISSION_KEY = '00000000-0000-4000-8000-000000000004'
@@ -33,6 +34,7 @@ vi.mock('@supabase/supabase-js', () => ({
 vi.mock('./turnstile.js', () => ({ verifyTurnstileToken: vi.fn() }))
 vi.mock('@vercel/functions', () => ({ waitUntil: vi.fn() }))
 vi.mock('./email/worker.js', () => ({ processEmailJobs: vi.fn() }))
+vi.mock('./sheets/worker.js', () => ({ processSheetJobs: vi.fn() }))
 
 const applicant = {
   submission_key: SUBMISSION_KEY,
@@ -65,6 +67,7 @@ beforeEach(() => {
   vi.stubEnv('VERCEL', '')
   vi.mocked(verifyTurnstileToken).mockResolvedValue('valid')
   vi.mocked(processEmailJobs).mockResolvedValue({ processed: 2, failed: 0 })
+  vi.mocked(processSheetJobs).mockResolvedValue({ processed: 1, failed: 0 })
   singleMock.mockResolvedValue({ data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' }, error: null })
   maybeSingleMock.mockResolvedValue({ data: { zip_code: '02108-1234' }, error: null })
 })
@@ -267,12 +270,14 @@ describe('Vercel submission functions', () => {
     vi.stubEnv('VERCEL', '1')
     expect((await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))).status).toBe(201)
     expect(processEmailJobs).toHaveBeenCalledExactlyOnceWith(2, SAVED_ID)
-    expect(waitUntil).toHaveBeenCalledTimes(1)
+    expect(processSheetJobs).toHaveBeenCalledExactlyOnceWith(1, SAVED_ID)
+    expect(waitUntil).toHaveBeenCalledTimes(2)
 
     vi.clearAllMocks()
     singleMock.mockResolvedValue({ data: null, error: { code: '23505' } })
     expect((await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))).status).toBe(200)
     expect(processEmailJobs).not.toHaveBeenCalled()
+    expect(processSheetJobs).not.toHaveBeenCalled()
     expect(waitUntil).not.toHaveBeenCalled()
   })
 
@@ -284,7 +289,18 @@ describe('Vercel submission functions', () => {
     const response = await applicants.fetch(post('applicants', applicant))
     expect(response.status).toBe(201)
     expect((await response.json()).data.id).toBe(SAVED_ID)
-    expect(waitUntil).toHaveBeenCalledTimes(1)
+    expect(waitUntil).toHaveBeenCalledTimes(2)
+  })
+
+  it('preserves a saved submission when immediate Sheets processing fails', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    vi.stubEnv('VERCEL', '1')
+    vi.mocked(processSheetJobs).mockRejectedValueOnce(new Error('Sheets unavailable'))
+    const response = await applicants.fetch(post('applicants', applicant))
+    expect(response.status).toBe(201)
+    expect((await response.json()).data.id).toBe(SAVED_ID)
+    expect(waitUntil).toHaveBeenCalledTimes(2)
   })
 
   it('does not report success on database errors or missing returned data', async () => {

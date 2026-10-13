@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && tsc -p tsconfig.api.json && vite build",
     "typecheck:api": "tsc -p tsconfig.api.json",
+    "sheets:admin": "tsx scripts/sheets-admin.ts",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run"
@@ -18,6 +19,7 @@
     "@react-email/render": "2.1.0",
     "@supabase/supabase-js": "2.117.3",
     "@vercel/functions": "3.9.11",
+    "google-auth-library": "^10.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "resend": "6.12.4",
@@ -39,6 +41,7 @@
     "globals": "^17.13.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.50.0",
     "vite": "^6.4.4",

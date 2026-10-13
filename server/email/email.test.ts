@@ -46,6 +46,19 @@ describe('email configuration', () => {
     vi.stubEnv('RESEND_FROM_EMAIL', 'Injected\nBcc: victim@example.com')
     expect(getEmailConfig()).toBeNull()
   })
+
+  it('normalizes angle-bracket-only sender values to the approved display names', () => {
+    vi.stubEnv('RESEND_API_KEY', 'test-only')
+    vi.stubEnv('RESEND_FROM_EMAIL', '<no-reply@mirembecleaning.com>')
+    vi.stubEnv('RESEND_CAREERS_EMAIL', '<no-reply@mirembecleaning.com>')
+    vi.stubEnv('MIREMBE_NOTIFICATION_EMAIL', config.notificationEmail)
+    expect(getEmailConfig()).toEqual(config)
+
+    vi.stubEnv('RESEND_FROM_EMAIL', 'no-reply@mirembecleaning.com')
+    expect(getEmailConfig()).toEqual(config)
+    vi.stubEnv('RESEND_FROM_EMAIL', '<no-reply@other.example>')
+    expect(getEmailConfig()).toBeNull()
+  })
 })
 
 describe('transactional messages', () => {

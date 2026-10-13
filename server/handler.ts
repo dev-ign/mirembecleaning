@@ -2,6 +2,7 @@ import type { ZodType } from 'zod'
 import { waitUntil } from '@vercel/functions'
 import { createSubmissionStore, getSupabaseConfig, type CreateResult, type SubmissionStore } from './database.js'
 import { processEmailJobs } from './email/worker.js'
+import { processSheetJobs } from './sheets/worker.js'
 import { acknowledgedResponse, createdResponse, errorResponse, readLimitedJson, validationFields } from './http.js'
 import { verifyTurnstileToken } from './turnstile.js'
 
@@ -63,6 +64,13 @@ export async function handleSubmission<T>(
         }))
       } catch {
         console.error('Unable to schedule immediate email processing', { submissionId: result.id })
+      }
+      try {
+        waitUntil(processSheetJobs(1, result.id).catch(() => {
+          console.error('Immediate Sheets processing failed', { submissionId: result.id })
+        }))
+      } catch {
+        console.error('Unable to schedule immediate Sheets processing', { submissionId: result.id })
       }
     }
     return createdResponse(result.id, result.createdAt, result.zipToken)
