@@ -120,7 +120,7 @@ describe('hiring modal', () => {
     await user.click(screen.getByRole('button', { name: 'Retry verification' }))
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Submit Application' }))
-    expect(submitHiringApplication).toHaveBeenCalledExactlyOnceWith(expect.any(Object), 'retry-token')
+    expect(submitHiringApplication).toHaveBeenCalledExactlyOnceWith(expect.any(Object), 'retry-token', expect.any(String))
   })
 
   it('opens with focus, locks background scroll, and preserves a draft after close', async () => {
@@ -282,7 +282,7 @@ describe('hiring modal', () => {
       first_name: 'Ari', email: 'ari@example.com', state: 'CT', has_vehicle: false,
       cleaning_experience: 'under_1_year', languages: ['english', 'spanish'],
       travel_distance: '20_miles', preferred_availability: 'part_time',
-    } satisfies Partial<HiringApplicationInput>), 'test-token')
+    } satisfies Partial<HiringApplicationInput>), 'test-token', expect.any(String))
     await user.click(screen.getByRole('button', { name: 'Close' }))
     await openModal(user)
     expect(screen.getByRole('heading', { name: "We've received your application." })).toHaveFocus()
@@ -310,8 +310,9 @@ describe('hiring modal', () => {
     await user.click(screen.getByRole('button', { name: 'Submit Application' }))
     expect(await screen.findByRole('heading', { name: "We've received your application." })).toBeInTheDocument()
     expect(submitHiringApplication).toHaveBeenCalledTimes(2)
-    expect(submitHiringApplication).toHaveBeenNthCalledWith(1, expect.any(Object), 'test-token')
-    expect(submitHiringApplication).toHaveBeenNthCalledWith(2, expect.any(Object), 'retry-token')
+    expect(submitHiringApplication).toHaveBeenNthCalledWith(1, expect.any(Object), 'test-token', expect.any(String))
+    expect(submitHiringApplication).toHaveBeenNthCalledWith(2, expect.any(Object), 'retry-token', expect.any(String))
+    expect(vi.mocked(submitHiringApplication).mock.calls[0][2]).toBe(vi.mocked(submitHiringApplication).mock.calls[1][2])
   })
 
   it('keeps the form in place until acceptance, then exits before the compact confirmation', async () => {

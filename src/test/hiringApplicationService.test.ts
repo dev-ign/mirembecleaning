@@ -30,7 +30,7 @@ describe('hiring application service', () => {
 
   it('posts every normalized form field and accepts only a persisted 201', async () => {
     mockResponse(201, { ok: true, data: { id: 'application-1', created_at: '2026-10-11T14:00:00Z' } })
-    const record = await submitHiringApplication(validInput, 'test-token')
+    const record = await submitHiringApplication(validInput, 'test-token', '00000000-0000-4000-8000-000000000004')
 
     expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/applicants', {
       method: 'POST',
@@ -43,6 +43,7 @@ describe('hiring application service', () => {
         phone: '8605550134',
         city: 'Hartford',
         other_language: 'French',
+        submission_key: '00000000-0000-4000-8000-000000000004',
         turnstileToken: 'test-token',
       }),
     })

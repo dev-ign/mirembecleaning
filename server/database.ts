@@ -7,6 +7,16 @@ export interface SupabaseConfig {
   secretKey: string
 }
 
+export function createServiceClient(config: SupabaseConfig) {
+  return createClient(config.url, config.secretKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  })
+}
+
 export function getSupabaseConfig(): SupabaseConfig | null {
   const url = process.env.SUPABASE_URL?.trim()
   const secretKey = process.env.SUPABASE_SECRET_KEY?.trim()
@@ -21,6 +31,7 @@ export function getSupabaseConfig(): SupabaseConfig | null {
 
 export type CreateResult =
   | { kind: 'created'; id: string; createdAt: string; zipToken?: string }
+  | { kind: 'replayed'; id: string; createdAt: string }
   | { kind: 'duplicate' }
   | { kind: 'unavailable' }
 
@@ -36,13 +47,7 @@ export interface SubmissionStore {
 }
 
 export function createSubmissionStore(config: SupabaseConfig): SubmissionStore | null {
-  const client = createClient(config.url, config.secretKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  })
+  const client = createServiceClient(config)
 
   return {
     async createWaitlist(input) {
@@ -69,6 +74,7 @@ export function createSubmissionStore(config: SupabaseConfig): SubmissionStore |
         .schema('public')
         .from('cleaning_applicants')
         .insert({
+          submission_key: input.submission_key,
           full_name: `${input.first_name} ${input.last_name}`,
           first_name: input.first_name,
           last_name: input.last_name,
@@ -88,6 +94,15 @@ export function createSubmissionStore(config: SupabaseConfig): SubmissionStore |
         .select('id, created_at')
         .single()
 
+      if (error?.code === '23505') {
+        const replay = await client.schema('public').from('cleaning_applicants')
+          .select('id, created_at').eq('submission_key', input.submission_key)
+          .eq('email', input.email).maybeSingle()
+        if (!replay.error && replay.data && typeof replay.data.id === 'string'
+          && typeof replay.data.created_at === 'string') {
+          return { kind: 'replayed', id: replay.data.id, createdAt: replay.data.created_at }
+        }
+      }
       if (error || !data || typeof data.id !== 'string' || typeof data.created_at !== 'string') {
         return { kind: 'unavailable' }
       }

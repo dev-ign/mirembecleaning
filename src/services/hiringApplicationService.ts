@@ -53,7 +53,7 @@ export function validateHiringApplication(input: HiringApplicationInput): Hiring
   return errors
 }
 
-export async function submitHiringApplication(input: HiringApplicationInput, turnstileToken: string): Promise<HiringApplicationRecord> {
+export async function submitHiringApplication(input: HiringApplicationInput, turnstileToken: string, submissionKey: string = crypto.randomUUID()): Promise<HiringApplicationRecord> {
   if (Object.keys(validateHiringApplication(input)).length > 0) throw new HiringRequestError('invalid')
 
   const normalized: HiringApplicationInput = {
@@ -72,7 +72,7 @@ export async function submitHiringApplication(input: HiringApplicationInput, tur
     response = await fetch('/api/applicants', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...normalized, turnstileToken }),
+      body: JSON.stringify({ ...normalized, submission_key: submissionKey, turnstileToken }),
     })
   } catch {
     throw new HiringRequestError('unavailable')

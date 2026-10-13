@@ -113,6 +113,7 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
   const [verificationStatus, setVerificationStatus] = useState<TurnstileStatus>('loading')
   const turnstileRef = useRef<TurnstileWidgetHandle>(null)
   const pending = useRef(false)
+  const submissionKey = useRef<string | null>(null)
   const verificationErrorActive = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const handleVerificationChange = useCallback((nextStatus: TurnstileStatus, token = '') => {
@@ -131,6 +132,7 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
   const verificationPending = verificationStatus === 'loading' || verificationStatus === 'ready'
 
   function updateField<K extends HiringField>(field: K, value: HiringApplicationInput[K]) {
+    submissionKey.current = null
     const nextForm = { ...form, [field]: value }
     setForm(nextForm)
     setErrors((current) => ({ ...current, [field]: current[field] ? validateHiringApplication(nextForm)[field] : undefined }))
@@ -177,7 +179,8 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
     pending.current = true
     setStatus('submitting')
     try {
-      const record = await submitHiringApplication(form, turnstileToken)
+      submissionKey.current ??= crypto.randomUUID()
+      const record = await submitHiringApplication(form, turnstileToken, submissionKey.current)
       onAccepted(record)
     } catch (error) {
       pending.current = false

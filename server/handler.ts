@@ -1,5 +1,7 @@
 import type { ZodType } from 'zod'
+import { waitUntil } from '@vercel/functions'
 import { createSubmissionStore, getSupabaseConfig, type CreateResult, type SubmissionStore } from './database.js'
+import { processEmailJobs } from './email/worker.js'
 import { acknowledgedResponse, createdResponse, errorResponse, readLimitedJson, validationFields } from './http.js'
 import { verifyTurnstileToken } from './turnstile.js'
 
@@ -50,6 +52,18 @@ export async function handleSubmission<T>(
     }
     if (result.kind === 'unavailable') {
       return errorResponse(503, 'SERVICE_UNAVAILABLE', 'Submission service is temporarily unavailable.')
+    }
+    if (result.kind === 'replayed') return createdResponse(result.id, result.createdAt)
+    // Insert triggers have already committed two durable jobs. Vercel keeps this
+    // promise alive after the response; the cron worker recovers interrupted runs.
+    if (process.env.VERCEL === '1') {
+      try {
+        waitUntil(processEmailJobs(2, result.id).catch(() => {
+          console.error('Immediate email processing failed', { submissionId: result.id })
+        }))
+      } catch {
+        console.error('Unable to schedule immediate email processing', { submissionId: result.id })
+      }
     }
     return createdResponse(result.id, result.createdAt, result.zipToken)
   } catch {

@@ -24,6 +24,7 @@ const phone = z.string().trim().max(32)
   .pipe(z.string().regex(/^\d{10}$/))
 
 export const applicantSchema = z.strictObject({
+  submission_key: z.uuid(),
   first_name: shortText(80),
   last_name: shortText(80),
   email,

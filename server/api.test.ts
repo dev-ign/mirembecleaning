@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { createClient } from '@supabase/supabase-js'
+import { waitUntil } from '@vercel/functions'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import waitlist from '../api/waitlist.js'
 import zip from '../api/waitlist/zip.js'
@@ -7,8 +8,10 @@ import applicants from '../api/applicants.js'
 import { applicantSchema, waitlistSchema, zipUpdateSchema } from './validation.js'
 import { createZipToken, verifyZipToken } from './zipToken.js'
 import { verifyTurnstileToken } from './turnstile.js'
+import { processEmailJobs } from './email/worker.js'
 
 const SAVED_ID = '00000000-0000-4000-8000-000000000001'
+const SUBMISSION_KEY = '00000000-0000-4000-8000-000000000004'
 const { fromMock, insertMock, singleMock, updateMock, eqMock, maybeSingleMock } = vi.hoisted(() => ({
   fromMock: vi.fn(), insertMock: vi.fn(), singleMock: vi.fn(), updateMock: vi.fn(), eqMock: vi.fn(), maybeSingleMock: vi.fn(),
 }))
@@ -17,6 +20,9 @@ vi.mock('@supabase/supabase-js', () => ({
     schema: () => ({
       from: fromMock.mockImplementation(() => ({
         insert: insertMock.mockImplementation(() => ({ select: () => ({ single: singleMock }) })),
+        select: () => ({ eq: eqMock.mockImplementation(() => ({
+          eq: eqMock.mockImplementation(() => ({ maybeSingle: maybeSingleMock })),
+        })) }),
         update: updateMock.mockImplementation(() => ({
           eq: eqMock.mockImplementation(() => ({ select: () => ({ maybeSingle: maybeSingleMock }) })),
         })),
@@ -25,8 +31,11 @@ vi.mock('@supabase/supabase-js', () => ({
   })),
 }))
 vi.mock('./turnstile.js', () => ({ verifyTurnstileToken: vi.fn() }))
+vi.mock('@vercel/functions', () => ({ waitUntil: vi.fn() }))
+vi.mock('./email/worker.js', () => ({ processEmailJobs: vi.fn() }))
 
 const applicant = {
+  submission_key: SUBMISSION_KEY,
   first_name: ' Ari ',
   last_name: ' Rivera ',
   email: ' ARI@Example.com ',
@@ -53,7 +62,9 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.stubEnv('SUPABASE_URL', '')
   vi.stubEnv('SUPABASE_SECRET_KEY', '')
+  vi.stubEnv('VERCEL', '')
   vi.mocked(verifyTurnstileToken).mockResolvedValue('valid')
+  vi.mocked(processEmailJobs).mockResolvedValue({ processed: 2, failed: 0 })
   singleMock.mockResolvedValue({ data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' }, error: null })
   maybeSingleMock.mockResolvedValue({ data: { zip_code: '02108-1234' }, error: null })
 })
@@ -187,6 +198,7 @@ describe('Vercel submission functions', () => {
     expect(await response.json()).toEqual({ ok: true, data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' } })
     expect(fromMock).toHaveBeenCalledExactlyOnceWith('cleaning_applicants')
     expect(insertMock).toHaveBeenCalledExactlyOnceWith({
+      submission_key: SUBMISSION_KEY,
       full_name: 'Ari Rivera',
       first_name: 'Ari', last_name: 'Rivera', email: 'ari@example.com', phone: '8605550134',
       city: 'Hartford', state: 'CT', has_personal_vehicle: false,
@@ -205,6 +217,21 @@ describe('Vercel submission functions', () => {
     expect(await response.json()).toEqual({
       ok: false, error: { code: 'SERVICE_UNAVAILABLE', message: 'Submission service is temporarily unavailable.' },
     })
+  })
+
+  it('acknowledges a hiring retry by submission key without scheduling new email work', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    vi.stubEnv('VERCEL', '1')
+    singleMock.mockResolvedValueOnce({ data: null, error: { code: '23505' } })
+    maybeSingleMock.mockResolvedValueOnce({ data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' }, error: null })
+    const response = await applicants.fetch(post('applicants', applicant))
+    expect(response.status).toBe(201)
+    expect((await response.json()).data.id).toBe(SAVED_ID)
+    expect(eqMock).toHaveBeenCalledWith('submission_key', SUBMISSION_KEY)
+    expect(eqMock).toHaveBeenCalledWith('email', 'ari@example.com')
+    expect(processEmailJobs).not.toHaveBeenCalled()
+    expect(waitUntil).not.toHaveBeenCalled()
   })
 
   it('inserts only normalized email and server-owned source before returning 201', async () => {
@@ -231,6 +258,33 @@ describe('Vercel submission functions', () => {
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ ok: true, data: { acknowledged: true } })
     expect(insertMock).toHaveBeenCalledTimes(1)
+    expect(waitUntil).not.toHaveBeenCalled()
+  })
+
+  it('schedules delivery only for newly saved records without delaying success', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    vi.stubEnv('VERCEL', '1')
+    expect((await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))).status).toBe(201)
+    expect(processEmailJobs).toHaveBeenCalledExactlyOnceWith(2, SAVED_ID)
+    expect(waitUntil).toHaveBeenCalledTimes(1)
+
+    vi.clearAllMocks()
+    singleMock.mockResolvedValue({ data: null, error: { code: '23505' } })
+    expect((await waitlist.fetch(post('waitlist', { email: 'person@example.com' }))).status).toBe(200)
+    expect(processEmailJobs).not.toHaveBeenCalled()
+    expect(waitUntil).not.toHaveBeenCalled()
+  })
+
+  it('preserves a saved submission when immediate email processing fails', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    vi.stubEnv('VERCEL', '1')
+    vi.mocked(processEmailJobs).mockRejectedValueOnce(new Error('Resend unavailable'))
+    const response = await applicants.fetch(post('applicants', applicant))
+    expect(response.status).toBe(201)
+    expect((await response.json()).data.id).toBe(SAVED_ID)
+    expect(waitUntil).toHaveBeenCalledTimes(1)
   })
 
   it('does not report success on database errors or missing returned data', async () => {

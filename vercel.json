@@ -1,4 +1,12 @@
 {
+  "crons": [
+    { "path": "/api/email-worker", "schedule": "0 9 * * *" }
+  ],
+  "functions": {
+    "api/email-worker.ts": { "maxDuration": 60 },
+    "api/waitlist.ts": { "maxDuration": 60 },
+    "api/applicants.ts": { "maxDuration": 60 }
+  },
   "headers": [
     {
       "source": "/(.*)",
