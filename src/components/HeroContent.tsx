@@ -1,5 +1,6 @@
 import { CleaningTeamLink } from './CleaningTeamLink'
 import { WaitlistExperience } from './WaitlistExperience'
+import { business } from '../config/business'
 
 export function HeroContent() {
   return (
@@ -10,7 +11,7 @@ export function HeroContent() {
           <span className="headline-accent entrance" style={{ animationDelay: '160ms' }}>More Peace.</span>
         </h1>
         <p className="hero-description entrance" style={{ animationDelay: '240ms' }}>
-          Thoughtful home and rental cleaning coming to Connecticut and Massachusetts in January 2027.
+          {business.description}
         </p>
       </div>
 

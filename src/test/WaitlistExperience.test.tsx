@@ -139,7 +139,7 @@ describe('waitlist experience', () => {
     const heading = await joinWaitlist(user)
     expect(heading).toHaveFocus()
     expect(screen.queryByLabelText('Email address')).not.toBeInTheDocument()
-    expect(screen.getByText(/booking opens in January 2027/i)).toBeInTheDocument()
+    expect(screen.getByText(/when booking opens/i)).toBeInTheDocument()
     expect(screen.getByLabelText('ZIP code (optional)')).toBeInTheDocument()
     expect(container.querySelector('.success-icon img')).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'))
     expect(container.querySelector('.success-check-trace')).toBeInTheDocument()

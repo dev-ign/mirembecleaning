@@ -15,6 +15,7 @@ import {
   type HiringField,
   type SpokenLanguage,
 } from '../../types/hiring'
+import { trackEvent } from '../../lib/analytics'
 
 type SubmissionStatus = 'idle' | 'submitting' | 'error'
 
@@ -113,6 +114,7 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
   const [verificationStatus, setVerificationStatus] = useState<TurnstileStatus>('loading')
   const turnstileRef = useRef<TurnstileWidgetHandle>(null)
   const pending = useRef(false)
+  const startTracked = useRef(false)
   const submissionKey = useRef<string | null>(null)
   const verificationErrorActive = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -132,6 +134,10 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
   const verificationPending = verificationStatus === 'loading' || verificationStatus === 'ready'
 
   function updateField<K extends HiringField>(field: K, value: HiringApplicationInput[K]) {
+    if (!startTracked.current) {
+      startTracked.current = true
+      trackEvent('hiring_form_start')
+    }
     submissionKey.current = null
     const nextForm = { ...form, [field]: value }
     setForm(nextForm)
@@ -177,12 +183,15 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
     if (verificationStatus !== 'verified' || !turnstileToken) return
 
     pending.current = true
+    trackEvent('hiring_form_submit')
     setStatus('submitting')
     try {
       submissionKey.current ??= crypto.randomUUID()
       const record = await submitHiringApplication(form, turnstileToken, submissionKey.current)
+      if (!record.replayed) trackEvent('hiring_application_success', record.id)
       onAccepted(record)
     } catch (error) {
+      trackEvent('hiring_application_error')
       pending.current = false
       verificationErrorActive.current = error instanceof HiringRequestError && error.kind === 'verification'
       setStatus('error')

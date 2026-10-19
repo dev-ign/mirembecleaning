@@ -230,7 +230,7 @@ describe('Vercel submission functions', () => {
     maybeSingleMock.mockResolvedValueOnce({ data: { id: SAVED_ID, created_at: '2026-10-11T00:00:00Z' }, error: null })
     const response = await applicants.fetch(post('applicants', applicant))
     expect(response.status).toBe(201)
-    expect((await response.json()).data.id).toBe(SAVED_ID)
+    expect((await response.json()).data).toMatchObject({ id: SAVED_ID, replayed: true })
     expect(eqMock).toHaveBeenCalledWith('submission_key', SUBMISSION_KEY)
     expect(eqMock).toHaveBeenCalledWith('email', 'ari@example.com')
     expect(processEmailJobs).not.toHaveBeenCalled()

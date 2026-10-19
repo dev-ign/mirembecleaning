@@ -3,10 +3,11 @@ import mailIcon from '../assets/icons/mail.svg'
 import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } from './TurnstileWidget'
 import { createWaitlistEntry, WaitlistRequestError } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
+import { trackEvent } from '../lib/analytics'
+import { marketing } from '../config/marketing'
 
 type FormStatus = 'idle' | 'invalid' | 'submitting' | 'error'
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const privacyPolicyUrl = import.meta.env.VITE_PRIVACY_POLICY_URL?.trim()
 
 interface WaitlistFormProps {
   onCreated: (record: WaitlistRecord) => void
@@ -22,6 +23,7 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
   const [verificationStatus, setVerificationStatus] = useState<TurnstileStatus>('loading')
   const turnstileRef = useRef<TurnstileWidgetHandle>(null)
   const submitPending = useRef(false)
+  const startTracked = useRef(false)
   const verificationErrorActive = useRef(false)
   const handleVerificationChange = useCallback((nextStatus: TurnstileStatus, token = '') => {
     setVerificationStatus(nextStatus)
@@ -60,13 +62,16 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
     if (verificationStatus !== 'verified' || !turnstileToken) return
 
     submitPending.current = true
+    trackEvent('waitlist_form_submit')
     setStatus('submitting')
     setMessage('')
 
     try {
       const record = await createWaitlistEntry({ email: normalizedEmail, source: 'landing_page' }, turnstileToken)
+      if (record.id) trackEvent('waitlist_signup_success', record.id)
       onCreated(record)
     } catch (error) {
+      trackEvent('waitlist_signup_error')
       submitPending.current = false
       const invalid = error instanceof WaitlistRequestError && error.kind === 'invalid'
       const verification = error instanceof WaitlistRequestError && error.kind === 'verification'
@@ -107,6 +112,12 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
                 readOnly={status === 'submitting' || exiting}
                 aria-invalid={status === 'invalid'}
                 aria-describedby={status === 'invalid' || status === 'error' ? 'waitlist-feedback waitlist-privacy' : 'waitlist-privacy'}
+                onFocus={() => {
+                  if (!startTracked.current) {
+                    startTracked.current = true
+                    trackEvent('waitlist_form_start')
+                  }
+                }}
                 onChange={(event) => {
                   setEmail(event.target.value)
                   if (status === 'invalid' || status === 'error') {
@@ -118,7 +129,7 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
             </div>
             <p id="waitlist-privacy" className="privacy-note entrance" style={{ animationDelay: '480ms' }}>
               Get launch updates and early access to booking. No spam.
-              {privacyPolicyUrl && <> <a href={privacyPolicyUrl}>Privacy Policy</a></>}
+              {marketing.privacyPolicyUrl && <> <a href={marketing.privacyPolicyUrl}>Privacy Policy</a></>}
             </p>
             <button className="submit-button" type="submit" disabled={status === 'submitting' || exiting || verificationPending}>
               {(status === 'submitting' || verificationPending) && <span className="loading-spinner" aria-hidden="true" />}

@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && tsc -p tsconfig.api.json && vite build",
+    "dev": "npm run seo:generate -- --mode development && vite",
+    "build": "npm run seo:generate -- --mode production && tsc -b && tsc -p tsconfig.api.json && vite build",
+    "seo:generate": "node --import tsx scripts/generate-seo.ts",
     "typecheck:api": "tsc -p tsconfig.api.json",
     "sheets:admin": "tsx scripts/sheets-admin.ts",
     "preview": "vite preview",

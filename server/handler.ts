@@ -54,7 +54,7 @@ export async function handleSubmission<T>(
     if (result.kind === 'unavailable') {
       return errorResponse(503, 'SERVICE_UNAVAILABLE', 'Submission service is temporarily unavailable.')
     }
-    if (result.kind === 'replayed') return createdResponse(result.id, result.createdAt)
+    if (result.kind === 'replayed') return createdResponse(result.id, result.createdAt, undefined, true)
     // Insert triggers have already committed two durable jobs. Vercel keeps this
     // promise alive after the response; the cron worker recovers interrupted runs.
     if (process.env.VERCEL === '1') {
