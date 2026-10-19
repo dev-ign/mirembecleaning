@@ -13,8 +13,8 @@ export function errorResponse(status: 400 | 405 | 409 | 413 | 429 | 500 | 503, c
   })
 }
 
-export function createdResponse(id: string, createdAt: string, zipToken?: string): Response {
-  return Response.json({ ok: true, data: { id, created_at: createdAt, ...(zipToken ? { zip_token: zipToken } : {}) } }, {
+export function createdResponse(id: string, createdAt: string, zipToken?: string, replayed = false): Response {
+  return Response.json({ ok: true, data: { id, created_at: createdAt, ...(zipToken ? { zip_token: zipToken } : {}), ...(replayed ? { replayed: true } : {}) } }, {
     status: 201,
     headers: { 'Cache-Control': 'no-store' },
   })

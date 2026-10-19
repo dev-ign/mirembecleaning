@@ -57,6 +57,12 @@ describe('hiring application service', () => {
     expect(record.has_vehicle).toBe(false)
   })
 
+  it('marks an idempotent server replay so it cannot be counted as a new lead', async () => {
+    mockResponse(201, { ok: true, data: { id: 'application-1', created_at: '2026-10-11T14:00:00Z', replayed: true } })
+    const record = await submitHiringApplication(validInput, 'test-token', '00000000-0000-4000-8000-000000000004')
+    expect(record.replayed).toBe(true)
+  })
+
   it('requires every answer, keeps No distinct from unanswered, and checks Other', () => {
     const missing = validateHiringApplication(initialHiringApplication)
     expect(missing.has_vehicle).toBe('Choose Yes or No.')

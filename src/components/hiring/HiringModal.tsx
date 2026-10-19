@@ -6,6 +6,7 @@ import locationIcon from '../../assets/icons/hiring-location.svg'
 import { HiringApplicationForm } from './HiringApplicationForm'
 import { HiringSuccess } from './HiringSuccess'
 import type { HiringApplicationRecord } from '../../types/hiring'
+import { useHydrated } from '../../lib/useHydrated'
 
 interface HiringModalProps {
   open: boolean
@@ -13,6 +14,7 @@ interface HiringModalProps {
 }
 
 export function HiringModal({ open, onDismiss }: HiringModalProps) {
+  const portalReady = useHydrated()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const closeTimer = useRef<number | null>(null)
   const closing = useRef(false)
@@ -93,6 +95,8 @@ export function HiringModal({ open, onDismiss }: HiringModalProps) {
     }
   }
 
+  if (!portalReady) return null
+
   return createPortal(
     <dialog
       id="hiring-dialog"
@@ -115,7 +119,7 @@ export function HiringModal({ open, onDismiss }: HiringModalProps) {
           <p id="hiring-description">Help us bring a little more peace to homes across Connecticut and Massachusetts</p>
           <div className="hiring-badges" aria-label="Hiring location and launch">
             <span className="hiring-badge"><img src={locationIcon} width="18" height="18" alt="" aria-hidden="true" />CT + MA</span>
-            <span className="hiring-badge"><img src={calendarIcon} alt="" aria-hidden="true" />January 2027 launch</span>
+            <span className="hiring-badge"><img src={calendarIcon} alt="" aria-hidden="true" />Preparing to launch</span>
           </div>
         </header>
         <HiringApplicationForm active={open} onAccepted={handleAccepted} />

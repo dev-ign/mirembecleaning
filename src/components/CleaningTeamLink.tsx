@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import arrowIcon from '../assets/icons/arrow-right.svg'
 import { HiringModal } from './hiring/HiringModal'
+import { trackEvent } from '../lib/analytics'
 
 export function CleaningTeamLink() {
   const [modalOpen, setModalOpen] = useState(false)
@@ -15,7 +16,7 @@ export function CleaningTeamLink() {
         aria-haspopup="dialog"
         aria-expanded={modalOpen}
         aria-controls="hiring-dialog"
-        onClick={() => setModalOpen(true)}
+        onClick={() => { trackEvent('hiring_cta_click'); setModalOpen(true) }}
       >
         <span>Interested in joining our cleaning team?</span>
         <img src={arrowIcon} width="24" height="24" alt="" aria-hidden="true" />

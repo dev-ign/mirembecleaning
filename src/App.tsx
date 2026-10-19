@@ -1,12 +1,12 @@
-import heroImage from './assets/images/mirembe-hero.png'
 import { BrandLogo } from './components/BrandLogo'
 import { FounderNote } from './components/FounderNote'
 import { HeroContent } from './components/HeroContent'
+import { AnalyticsConsent } from './components/AnalyticsConsent'
 
 export default function App() {
   return (
     <div className="page-shell">
-      <img className="room-photo" src={heroImage} alt="" aria-hidden="true" fetchPriority="high" />
+      <img className="room-photo" src="/hero.webp" alt="" aria-hidden="true" fetchPriority="high" />
       <div className="photo-gradient" aria-hidden="true" />
       <header className="site-header">
         <BrandLogo />
@@ -15,6 +15,7 @@ export default function App() {
         <HeroContent />
         <FounderNote />
       </main>
+      <AnalyticsConsent />
     </div>
   )
 }

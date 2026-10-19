@@ -68,6 +68,7 @@ describe('transactional messages', () => {
       expect(html).toContain('Mirembe')
       expect(text).toContain('Mirembe')
       expect(html).toContain('mailto:hello@mirembecleaning.com')
+      expect(text).toContain('hello@mirembecleaning.com')
       expect(html).not.toContain('<script')
       if (kind.startsWith('hiring')) expect(html).not.toContain('PRIORITY BOOKING')
     }
@@ -77,7 +78,8 @@ describe('transactional messages', () => {
     const { html, text } = await renderTemplate('waitlist_confirmation', job('waitlist_confirmation').payload)
     expect(html).toContain('PRIORITY BOOKING')
     expect(html).toContain('$50 OFF')
-    expect(text).toContain('January 2027')
+    expect(text).toContain('when booking opens')
+    expect(text).not.toContain('January 2027')
     expect(text).toContain("We'll send you your discount code")
   })
 

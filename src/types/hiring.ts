@@ -23,6 +23,7 @@ export interface HiringApplicationRecord extends HiringApplicationInput {
   id: string
   source: 'landing_page'
   created_at: string
+  replayed?: boolean
 }
 
 export type HiringField = keyof HiringApplicationInput

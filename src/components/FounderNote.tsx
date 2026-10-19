@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 const mobileQuery = '(max-width: 1023px)'
 
 export function FounderNote() {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(mobileQuery).matches)
+  // Match the server render first; the media query updates interaction state after hydration.
+  const [isMobile, setIsMobile] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)

@@ -1,4 +1,14 @@
 @import "tailwindcss";
+@import "@fontsource/montserrat/latin-400.css";
+@import "@fontsource/montserrat/latin-500.css";
+@import "@fontsource/montserrat/latin-700.css";
+@import "@fontsource/cormorant-garamond/latin-700-italic.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/latin-400-italic.css";
+@import "@fontsource/inter/latin-700-italic.css";
 
 @theme {
   --font-inter: "Inter", sans-serif;
@@ -63,6 +73,59 @@ input {
   min-height: 100dvh;
   overflow: hidden;
   background: white;
+}
+
+.analytics-consent {
+  position: fixed;
+  z-index: 100;
+  inset-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(440px, calc(100% - 32px));
+  color: #333;
+}
+
+.analytics-consent-panel {
+  padding: 18px;
+  border: 1px solid #e4dce9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 36px rgb(33 20 46 / 18%);
+}
+
+.analytics-consent-panel p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.analytics-consent-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.analytics-consent-actions button,
+.analytics-consent-panel > button,
+.analytics-settings {
+  border: 1px solid #7952a3;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: #fff;
+  color: #68448f;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.analytics-consent-actions button:last-child {
+  background: #7952a3;
+  color: #fff;
+}
+
+.analytics-consent-actions button:focus-visible,
+.analytics-consent-panel > button:focus-visible,
+.analytics-settings:focus-visible {
+  outline: 3px solid #333;
+  outline-offset: 3px;
 }
 
 .room-photo,
@@ -786,7 +849,7 @@ input {
 }
 
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0.85; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

@@ -1,5 +1,6 @@
 import { createElement as h, type ReactNode } from 'react'
 import { render } from '@react-email/render'
+import { business } from '../../src/config/business.js'
 
 const ink = '#333333'
 const purple = '#68448f'
@@ -23,7 +24,7 @@ function EmailLayout(title: string, ...children: ReactNode[]) {
           h('div', { style: { borderTop: '1px solid #e9e4ec', paddingTop: 22, marginTop: 32 } },
             h('p', { style: { color: muted, fontSize: 13, lineHeight: '20px', margin: 0 } },
               'Questions? Email us at ',
-              h('a', { href: 'mailto:hello@mirembecleaning.com', style: { color: purple } }, 'hello@mirembecleaning.com')))))))))
+              h('a', { href: `mailto:${business.publicEmail}`, style: { color: purple } }, business.publicEmail)))))))))
 }
 
 function P(...children: ReactNode[]) {
@@ -44,7 +45,7 @@ function WaitlistConfirmation() {
     P("As an early supporter, you've secured:"),
     h('table', { role: 'presentation', cellPadding: '0', cellSpacing: '0', width: '100%', style: { margin: '22px 0 24px' } },
       h('tbody', null,
-        Benefit('PRIORITY BOOKING', 'Be among the first to book when we launch in January 2027.'),
+        Benefit('PRIORITY BOOKING', 'Be among the first to book when booking opens.'),
         Benefit('$50 OFF', 'Your first recurring clean.'))),
     P("We'll send you your discount code and booking details as we get closer to launch."),
     P("We can't wait to care for your space!"),

@@ -95,5 +95,6 @@ export async function submitHiringApplication(input: HiringApplicationInput, tur
     throw new HiringRequestError('unavailable')
   }
 
-  return { ...normalized, id: payload.data.id, source: 'landing_page', created_at: payload.data.created_at }
+  return { ...normalized, id: payload.data.id, source: 'landing_page', created_at: payload.data.created_at,
+    ...(payload.data && 'replayed' in payload.data && payload.data.replayed === true ? { replayed: true } : {}) }
 }

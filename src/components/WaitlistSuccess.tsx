@@ -26,7 +26,7 @@ export function WaitlistSuccess({ record, onRecordUpdated }: WaitlistSuccessProp
           </div>
         </div>
         <p className="success-message">
-          We’ll be in touch when booking opens in January 2027, along with your $50 recurring-clean offer.
+          We’ll be in touch when booking opens, along with your $50 recurring-clean offer.
         </p>
       </div>
       <ZipCodeForm record={record} onSaved={onRecordUpdated} />
