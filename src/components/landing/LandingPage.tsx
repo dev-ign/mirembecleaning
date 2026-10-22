@@ -63,7 +63,7 @@ function Header({ open, joined, requestInfo }: { open: () => void; joined: boole
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
   }, [])
-  return <header className={`landing-header${scrolled ? ' is-scrolled' : ''}`}><div className="landing-header-inner">
+  return <header className={`landing-header${scrolled ? ' is-scrolled' : ''}`}><div className="landing-header-inner landing-container">
     <a href="#top" aria-label="Mirembe Cleaning Company, back to top" className="landing-brand-link"><BrandLogo /></a>
     <button className="landing-menu-toggle" type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
     <nav id="landing-nav" className={`landing-nav${menuOpen ? ' is-open' : ''}`} aria-label="Main navigation">
