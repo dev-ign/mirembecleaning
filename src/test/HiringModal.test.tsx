@@ -119,7 +119,7 @@ describe('hiring modal', () => {
     await waitFor(() => expect(trigger).toHaveFocus())
     expect(document.body.style.overflow).toBe('')
 
-    await user.click(screen.getAllByRole('button', { name: /Request Cleaning/ })[0])
+    await user.click(screen.getAllByRole('button', { name: /Request a Cleaning/ })[0])
     expect(screen.getByRole('alert')).toHaveTextContent('The booking link is coming soon.')
   })
 
