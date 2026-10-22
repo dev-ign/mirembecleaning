@@ -42,7 +42,8 @@
 .landing-section-heading h2, .landing-section-heading p { margin: 0; }
 .landing-section-heading > p:last-child:not(.landing-eyebrow) { color: var(--text-secondary); font-size: 20px; }
 .landing-section-heading.is-centered { margin-inline: auto; text-align: center; }
-.landing-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 14px 28px; border: 1.5px solid transparent; border-radius: var(--radius-pill); background: var(--brand-primary); color: #fff; font: 600 16px/1 var(--font-inter); white-space: nowrap; cursor: pointer; transition: background-color 180ms var(--motion-ease), box-shadow 180ms var(--motion-ease), transform 180ms var(--motion-ease); }
+.landing-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 14px 28px; border: 1.5px solid transparent; border-radius: var(--radius-pill); background: var(--brand-primary); color: #fff; font: 600 16px/1 var(--font-inter); white-space: nowrap; cursor: pointer; }
+.landing-button, .landing-nav a.landing-button { transition: background-color 220ms ease-in-out, color 220ms ease-in-out, border-color 220ms ease-in-out, box-shadow 220ms ease-in-out, transform 220ms ease-in-out; }
 .landing-button:hover:not(:disabled) { background: var(--brand-hover); box-shadow: var(--shadow-card); }
 .landing-button:active:not(:disabled) { transform: scale(.98); }
 .landing-button img { width: 18px; height: 18px; }
@@ -54,9 +55,9 @@
 .landing-cta-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .landing-text-link { display: inline-flex; align-items: center; gap: 8px; padding: 4px 2px; border: 0; background: none; color: var(--brand-primary); font: 600 14px/1.4 var(--font-inter); cursor: pointer; text-align: left; }
 .landing-text-link:hover { text-decoration: underline; text-underline-offset: 3px; }
-.landing-text-link span { transition: transform 220ms var(--motion-ease); }
+.landing-text-link span { transition: transform 220ms ease-in-out; }
 .landing-text-link:hover span { transform: translateX(4px); }
-.landing-text-link img { width: 18px; height: 18px; transition: transform 220ms var(--motion-ease); }
+.landing-text-link img { width: 18px; height: 18px; transition: transform 220ms ease-in-out; }
 .landing-text-link:hover img { transform: translateX(4px); }
 
 .landing-header { position: sticky; top: 0; z-index: 40; width: 100%; margin-bottom: -101px; background: transparent; transition: background-color 300ms var(--motion-ease), box-shadow 300ms var(--motion-ease); }
@@ -121,7 +122,7 @@
 .landing-service-card h3 { margin: 0 0 10px; font: 600 24px/1.3 var(--font-montserrat); }
 .landing-service-card p { margin: 0 0 20px; color: #f2eaf9; font-size: 15px; }
 .landing-service-action { color: #fff; font: 600 14px var(--font-inter); text-decoration: underline; text-underline-offset: 4px; }
-.landing-service-action img { display: inline-block; width: 18px; height: 18px; margin-left: 6px; vertical-align: middle; transition: transform 220ms var(--motion-ease); }
+.landing-service-action img { display: inline-block; width: 18px; height: 18px; margin-left: 6px; vertical-align: middle; transition: transform 220ms ease-in-out; }
 .landing-service-card:hover .landing-service-action img, .landing-service-card:focus-within .landing-service-action img { transform: translateX(4px); }
 .landing-service-help { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 12px; padding: 32px; background: var(--brand-deep); color: #fff; }
 .landing-service-help h3 { margin: 0 0 28px; font: 600 24px/1.3 var(--font-montserrat); }
@@ -137,8 +138,6 @@
 .landing-how .landing-cta-group { justify-content: center; margin-top: 0; }
 .landing-how .landing-button.is-on-dark { background: #cdbbe6; color: #2e1f42; }
 .landing-how .landing-button.is-on-dark:hover { background: #e2d4f1; }
-.landing-how .landing-button.is-inverse { border-color: #9f8bbe; background: rgb(255 255 255 / 6%); color: #cdbae6; }
-.landing-how .landing-button.is-inverse:hover { background: rgb(255 255 255 / 12%); }
 .landing-steps { --step-row: 138px; --rail-top: 69px; --rail-height: 276px; position: relative; display: grid; width: min(100%, 772px); margin: 0; padding: 0; list-style: none; }
 .landing-steps::before, .landing-steps::after { content: ''; position: absolute; z-index: 0; top: var(--rail-top); height: var(--rail-height); left: calc(50% - 1px); width: 2px; border-radius: 1px; background: rgb(205 186 230 / 22%); }
 .landing-steps::after { background: #cdbae6; transform: scaleY(var(--steps-progress, 1)); transform-origin: top; }
@@ -236,8 +235,8 @@
 .landing-faq-item { display: grid; gap: 12px; padding: 28px 0; border-bottom: 1px solid var(--border); }
 .landing-faq-item:has(> h3 > button[aria-expanded="true"]) { border-color: var(--brand-accent); }
 .landing-faq-item h3 { margin: 0; }
-.landing-faq-item button { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 40px; padding: 0; border: 0; background: none; color: var(--text-primary); font: 600 18px/1.4 var(--font-montserrat); text-align: left; cursor: pointer; }
-.landing-faq-item button span { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-primary); font: 500 26px/1 var(--font-inter); }
+.landing-faq-item button { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; min-height: 40px; padding: 0; border: 0; background: none; color: var(--text-primary); font: 600 18px/1.4 var(--font-montserrat); text-align: left; cursor: pointer; transition: color 220ms ease-in-out; }
+.landing-faq-item button span { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-primary); font: 500 26px/1 var(--font-inter); transition: background-color 220ms ease-in-out, color 220ms ease-in-out; }
 .landing-faq-item button[aria-expanded="true"] span { background: var(--brand-primary); color: #fff; }
 .landing-faq-item button span img { width: 18px; height: 18px; }
 .landing-faq-item p { max-width: 70ch; margin: 0; color: var(--text-secondary); }

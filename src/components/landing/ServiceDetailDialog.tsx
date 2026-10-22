@@ -1,11 +1,12 @@
 import { useEffect, useRef, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { holidayCampaign } from '../../config/campaigns'
 import { useHydrated } from '../../lib/useHydrated'
 import type { Service } from './content'
 
-type Props = { service: Service | null; onDismiss: () => void; onRequest: () => void }
+type Props = { service: Service | null; onDismiss: () => void }
 
-export function ServiceDetailDialog({ service, onDismiss, onRequest }: Props) {
+export function ServiceDetailDialog({ service, onDismiss }: Props) {
   const ready = useHydrated()
   const ref = useRef<HTMLDialogElement>(null)
   const trigger = useRef<HTMLElement | null>(null)
@@ -42,7 +43,7 @@ export function ServiceDetailDialog({ service, onDismiss, onRequest }: Props) {
           <div className="service-detail-addons"><h3>Available add-ons</h3><div>{service.addons.map(addon => <span className="landing-area-badge" key={addon}>{addon}</span>)}</div></div>
           <p className="service-detail-note">{service.note}</p>
         </div>
-        <div className="service-detail-actions"><button className="landing-button" type="button" onClick={onRequest}>Request a Cleaning <span aria-hidden="true">→</span></button><button className="landing-text-link" type="button" onClick={onDismiss}>Back to services</button></div>
+        <div className="service-detail-actions"><a className="landing-button" href={holidayCampaign.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={onDismiss}>Request a Cleaning <span aria-hidden="true">→</span></a><button className="landing-text-link" type="button" onClick={onDismiss}>Back to services</button></div>
       </div>}
     </dialog>, document.body,
   )

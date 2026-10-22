@@ -4,12 +4,14 @@ import { CleaningTeamLink } from '../CleaningTeamLink'
 import { AnalyticsConsent } from '../AnalyticsConsent'
 import { business } from '../../config/business'
 import { marketing } from '../../config/marketing'
-import { holidayCampaign, hasSeenHolidayModal, isHolidayCampaignActive, launch, markHolidayModalSeen } from '../../config/campaigns'
+import { holidayCampaign, isHolidayCampaignActive, launch } from '../../config/campaigns'
 import { trackEvent } from '../../lib/analytics'
 import { Reveal } from './Reveal'
 import { WaitlistModal } from './WaitlistModal'
 import { HolidayFloatingCTA, HolidayPromoModal } from './HolidayCampaign'
 import { ServiceDetailDialog } from './ServiceDetailDialog'
+import { HowItWorksTimeline } from './HowItWorksTimeline'
+import { navigationSections, useActiveNavigation } from './useActiveNavigation'
 import { areas, benefits, faqs, services, type Service } from './content'
 
 const photo = (name: string) => '/landing/v2/' + name + '.webp'
@@ -21,15 +23,16 @@ function WaitlistButton({ open, joined, variant = 'primary', showArrow = false }
     {joined ? <>✓ You’re on the waitlist</> : <>Join the Waitlist{showArrow && <Icon name="button-arrow-light" />}</>}
   </button>
 }
-function RequestButton({ onClick, onDark = false, primary = false }: { onClick: () => void; onDark?: boolean; primary?: boolean }) {
-  return <button className={'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} type="button" onClick={onClick}>Request a Cleaning{primary && <Icon name="button-arrow-light" />}</button>
+function RequestButton({ onDark = false, primary = false, onNavigate }: { onDark?: boolean; primary?: boolean; onNavigate?: () => void }) {
+  return <a className={'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} href={holidayCampaign.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={onNavigate}>Request a Cleaning{primary && <Icon name="button-arrow-light" />}</a>
 }
 function SectionHeading({ eyebrow, title, description, id, center = false }: { eyebrow?: string; title: string; description?: string; id: string; center?: boolean }) {
   return <div className={'landing-section-heading' + (center ? ' is-centered' : '')}>{eyebrow && <p className="landing-eyebrow">{eyebrow}</p>}<h2 id={id}>{title}</h2>{description && <p>{description}</p>}</div>
 }
 
-function Header({ open, joined, requestInfo, menuOpen, setMenuOpen }: { open: () => void; joined: boolean; requestInfo: () => void; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
+function Header({ open, joined, menuOpen, setMenuOpen }: { open: () => void; joined: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
   const [scrolled, setScrolled] = useState(false)
+  const activeSection = useActiveNavigation()
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 32)
     update()
@@ -40,20 +43,20 @@ function Header({ open, joined, requestInfo, menuOpen, setMenuOpen }: { open: ()
     <a href="#top" aria-label="Mirembe Cleaning Company, back to top" className="landing-brand-link"><BrandLogo /></a>
     <button className="landing-menu-toggle" type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
     <nav id="landing-nav" className={'landing-nav' + (menuOpen ? ' is-open' : '')} aria-label="Main navigation">
-      {[['Services', '#services'], ['Why Mirembe', '#why-mirembe'], ['Areas We Serve', '#areas'], ['FAQ', '#faq']].map(([label, href]) => <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+      {navigationSections.map(({ id, label }) => <a key={id} href={'#' + id} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{label}</a>)}
       <WaitlistButton open={() => { setMenuOpen(false); open() }} joined={joined} variant="secondary" />
-      <RequestButton primary onClick={() => { setMenuOpen(false); requestInfo() }} />
+      <RequestButton primary onNavigate={() => setMenuOpen(false)} />
     </nav>
   </div></header>
 }
 
-function Hero({ open, joined, requestInfo, campaignActive }: { open: () => void; joined: boolean; requestInfo: () => void; campaignActive: boolean }) {
+function Hero({ open, joined, campaignActive }: { open: () => void; joined: boolean; campaignActive: boolean }) {
   return <section className="landing-hero" id="top" aria-labelledby="hero-heading"><div className="landing-container landing-hero-grid">
     <div className="landing-hero-copy">
       <Reveal initial><p className="landing-availability"><Icon name="leaf" /><span className="landing-availability-desktop">Mirembe Cleaning Company · Greater Hartford &amp; Greater Boston</span><span className="landing-availability-mobile">Mirembe Cleaning Company</span></p></Reveal>
       <Reveal initial delay={80}><h1 id="hero-heading">A Cleaner Home, <span>More Peace.</span></h1></Reveal>
       <Reveal initial delay={160}><p className="landing-hero-lede">Trusted home and rental cleaning across Greater Hartford, CT, and Greater Boston, MA. Thoughtful, reliable cleaning designed to give you one less thing to worry about.</p></Reveal>
-      <Reveal initial delay={240}><div className="landing-hero-actions"><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} showArrow /><RequestButton onClick={requestInfo} /></div><p>{launch.headline}{campaignActive && <> {launch.holidayMessage}</>}</p></div></Reveal>
+      <Reveal initial delay={240}><div className="landing-hero-actions"><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} showArrow /><RequestButton /></div><p>{launch.headline}{campaignActive && <> {launch.holidayMessage}</>}</p></div></Reveal>
       <Reveal initial delay={320} className="landing-quick-facts-desktop"><ul className="landing-quick-facts"><li><Icon name="home" />Home &amp; rental cleaning</li><li><Icon name="map-pin" />Greater Boston, MA</li><li><Icon name="map-pin" />Greater Hartford, CT</li></ul></Reveal>
     </div>
     <Reveal initial delay={400} className="landing-hero-visual">
@@ -72,21 +75,22 @@ function BrandStory() {
   </div></section>
 }
 
-function Services({ openService, requestInfo }: { openService: (service: Service) => void; requestInfo: () => void }) {
+function Services({ openService }: { openService: (service: Service) => void }) {
   return <section className="landing-section landing-services" id="services" aria-labelledby="services-heading"><div className="landing-container">
-    <Reveal><div className="landing-services-intro"><SectionHeading id="services-heading" eyebrow="Our services" title="Cleaning designed around your home." description="Every clean follows our room-by-room checklist, so you know exactly what to expect." /><button className="landing-text-link" type="button" onClick={requestInfo}>Not sure what you need? Request a cleaning <Icon name="arrow-right" /></button></div></Reveal>
+    <Reveal><div className="landing-services-intro"><SectionHeading id="services-heading" eyebrow="Our services" title="Cleaning designed around your home." description="Every clean follows our room-by-room checklist, so you know exactly what to expect." /></div></Reveal>
     <div className="landing-service-grid">{services.map((service, index) => <Reveal key={service.slug} delay={index * 70}><article className="landing-service-card"><img src={photo(service.image)} alt="" width="1536" height="1024" loading="lazy" /><div className="landing-service-overlay" /><button className="landing-service-card-hit" type="button" onClick={() => openService(service)} aria-haspopup="dialog" aria-label={'What’s included in ' + service.title} /><div className="landing-service-content"><span className="landing-service-icon"><Icon name={service.icon} /></span><h3>{service.title}</h3><p>{service.summary}</p><span className="landing-service-action">What’s Included <Icon name="service-arrow" /></span></div></article></Reveal>)}</div>
+    <Reveal className="landing-services-request"><a className="landing-text-link" href={holidayCampaign.bookingUrl} target="_blank" rel="noopener noreferrer">Not sure what you need? Request a Cleaning <Icon name="arrow-right" /></a></Reveal>
     <Reveal><div className="landing-addons-strip"><span className="landing-addons-title"><span aria-hidden="true">＋</span>Available add-ons</span><span className="landing-area-badge"><Icon name="badge-pin" />Inside cabinets</span><span className="landing-area-badge"><Icon name="badge-pin" />Dishes</span><p>Choose add-ons when you book. Availability varies by service.</p></div></Reveal>
   </div></section>
 }
 
-function HowItWorks({ open, joined, requestInfo }: { open: () => void; joined: boolean; requestInfo: () => void }) {
-  const steps = [
+const howItWorksSteps = [
     ['Choose Your Clean', 'Select your service, home size, and any extras you need.'],
     ['See Your Price & Book', 'Get transparent pricing and choose a date that works for you.'],
     ['Come Home to More Peace', 'Our trained team arrives with the supplies, follows the Mirembe checklist, and takes care of the rest.'],
-  ]
-  return <section className="landing-section landing-how" id="how-it-works" aria-labelledby="how-heading"><div className="landing-container landing-how-grid"><Reveal><SectionHeading id="how-heading" center eyebrow="How it works" title="Booking Mirembe is simple." description="Three simple steps — from choosing your clean to coming home to more peace." /></Reveal><ol className="landing-steps">{steps.map(([title, body], index) => <li key={title} className={index === 1 ? 'is-left' : 'is-right'} data-state="complete"><span className="landing-step-node" aria-hidden="true" /><div className="landing-step-content"><span className="landing-step-number">{String(index + 1).padStart(2, '0')}</span><h3>{title}</h3><p>{body}</p></div></li>)}</ol><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} variant="inverse" /><RequestButton onClick={requestInfo} onDark /></div></div></section>
+  ] as const
+function HowItWorks({ open, joined }: { open: () => void; joined: boolean }) {
+  return <section className="landing-section landing-how" id="how-it-works" aria-labelledby="how-heading"><div className="landing-container landing-how-grid"><Reveal><SectionHeading id="how-heading" center eyebrow="How it works" title="Booking Mirembe is simple." description="Three simple steps — from choosing your clean to coming home to more peace." /></Reveal><HowItWorksTimeline steps={howItWorksSteps} /><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} variant="inverse" /><RequestButton onDark /></div></div></section>
 }
 
 function WhyMirembe() {
@@ -103,7 +107,7 @@ function Founders() {
 
 function Faq({ campaignActive }: { campaignActive: boolean }) {
   const [expanded, setExpanded] = useState<number | null>(null)
-  return <section className="landing-section landing-faq" id="faq" aria-labelledby="faq-heading"><div className="landing-container landing-faq-grid"><Reveal><SectionHeading id="faq-heading" title="Frequently asked questions." description="Everything you need to know before your first clean." /></Reveal><div className="landing-faq-list">{faqs.map(([question, answer], index) => <div className="landing-faq-item" key={question}><h3><button id={'faq-question-' + index} type="button" aria-expanded={expanded === index} aria-controls={'faq-answer-' + index} onClick={() => setExpanded(expanded === index ? null : index)}>{question}<span aria-hidden="true"><Icon name={expanded === index ? 'faq-minus' : 'faq-plus'} /></span></button></h3><div id={'faq-answer-' + index} role="region" aria-labelledby={'faq-question-' + index} hidden={expanded !== index}><p>{index === 0 && !campaignActive ? launch.regularBookingsMessage : answer}</p></div></div>)}</div></div></section>
+  return <section className="landing-section landing-faq" id="faq" aria-labelledby="faq-heading"><div className="landing-container landing-faq-grid"><Reveal><SectionHeading id="faq-heading" eyebrow="Questions" title="Frequently asked questions." description="Everything you need to know before your first clean." /></Reveal><div className="landing-faq-list">{faqs.map(([question, answer], index) => <div className="landing-faq-item" key={question}><h3><button id={'faq-question-' + index} type="button" aria-expanded={expanded === index} aria-controls={'faq-answer-' + index} onClick={() => setExpanded(expanded === index ? null : index)}>{question}<span aria-hidden="true"><Icon name={expanded === index ? 'faq-minus' : 'faq-plus'} /></span></button></h3><div id={'faq-answer-' + index} role="region" aria-labelledby={'faq-question-' + index} hidden={expanded !== index}><p>{index === 0 && !campaignActive ? launch.regularBookingsMessage : answer}</p></div></div>)}</div></div></section>
 }
 
 function Footer() {
@@ -118,6 +122,9 @@ export function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [anyDialogOpen, setAnyDialogOpen] = useState(false)
   const [campaignActive, setCampaignActive] = useState(() => isHolidayCampaignActive())
+  const [holidayReady, setHolidayReady] = useState(false)
+  const holidayShownThisLoad = useRef(false)
+  const holidayBookingClicked = useRef(false)
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' | 'verification' | 'info' } | null>(null)
   const trigger = useRef<HTMLElement | null>(null)
   const timer = useRef<number | null>(null)
@@ -139,27 +146,28 @@ export function LandingPage() {
     return () => observer.disconnect()
   }, [])
   useEffect(() => {
-    if (!campaignActive || hasSeenHolidayModal()) return
-    const params = new URLSearchParams(window.location.search)
-    if ([...params.entries()].some(([key, value]) => key.startsWith('utm_') && /holiday/i.test(value))) return
-    let idleId: number | undefined
-    const timeout = window.setTimeout(() => {
-      const show = () => {
-        if (hasSeenHolidayModal() || document.querySelector('dialog[open]') || document.querySelector('.landing-nav.is-open') || document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')) return
-        markHolidayModalSeen()
-        setHolidayOpen(true)
-      }
-      if ('requestIdleCallback' in window) idleId = window.requestIdleCallback(show, { timeout: 1500 })
-      else show()
-    }, holidayCampaign.modalDelayMs)
-    return () => { window.clearTimeout(timeout); if (idleId !== undefined) window.cancelIdleCallback(idleId) }
+    if (!campaignActive) return
+    const timeout = window.setTimeout(() => setHolidayReady(true), holidayCampaign.modalDelayMs)
+    return () => window.clearTimeout(timeout)
   }, [campaignActive])
+  useEffect(() => {
+    if (!holidayReady || !campaignActive || holidayShownThisLoad.current || holidayBookingClicked.current) return
+    const showWhenAvailable = () => {
+      if (holidayShownThisLoad.current || holidayBookingClicked.current || document.querySelector('dialog[open], .landing-nav.is-open') || document.activeElement?.matches('input, textarea, select, [contenteditable="true"]') || document.activeElement?.closest('form')) return
+      holidayShownThisLoad.current = true
+      setHolidayOpen(true)
+    }
+    let retry: number | undefined
+    const onFocusOut = () => { retry = window.setTimeout(showWhenAvailable, 150) }
+    showWhenAvailable()
+    document.addEventListener('focusout', onFocusOut, true)
+    return () => { document.removeEventListener('focusout', onFocusOut, true); if (retry !== undefined) window.clearTimeout(retry) }
+  }, [holidayReady, campaignActive, menuOpen, waitlistOpen, selectedService, anyDialogOpen])
   function open() { if (!joined) { trigger.current = document.activeElement as HTMLElement; setHolidayOpen(false); setSelectedService(null); trackEvent('waitlist_cta_click'); setWaitlistOpen(true) } }
   function dismiss() { setWaitlistOpen(false); window.requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })) }
   function created() { setJoined(true); showToast('You’re on the waitlist.', 'success') }
-  function requestInfo() { showToast('The booking link is coming soon. Join the waitlist for updates.', 'info') }
-  function bookHoliday() { markHolidayModalSeen(); setHolidayOpen(false) }
+  function bookHoliday() { holidayBookingClicked.current = true; setHolidayOpen(false) }
   function openService(service: Service) { setSelectedService(service) }
   const dialogOpen = waitlistOpen || Boolean(selectedService) || holidayOpen || anyDialogOpen
-  return <div className="landing-page"><Header open={open} joined={joined} requestInfo={requestInfo} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero open={open} joined={joined} requestInfo={requestInfo} campaignActive={campaignActive} /><BrandStory /><Services openService={openService} requestInfo={requestInfo} /><HowItWorks open={open} joined={joined} requestInfo={requestInfo} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading">Ready for a cleaner home<br /><em>and more peace?</em></h2><p>Join our waitlist for the January 2027 launch{campaignActive ? ', or explore our limited holiday cleaning availability.' : '.'}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton onClick={requestInfo} /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={selectedService} onDismiss={() => setSelectedService(null)} onRequest={() => { setSelectedService(null); requestInfo() }} />{campaignActive && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{toast.message}</p><button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification">×</button></div>}</div>
+  return <div className="landing-page"><Header open={open} joined={joined} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero open={open} joined={joined} campaignActive={campaignActive} /><BrandStory /><Services openService={openService} /><HowItWorks open={open} joined={joined} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading">Ready for a cleaner home<br /><em>and more peace?</em></h2><p>Join our waitlist for the January 2027 launch{campaignActive ? ', or explore our limited holiday cleaning availability.' : '.'}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={selectedService} onDismiss={() => setSelectedService(null)} />{campaignActive && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{toast.message}</p><button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification">×</button></div>}</div>
 }

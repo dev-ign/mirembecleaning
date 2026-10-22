@@ -2,7 +2,6 @@
 export const holidayCampaign = {
   id: 'holiday-2026',
   enabled: true,
-  startsAt: '2026-10-22T00:00:00-04:00',
   endsAt: '2026-12-23T23:59:59-05:00',
   bookingUrl: 'https://app.zenmaid.com/book/mirembe-cleaning-company-holiday',
   discount: '10%',
@@ -18,8 +17,8 @@ export const launch = {
   primaryCta: 'waitlist' as const,
 } as const
 
-export function isHolidayCampaignActive(now: Date = new Date()): boolean {
-  return holidayCampaign.enabled && now.getTime() >= Date.parse(holidayCampaign.startsAt) && now.getTime() <= Date.parse(holidayCampaign.endsAt)
+export function isHolidayCampaignActive(now: Date = new Date(), campaign: { enabled: boolean; endsAt: string } = holidayCampaign): boolean {
+  return campaign.enabled && now.getTime() <= Date.parse(campaign.endsAt)
 }
 
 export function readCampaignFlag(storage: Storage | undefined, key: string): boolean {
@@ -30,8 +29,4 @@ export function writeCampaignFlag(storage: Storage | undefined, key: string): vo
   try { storage?.setItem(key, '1') } catch { /* Storage can be unavailable in private mode. */ }
 }
 
-const modalSeenKey = `${holidayCampaign.id}.modalSeen`
 export const holidayCtaDismissedKey = `${holidayCampaign.id}.ctaDismissed`
-function safeLocalStorage(): Storage | undefined { try { return window.localStorage } catch { return undefined } }
-export function hasSeenHolidayModal() { return readCampaignFlag(safeLocalStorage(), modalSeenKey) }
-export function markHolidayModalSeen() { writeCampaignFlag(safeLocalStorage(), modalSeenKey) }

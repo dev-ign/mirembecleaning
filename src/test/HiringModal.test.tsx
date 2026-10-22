@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { holidayCampaign } from '../config/campaigns'
 import { submitHiringApplication } from '../services/hiringApplicationService'
 import { createWaitlistEntry } from '../services/waitlistService'
 import type { HiringApplicationInput, HiringApplicationRecord } from '../types/hiring'
@@ -105,7 +106,7 @@ describe('hiring modal', () => {
     })
   })
 
-  it('opens the waitlist dialog accessibly and explains the pending booking link', async () => {
+  it('opens the waitlist dialog accessibly and keeps booking as a separate link', async () => {
     const user = userEvent.setup()
     render(<App />)
     const trigger = screen.getAllByRole('button', { name: 'Join the Waitlist' })[0]
@@ -119,8 +120,10 @@ describe('hiring modal', () => {
     await waitFor(() => expect(trigger).toHaveFocus())
     expect(document.body.style.overflow).toBe('')
 
-    await user.click(screen.getAllByRole('button', { name: /Request a Cleaning/ })[0])
-    expect(screen.getByRole('alert')).toHaveTextContent('The booking link is coming soon.')
+    const booking = screen.getAllByRole('link', { name: /Request a Cleaning/ })[0]
+    expect(booking).toHaveAttribute('href', holidayCampaign.bookingUrl)
+    expect(booking).toHaveAttribute('target', '_blank')
+    expect(booking).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
   it('waits for verification and allows a failed challenge to be retried', async () => {
