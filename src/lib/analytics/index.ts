@@ -2,7 +2,7 @@ import { marketing } from '../../config/marketing'
 import { captureCampaign, getAttribution, safePageLocation } from './attribution'
 
 export type MarketingEvent =
-  | 'waitlist_form_start' | 'waitlist_form_submit' | 'waitlist_signup_success' | 'waitlist_signup_error'
+  | 'waitlist_cta_click' | 'waitlist_form_start' | 'waitlist_form_submit' | 'waitlist_signup_success' | 'waitlist_signup_error'
   | 'hiring_cta_click' | 'hiring_form_start' | 'hiring_form_submit'
   | 'hiring_application_success' | 'hiring_application_error'
 

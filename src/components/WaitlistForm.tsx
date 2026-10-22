@@ -11,11 +11,13 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface WaitlistFormProps {
   onCreated: (record: WaitlistRecord) => void
+  onFeedback?: (message: string, kind: 'error' | 'verification') => void
+  onSubmittingChange?: (submitting: boolean) => void
   exiting: boolean
   onExitComplete: () => void
 }
 
-export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFormProps) {
+export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exiting, onExitComplete }: WaitlistFormProps) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<FormStatus>('idle')
   const [message, setMessage] = useState('')
@@ -32,12 +34,13 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
       verificationErrorActive.current = true
       setStatus((current) => current === 'submitting' ? current : 'error')
       setMessage('Verification could not load. Try again.')
+      onFeedback?.('Verification could not load. Try again.', 'verification')
     } else if (nextStatus === 'verified' && verificationErrorActive.current) {
       verificationErrorActive.current = false
       setStatus((current) => current === 'error' ? 'idle' : current)
       setMessage('')
     }
-  }, [])
+  }, [onFeedback])
   const verificationPending = verificationStatus === 'loading' || verificationStatus === 'ready'
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -62,6 +65,7 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
     if (verificationStatus !== 'verified' || !turnstileToken) return
 
     submitPending.current = true
+    onSubmittingChange?.(true)
     trackEvent('waitlist_form_submit')
     setStatus('submitting')
     setMessage('')
@@ -73,6 +77,7 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
     } catch (error) {
       trackEvent('waitlist_signup_error')
       submitPending.current = false
+      onSubmittingChange?.(false)
       const invalid = error instanceof WaitlistRequestError && error.kind === 'invalid'
       const verification = error instanceof WaitlistRequestError && error.kind === 'verification'
       verificationErrorActive.current = verification
@@ -81,6 +86,7 @@ export function WaitlistForm({ onCreated, exiting, onExitComplete }: WaitlistFor
         ? 'Enter a valid email address to join the waitlist.'
         : verification ? 'Verification failed. Please try again.'
         : 'We couldn’t add you right now. Please try again.')
+      onFeedback?.(invalid ? 'Enter a valid email address to join the waitlist.' : verification ? 'Verification failed. Please try again.' : 'We couldn’t add you right now. Please try again.', verification ? 'verification' : 'error')
       turnstileRef.current?.reset()
     }
   }
