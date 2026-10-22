@@ -10,6 +10,7 @@
 @import "@fontsource/inter/latin-400-italic.css";
 @import "@fontsource/inter/latin-700-italic.css";
 @import "./landing.css";
+@import "./landing-v2.css";
 
 @theme {
   --font-inter: "Inter", sans-serif;
