@@ -5,3 +5,10 @@ dist
 !.env.example
 .vercel
 .DS_Store
+
+# Generated development and visual QA artifacts
+/artifacts/
+/playwright-report/
+/test-results/
+/coverage/
+*.log
