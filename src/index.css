@@ -9,6 +9,9 @@
 @import "@fontsource/inter/latin-700.css";
 @import "@fontsource/inter/latin-400-italic.css";
 @import "@fontsource/inter/latin-700-italic.css";
+@import "./landing.css";
+@import "./landing-v2.css";
+@import "./booking.css";
 
 @theme {
   --font-inter: "Inter", sans-serif;
@@ -374,7 +377,7 @@ input {
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 200ms ease-out, box-shadow 200ms ease-out, transform 200ms ease-out;
+  transition: background-color 220ms ease-in-out, box-shadow 220ms ease-in-out, transform 220ms ease-in-out;
 }
 
 .submit-button:hover:not(:disabled) {
@@ -460,7 +463,7 @@ input {
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
-  transition: color 200ms ease-out;
+  transition: color 220ms ease-in-out;
 }
 
 .team-link:hover {
@@ -470,7 +473,7 @@ input {
 .team-link img {
   width: 24px;
   height: 24px;
-  transition: transform 200ms ease-out;
+  transition: transform 220ms ease-in-out;
 }
 
 .team-link:hover img {
@@ -621,7 +624,7 @@ input {
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
-  transition: color var(--motion-fast) ease-out;
+  transition: color 220ms ease-in-out;
 }
 
 .zip-edit-button { margin-left: var(--space-4); }
@@ -720,7 +723,7 @@ input {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out, transform var(--motion-fast) ease-out;
+  transition: background-color 220ms ease-in-out, box-shadow 220ms ease-in-out, transform 220ms ease-in-out;
 }
 
 .zip-save-button:hover:not(:disabled):not([aria-disabled='true']) {
@@ -971,7 +974,7 @@ input {
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
-  transition: background-color var(--motion-fast) ease-out;
+  transition: background-color 220ms ease-in-out;
 }
 
 .hiring-close img { display: block; }
@@ -1208,7 +1211,7 @@ input {
   color: #fff;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color var(--motion-fast) ease-out, transform var(--motion-fast) ease-out;
+  transition: background-color 220ms ease-in-out, transform 220ms ease-in-out;
 }
 
 .hiring-submit:hover:not([aria-disabled='true']) { background: #68448f; }
@@ -1272,7 +1275,7 @@ input {
   line-height: 20px;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  transition: background-color 220ms ease-in-out, border-color 220ms ease-in-out, transform 220ms ease-in-out;
 }
 .hiring-success-close:hover { border-color: #987fac; background: #f8f4fa; }
 .hiring-success-close:active { transform: scale(0.98); }

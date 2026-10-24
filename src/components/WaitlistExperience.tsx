@@ -5,7 +5,13 @@ import { WaitlistSuccess } from './WaitlistSuccess'
 
 type Phase = 'form' | 'exiting' | 'success'
 
-export function WaitlistExperience() {
+interface WaitlistExperienceProps {
+  onCreated?: (record: WaitlistRecord) => void
+  onFeedback?: (message: string, kind: 'error' | 'verification') => void
+  onSubmittingChange?: (submitting: boolean) => void
+}
+
+export function WaitlistExperience({ onCreated, onFeedback, onSubmittingChange }: WaitlistExperienceProps = {}) {
   const [record, setRecord] = useState<WaitlistRecord | null>(null)
   const [phase, setPhase] = useState<Phase>('form')
 
@@ -18,6 +24,8 @@ export function WaitlistExperience() {
 
   function handleCreated(createdRecord: WaitlistRecord) {
     setRecord(createdRecord)
+    onSubmittingChange?.(false)
+    onCreated?.(createdRecord)
     setPhase(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'success' : 'exiting')
   }
 
@@ -28,6 +36,8 @@ export function WaitlistExperience() {
   return (
     <WaitlistForm
       onCreated={handleCreated}
+      onFeedback={onFeedback}
+      onSubmittingChange={onSubmittingChange}
       exiting={phase === 'exiting'}
       onExitComplete={() => setPhase('success')}
     />
