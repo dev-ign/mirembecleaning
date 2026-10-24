@@ -5,6 +5,7 @@ import { AnalyticsConsent } from '../AnalyticsConsent'
 import { business } from '../../config/business'
 import { marketing } from '../../config/marketing'
 import { holidayCampaign, isHolidayCampaignActive, launch } from '../../config/campaigns'
+import { bookingConfig } from '../../config/booking'
 import { trackEvent } from '../../lib/analytics'
 import { Reveal } from './Reveal'
 import { WaitlistModal } from './WaitlistModal'
@@ -24,13 +25,13 @@ function WaitlistButton({ open, joined, variant = 'primary', showArrow = false }
   </button>
 }
 function RequestButton({ onDark = false, primary = false, onNavigate }: { onDark?: boolean; primary?: boolean; onNavigate?: () => void }) {
-  return <a className={'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} href={holidayCampaign.bookingUrl} target="_blank" rel="noopener noreferrer" onClick={onNavigate}>Request a Cleaning{primary && <Icon name="button-arrow-light" />}</a>
+  return <a className={'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} href={bookingConfig.path} onClick={onNavigate}>Request a Cleaning{primary && <Icon name="button-arrow-light" />}</a>
 }
 function SectionHeading({ eyebrow, title, description, id, center = false }: { eyebrow?: string; title: string; description?: string; id: string; center?: boolean }) {
   return <div className={'landing-section-heading' + (center ? ' is-centered' : '')}>{eyebrow && <p className="landing-eyebrow">{eyebrow}</p>}<h2 id={id}>{title}</h2>{description && <p>{description}</p>}</div>
 }
 
-function Header({ open, joined, menuOpen, setMenuOpen }: { open: () => void; joined: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
+export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: { homePath?: string; open: () => void; joined: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
   const [scrolled, setScrolled] = useState(false)
   const activeSection = useActiveNavigation()
   useEffect(() => {
@@ -40,10 +41,10 @@ function Header({ open, joined, menuOpen, setMenuOpen }: { open: () => void; joi
     return () => window.removeEventListener('scroll', update)
   }, [])
   return <header className={'landing-header' + (scrolled ? ' is-scrolled' : '')}><div className="landing-header-inner landing-container">
-    <a href="#top" aria-label="Mirembe Cleaning Company, back to top" className="landing-brand-link"><BrandLogo /></a>
+    <a href={homePath + '#top'} aria-label="Mirembe Cleaning Company, back to top" className="landing-brand-link"><BrandLogo /></a>
     <button className="landing-menu-toggle" type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
     <nav id="landing-nav" className={'landing-nav' + (menuOpen ? ' is-open' : '')} aria-label="Main navigation">
-      {navigationSections.map(({ id, label }) => <a key={id} href={'#' + id} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{label}</a>)}
+      {navigationSections.map(({ id, label }) => <a key={id} href={homePath + '#' + id} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{label}</a>)}
       <WaitlistButton open={() => { setMenuOpen(false); open() }} joined={joined} variant="secondary" />
       <RequestButton primary onNavigate={() => setMenuOpen(false)} />
     </nav>
@@ -79,7 +80,7 @@ function Services({ openService }: { openService: (service: Service) => void }) 
   return <section className="landing-section landing-services" id="services" aria-labelledby="services-heading"><div className="landing-container">
     <Reveal><div className="landing-services-intro"><SectionHeading id="services-heading" eyebrow="Our services" title="Cleaning designed around your home." description="Every clean follows our room-by-room checklist, so you know exactly what to expect." /></div></Reveal>
     <div className="landing-service-grid">{services.map((service, index) => <Reveal key={service.slug} delay={index * 70}><article className="landing-service-card"><img src={photo(service.image)} alt="" width="1536" height="1024" loading="lazy" /><div className="landing-service-overlay" /><button className="landing-service-card-hit" type="button" onClick={() => openService(service)} aria-haspopup="dialog" aria-label={'What’s included in ' + service.title} /><div className="landing-service-content"><span className="landing-service-icon"><Icon name={service.icon} /></span><h3>{service.title}</h3><p>{service.summary}</p><span className="landing-service-action">What’s Included <Icon name="service-arrow" /></span></div></article></Reveal>)}</div>
-    <Reveal className="landing-services-request"><a className="landing-text-link" href={holidayCampaign.bookingUrl} target="_blank" rel="noopener noreferrer">Not sure what you need? Request a Cleaning <Icon name="arrow-right" /></a></Reveal>
+    <Reveal className="landing-services-request"><a className="landing-text-link" href={bookingConfig.path}>Not sure what you need? Request a Cleaning <Icon name="arrow-right" /></a></Reveal>
     <Reveal><div className="landing-addons-strip"><span className="landing-addons-title"><span aria-hidden="true">＋</span>Available add-ons</span><span className="landing-area-badge"><Icon name="badge-pin" />Inside cabinets</span><span className="landing-area-badge"><Icon name="badge-pin" />Dishes</span><p>Choose add-ons when you book. Availability varies by service.</p></div></Reveal>
   </div></section>
 }
@@ -110,8 +111,8 @@ function Faq({ campaignActive }: { campaignActive: boolean }) {
   return <section className="landing-section landing-faq" id="faq" aria-labelledby="faq-heading"><div className="landing-container landing-faq-grid"><Reveal><SectionHeading id="faq-heading" eyebrow="Questions" title="Frequently asked questions." description="Everything you need to know before your first clean." /></Reveal><div className="landing-faq-list">{faqs.map(([question, answer], index) => <div className="landing-faq-item" key={question}><h3><button id={'faq-question-' + index} type="button" aria-expanded={expanded === index} aria-controls={'faq-answer-' + index} onClick={() => setExpanded(expanded === index ? null : index)}>{question}<span aria-hidden="true"><Icon name={expanded === index ? 'faq-minus' : 'faq-plus'} /></span></button></h3><div id={'faq-answer-' + index} role="region" aria-labelledby={'faq-question-' + index} hidden={expanded !== index}><p>{index === 0 && !campaignActive ? launch.regularBookingsMessage : answer}</p></div></div>)}</div></div></section>
 }
 
-function Footer() {
-  return <footer className="landing-footer"><div className="landing-container"><div className="landing-footer-grid"><div><a className="landing-brand-link" href="#top" aria-label="Mirembe Cleaning Company, back to top"><BrandLogo /></a><p>Thoughtful home and rental cleaning serving Greater Hartford, CT, and Greater Boston, MA.</p><div className="landing-social"><a href={business.socialProfiles.instagram} aria-label="Instagram"><Icon name="instagram" /></a><a href={business.socialProfiles.facebook} aria-label="Facebook"><Icon name="facebook" /></a><a href={'mailto:' + business.publicEmail} aria-label="Email Mirembe"><Icon name="social-mail" /></a></div><a href={'mailto:' + business.publicEmail}>{business.publicEmail}</a></div><div><h2>Services</h2><a href="#services">Standard Clean</a><a href="#services">Deep Clean</a><a href="#services">Rental Turnovers</a><a href="#services">Move-In / Move-Out</a></div><div><h2>Areas We Serve</h2><a href="#areas">Greater Hartford, CT</a><a href="#areas">Greater Boston, MA</a><a href="#areas">Don’t see your town?</a></div><div><h2>Company</h2><a href="#about">About Mirembe</a><a href="#faq">FAQ</a><CleaningTeamLink /><a href={'mailto:' + business.publicEmail}>Contact</a></div></div><div className="landing-footer-bottom"><p>© 2026 Mirembe Cleaning Company. Family-owned. “Mirembe” means peace and tranquility.</p>{marketing.privacyPolicyUrl && <a href={marketing.privacyPolicyUrl}>Privacy Policy</a>}</div></div></footer>
+export function Footer({ homePath = '' }: { homePath?: string }) {
+  return <footer className="landing-footer"><div className="landing-container"><div className="landing-footer-grid"><div><a className="landing-brand-link" href={homePath + '#top'} aria-label="Mirembe Cleaning Company, back to top"><BrandLogo /></a><p>Thoughtful home and rental cleaning serving Greater Hartford, CT, and Greater Boston, MA.</p><div className="landing-social"><a href={business.socialProfiles.instagram} aria-label="Instagram"><Icon name="instagram" /></a><a href={business.socialProfiles.facebook} aria-label="Facebook"><Icon name="facebook" /></a><a href={'mailto:' + business.publicEmail} aria-label="Email Mirembe"><Icon name="social-mail" /></a></div><a href={'mailto:' + business.publicEmail}>{business.publicEmail}</a></div><div><h2>Services</h2><a href={homePath + '#services'}>Standard Clean</a><a href={homePath + '#services'}>Deep Clean</a><a href={homePath + '#services'}>Rental Turnovers</a><a href={homePath + '#services'}>Move-In / Move-Out</a></div><div><h2>Areas We Serve</h2><a href={homePath + '#areas'}>Greater Hartford, CT</a><a href={homePath + '#areas'}>Greater Boston, MA</a><a href={homePath + '#areas'}>Don’t see your town?</a></div><div><h2>Company</h2><a href={homePath + '#about'}>About Mirembe</a><a href={homePath + '#faq'}>FAQ</a><CleaningTeamLink /><a href={'mailto:' + business.publicEmail}>Contact</a></div></div><div className="landing-footer-bottom"><p>© 2026 Mirembe Cleaning Company. Family-owned. “Mirembe” means peace and tranquility.</p>{marketing.privacyPolicyUrl && <a href={marketing.privacyPolicyUrl}>Privacy Policy</a>}</div></div></footer>
 }
 
 export function LandingPage() {

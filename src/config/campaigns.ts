@@ -1,9 +1,11 @@
+import { bookingConfig } from './booking'
+
 /** The seasonal promotion is deliberately independent of booking and form operations. */
 export const holidayCampaign = {
   id: 'holiday-2026',
   enabled: true,
   endsAt: '2026-12-23T23:59:59-05:00',
-  bookingUrl: 'https://app.zenmaid.com/book/mirembe-cleaning-company-holiday',
+  bookingUrl: bookingConfig.holiday.hostedUrl,
   discount: '10%',
   windows: ['November 20–23, 2026', 'December 18–23, 2026'],
   modalDelayMs: 4000,

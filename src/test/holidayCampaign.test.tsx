@@ -89,7 +89,9 @@ describe('holiday promotion page-load behavior', () => {
 
   it('does not interrupt a holiday booking click during this load', () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('link', { name: /Book a holiday cleaning/ }))
+    const link = screen.getByRole('link', { name: /Book a holiday cleaning/ })
+    link.addEventListener('click', event => event.preventDefault()) // jsdom has no document navigation.
+    fireEvent.click(link)
     advance(4000)
     expect(modal()).not.toHaveAttribute('open')
   })

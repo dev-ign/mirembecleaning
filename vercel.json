@@ -1,4 +1,8 @@
 {
+  "rewrites": [
+    { "source": "/booking/thank-you", "destination": "/booking/thank-you/index.html" },
+    { "source": "/booking", "destination": "/booking/index.html" }
+  ],
   "crons": [
     { "path": "/api/email-worker", "schedule": "0 9 * * *" },
     { "path": "/api/sheets-worker", "schedule": "0 10 * * *" }

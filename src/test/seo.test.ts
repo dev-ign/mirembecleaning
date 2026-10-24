@@ -42,4 +42,16 @@ describe('generated search files', () => {
     expect(sitemap).toContain(`<loc>${business.websiteUrl}</loc>`)
     expect(robots).toContain(`Sitemap: ${business.websiteUrl}sitemap.xml`)
   })
+
+  it('prerenders dedicated booking documents with their own titles, canonical URLs and exact Vercel rewrites', () => {
+    const vercel = JSON.parse(readFileSync('vercel.json', 'utf8')) as { rewrites: Array<{ source: string; destination: string }> }
+    for (const path of ['/booking', '/booking/thank-you']) {
+      const page = new DOMParser().parseFromString(readFileSync(`${path.slice(1)}/index.html`, 'utf8'), 'text/html')
+      expect(page.querySelectorAll('#root h1')).toHaveLength(1)
+      expect(page.querySelector('title')?.textContent).not.toContain('House Cleaning in CT & MA')
+      expect(page.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(new URL(path, business.websiteUrl).href)
+      expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex,follow')
+      expect(vercel.rewrites).toContainEqual({ source: path, destination: `${path}/index.html` })
+    }
+  })
 })

@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
-import { holidayCampaign } from '../config/campaigns'
+import { bookingConfig } from '../config/booking'
 import { submitHiringApplication } from '../services/hiringApplicationService'
 import { createWaitlistEntry } from '../services/waitlistService'
 import type { HiringApplicationInput, HiringApplicationRecord } from '../types/hiring'
@@ -146,9 +146,9 @@ describe('hiring modal', () => {
     expect(document.body.style.overflow).toBe('')
 
     const booking = screen.getAllByRole('link', { name: /Request a Cleaning/ })[0]
-    expect(booking).toHaveAttribute('href', holidayCampaign.bookingUrl)
-    expect(booking).toHaveAttribute('target', '_blank')
-    expect(booking).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(booking).toHaveAttribute('href', bookingConfig.path)
+    expect(booking).not.toHaveAttribute('target')
+    expect(booking).not.toHaveAttribute('rel')
   })
 
   it('waits for verification and allows a failed challenge to be retried', async () => {

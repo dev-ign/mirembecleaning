@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import App from '../App'
-import { holidayCampaign } from '../config/campaigns'
+import { bookingConfig } from '../config/booking'
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }) })
@@ -18,29 +18,37 @@ describe('landing navigation and booking actions', () => {
     }
   })
 
-  it('uses the existing ZenMaid URL for every general request link and the service drawer', () => {
+  it('uses same-tab booking navigation for every general request link and service drawer', () => {
     render(<App />)
     const requests = screen.getAllByRole('link', { name: /Request a Cleaning/i })
     expect(requests).toHaveLength(5)
     for (const link of requests) {
-      expect(link).toHaveAttribute('href', holidayCampaign.bookingUrl)
-      expect(link).toHaveAttribute('target', '_blank')
-      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+      expect(link).toHaveAttribute('href', bookingConfig.path)
+      expect(link).not.toHaveAttribute('target')
+      expect(link).not.toHaveAttribute('rel')
     }
-    fireEvent.click(screen.getByRole('button', { name: 'What’s included in Deep Clean' }))
-    const drawerLink = screen.getAllByRole('link', { name: /Request a Cleaning/i }).at(-1)
-    expect(drawerLink).toHaveAttribute('href', holidayCampaign.bookingUrl)
-    expect(drawerLink).toHaveAttribute('target', '_blank')
-    expect(drawerLink).toHaveAttribute('rel', 'noopener noreferrer')
-    expect(screen.getByRole('button', { name: 'Back to services' })).toBeInTheDocument()
-    fireEvent.click(drawerLink!)
-    expect(document.querySelector('.service-detail-dialog')).not.toHaveAttribute('open')
+    const serviceTriggers = screen.getAllByRole('button', { name: /What’s included in/ })
+    expect(serviceTriggers).toHaveLength(3)
+    for (const trigger of serviceTriggers) {
+      fireEvent.click(trigger)
+      const drawerLink = screen.getAllByRole('link', { name: /Request a Cleaning/i }).at(-1)!
+      expect(drawerLink).toHaveAttribute('href', bookingConfig.path)
+      expect(drawerLink).not.toHaveAttribute('target')
+      expect(drawerLink).not.toHaveAttribute('rel')
+      expect(screen.getByRole('button', { name: 'Back to services' })).toBeInTheDocument()
+      // Keep jsdom on this document while checking the existing dismissal callback.
+      drawerLink.addEventListener('click', event => event.preventDefault(), { once: true })
+      fireEvent.click(drawerLink)
+      expect(document.querySelector('.service-detail-dialog')).not.toHaveAttribute('open')
+    }
   })
 
   it('keeps waitlist, hiring, and holiday actions distinct', () => {
     render(<App />)
     expect(screen.getAllByRole('button', { name: 'Join the Waitlist' }).length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: 'Interested in joining our cleaning team?' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Book a holiday cleaning/ })).toHaveAttribute('href', holidayCampaign.bookingUrl)
+    const holiday = screen.getByRole('link', { name: /Book a holiday cleaning/ })
+    expect(holiday).toHaveAttribute('href', bookingConfig.path)
+    expect(holiday).not.toHaveAttribute('target')
   })
 })

@@ -1,3 +1,5 @@
+import { bookingConfig } from '../../config/booking'
+
 export type CampaignField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_content' | 'utm_term'
 export type Campaign = Partial<Record<CampaignField, string>>
 
@@ -41,8 +43,13 @@ export function getAttribution() {
   return { firstTouch: readStored(firstTouchKey), lastTouch: readStored(lastTouchKey) }
 }
 
+export function safePagePath(): string {
+  const path = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
+  return path === bookingConfig.path || path === bookingConfig.thankYouPath ? path : '/'
+}
+
 export function safePageLocation(search: string): string {
-  const url = new URL('/', window.location.origin)
+  const url = new URL(safePagePath(), window.location.origin)
   const current = readCurrentCampaign(search)
   for (const field of fields) if (current[field]) url.searchParams.set(field, current[field])
   return url.href

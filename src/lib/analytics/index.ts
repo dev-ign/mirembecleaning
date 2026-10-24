@@ -1,5 +1,5 @@
 import { marketing } from '../../config/marketing'
-import { captureCampaign, getAttribution, safePageLocation } from './attribution'
+import { captureCampaign, getAttribution, safePageLocation, safePagePath } from './attribution'
 
 export type MarketingEvent =
   | 'waitlist_cta_click' | 'waitlist_form_start' | 'waitlist_form_submit' | 'waitlist_signup_success' | 'waitlist_signup_error'
@@ -71,7 +71,7 @@ export function startAnalytics(): void {
     window.gtag('config', marketing.ga4Id, { send_page_view: false })
     window.gtag('event', 'page_view', {
       page_location: safePageLocation(window.location.search),
-      page_path: '/',
+      page_path: safePagePath(),
       page_title: document.title,
     })
     addScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(marketing.ga4Id)}`, 'mirembe-ga4')
@@ -106,7 +106,7 @@ export function trackEvent(event: MarketingEvent, conversionId?: string): void {
     if (marketing.ga4Id) {
       const attribution = getAttribution()
       window.gtag?.('event', event, {
-        page_path: '/',
+        page_path: safePagePath(),
         ...Object.fromEntries(Object.entries(attribution.firstTouch).map(([key, value]) => [`first_${key}`, value])),
         ...attribution.lastTouch,
       })
