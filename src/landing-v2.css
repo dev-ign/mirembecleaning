@@ -11,11 +11,23 @@ html { scroll-behavior: smooth; }
 .landing-page a.landing-text-link:hover { text-decoration: underline; }
 .landing-hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(420px, 0.9fr); }
 .landing-hero h1 span { color: var(--brand-accent); }
-.landing-availability-mobile, .landing-quick-facts-mobile { display: none; }
+.landing-quick-facts-mobile { display: none; }
 .landing-hero-photo { object-position: 65% center; }
 .landing-hero-visual picture { display: block; height: 100%; }
 .landing-hero-actions p { max-width: 550px; }
-.landing-hero .landing-availability { font-size: 13px; }
+.landing-hero-actions .landing-hero-trust { display: flex; align-items: start; gap: 8px; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.landing-hero-trust > span:first-child { flex: none; color: var(--brand-primary); }
+.landing-hero-pathways { display: grid; gap: 8px; }
+.landing-hiring-link { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 44px; padding: 8px 0; border: 0; border-radius: 4px; background: transparent; color: var(--text-secondary); font: 400 13px/1.5 var(--font-inter); text-align: left; cursor: pointer; transition: color 220ms ease-in-out; }
+.landing-hiring-link strong { color: var(--brand-primary); font-weight: 500; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color 220ms ease-in-out, text-decoration-color 220ms ease-in-out; }
+.landing-hiring-link img { flex: 0 0 16px; width: 16px; height: 16px; transition: transform 220ms ease-in-out; }
+.landing-hiring-link:hover, .landing-hiring-link:hover strong { color: var(--brand-hover); }
+.landing-hiring-link:hover strong { text-decoration-color: currentColor; }
+.landing-hiring-link:hover img { transform: translateX(3px); }
+.landing-hero .landing-availability { max-width: 100%; font-size: 13px; }
+.landing-availability > span { min-width: 0; text-wrap: balance; }
+.landing-availability strong { font-weight: 500; white-space: nowrap; }
+.landing-announcement-detail { white-space: nowrap; }
 .landing-story { background: var(--background); }
 .landing-story-rows { display: grid; gap: 96px; }
 .landing-story-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(48px, 7vw, 112px); }
@@ -81,7 +93,8 @@ html { scroll-behavior: smooth; }
 .landing-founders-grid > .landing-reveal:first-child { max-width: 680px; }
 .landing-founders p:not(.landing-eyebrow) { font-size: 18px; }
 .landing-founders blockquote { margin: 24px 0; padding: 0; border: 0; font-size: 28px; line-height: 1.25; }
-.landing-founder-photo { min-height: 620px; }
+.landing-founder-photo { position: relative; min-height: 620px; overflow: hidden; }
+.landing-founder-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 65%; }
 .landing-faq { background: var(--background); }
 .landing-faq-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
 .landing-faq .landing-section-heading { max-width: none; }
@@ -207,8 +220,10 @@ html { scroll-behavior: smooth; }
   .landing-page :is(#services, #why-mirembe, #areas, #faq, #about, #story) { scroll-margin-top: 92px; }
   .landing-hero { padding-top: 92px; padding-bottom: 48px; }
   .landing-hero-grid { gap: 20px; }
-  .landing-availability-desktop, .landing-quick-facts-desktop { display: none; }
-  .landing-availability-mobile { display: inline; }
+  .landing-hero-copy { gap: 18px; }
+  .landing-hero-actions { gap: 10px; }
+  .landing-hero-pathways { margin-top: -8px; }
+  .landing-quick-facts-desktop { display: none; }
   .landing-quick-facts-mobile { display: grid; grid-template-columns: max-content max-content; column-gap: 18px; }
   .landing-quick-facts-mobile li:first-child { grid-column: 1 / -1; }
   .landing-hero h1 { font-size: clamp(34px, 10.5vw, 42px); line-height: 1.12; }
@@ -291,6 +306,8 @@ html { scroll-behavior: smooth; }
   .landing-footer-grid button.team-link { max-width: 342px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .landing-hiring-link, .landing-hiring-link strong, .landing-hiring-link img { transition: none; }
+  .landing-hiring-link:hover img { transform: none; }
   html { scroll-behavior: auto; }
   .service-detail-dialog .landing-button, .holiday-modal .landing-button { transition: none; }
   .service-detail-dialog, .holiday-modal, .holiday-floating-cta, .landing-faq-item [role="region"]:not([hidden]) { animation: none !important; }

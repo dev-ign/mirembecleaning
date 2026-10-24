@@ -220,7 +220,6 @@
 .landing-signature strong { font: italic 700 28px var(--font-cormorant); }
 .landing-signature small { color: var(--text-muted); font-size: 12px; }
 .landing-founder-photo { display: flex; align-items: end; height: 620px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: linear-gradient(145deg, #efe8f6, #f5f0eb); }
-.landing-founder-photo span { padding: 8px 14px; border-radius: var(--radius-pill); background: var(--surface-elevated); font-size: 14px; box-shadow: var(--shadow-subtle); }
 
 .landing-cta-wrap { padding: 128px 0 32px; }
 .landing-cta-banner { display: flex; align-items: center; justify-content: space-between; gap: 64px; padding: 80px; border-radius: var(--radius-2xl); background: linear-gradient(110deg, #efe8f6, #f8f4ef); }

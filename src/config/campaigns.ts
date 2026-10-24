@@ -11,8 +11,8 @@ export const holidayCampaign = {
 } as const
 
 export const launch = {
-  headline: 'Full service launches January 2027.',
-  holidayMessage: 'Limited holiday appointments are now available.',
+  headline: 'Launching January 2027',
+  holidayMessage: 'Holiday bookings available',
   regularBookingsMessage: 'We plan to open for regular bookings in January 2027. Join the waitlist for launch updates.',
   primaryCta: 'waitlist' as const,
 } as const

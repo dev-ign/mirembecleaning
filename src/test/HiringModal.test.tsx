@@ -106,6 +106,31 @@ describe('hiring modal', () => {
     })
   })
 
+  it('shares one hiring dialog between hero and footer and restores each trigger’s focus', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const heroTrigger = screen.getByRole('button', { name: 'Looking for cleaning work? Join our team' })
+    const footerTrigger = screen.getByRole('button', { name: 'Interested in joining our cleaning team?' })
+    expect(document.querySelectorAll('#hiring-dialog')).toHaveLength(1)
+
+    heroTrigger.focus()
+    await user.keyboard('{Enter}')
+    const dialog = screen.getByRole('dialog', { name: 'Join the Mirembe team.' })
+    expect(screen.getByRole('heading', { name: 'Join the Mirembe team.' })).toHaveFocus()
+    await user.type(within(dialog).getByRole('textbox', { name: 'First name' }), 'Ari')
+    // jsdom does not dispatch the native dialog cancel event for Escape.
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    await waitFor(() => expect(heroTrigger).toHaveFocus())
+    expect(dialog).not.toHaveAttribute('open')
+
+    await user.click(footerTrigger)
+    expect(screen.getByRole('dialog', { name: 'Join the Mirembe team.' })).toBe(dialog)
+    expect(within(dialog).getByRole('textbox', { name: 'First name' })).toHaveValue('Ari')
+    await user.click(within(dialog).getByRole('button', { name: 'Close application form' }))
+    await waitFor(() => expect(footerTrigger).toHaveFocus())
+    expect(document.body.style.overflow).toBe('')
+  })
+
   it('opens the waitlist dialog accessibly and keeps booking as a separate link', async () => {
     const user = userEvent.setup()
     render(<App />)
