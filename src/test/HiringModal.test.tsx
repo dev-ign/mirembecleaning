@@ -1,7 +1,8 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { bookingConfig } from '../config/booking'
 import { submitHiringApplication } from '../services/hiringApplicationService'
 import { createWaitlistEntry } from '../services/waitlistService'
 import type { HiringApplicationInput, HiringApplicationRecord } from '../types/hiring'
@@ -103,6 +104,51 @@ describe('hiring modal', () => {
       configurable: true,
       value: vi.fn().mockReturnValue({ matches: true }),
     })
+  })
+
+  it('shares one hiring dialog between hero and footer and restores each trigger’s focus', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const heroTrigger = screen.getByRole('button', { name: 'Looking for cleaning work? Join our team' })
+    const footerTrigger = screen.getByRole('button', { name: 'Interested in joining our cleaning team?' })
+    expect(document.querySelectorAll('#hiring-dialog')).toHaveLength(1)
+
+    heroTrigger.focus()
+    await user.keyboard('{Enter}')
+    const dialog = screen.getByRole('dialog', { name: 'Join the Mirembe team.' })
+    expect(screen.getByRole('heading', { name: 'Join the Mirembe team.' })).toHaveFocus()
+    await user.type(within(dialog).getByRole('textbox', { name: 'First name' }), 'Ari')
+    // jsdom does not dispatch the native dialog cancel event for Escape.
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    await waitFor(() => expect(heroTrigger).toHaveFocus())
+    expect(dialog).not.toHaveAttribute('open')
+
+    await user.click(footerTrigger)
+    expect(screen.getByRole('dialog', { name: 'Join the Mirembe team.' })).toBe(dialog)
+    expect(within(dialog).getByRole('textbox', { name: 'First name' })).toHaveValue('Ari')
+    await user.click(within(dialog).getByRole('button', { name: 'Close application form' }))
+    await waitFor(() => expect(footerTrigger).toHaveFocus())
+    expect(document.body.style.overflow).toBe('')
+  })
+
+  it('opens the waitlist dialog accessibly and keeps booking as a separate link', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const trigger = screen.getAllByRole('button', { name: 'Join the Waitlist' })[0]
+    await user.click(trigger)
+    const dialog = screen.getByRole('dialog', { name: 'Join the Mirembe waitlist.' })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(screen.getByRole('heading', { name: 'Join the Mirembe waitlist.' })).toHaveFocus()
+    expect(document.body.style.overflow).toBe('hidden')
+    await user.click(screen.getByRole('button', { name: 'Close waitlist' }))
+    expect(dialog).not.toHaveAttribute('open')
+    await waitFor(() => expect(trigger).toHaveFocus())
+    expect(document.body.style.overflow).toBe('')
+
+    const booking = screen.getAllByRole('link', { name: /Request a Cleaning/ })[0]
+    expect(booking).toHaveAttribute('href', bookingConfig.path)
+    expect(booking).not.toHaveAttribute('target')
+    expect(booking).not.toHaveAttribute('rel')
   })
 
   it('waits for verification and allows a failed challenge to be retried', async () => {
@@ -357,12 +403,14 @@ describe('hiring modal', () => {
   it('leaves an existing customer waitlist confirmation intact', async () => {
     const user = userEvent.setup()
     render(<App />)
+    await user.click(screen.getAllByRole('button', { name: 'Join the Waitlist' })[0])
     await user.type(screen.getByRole('textbox', { name: 'Email address' }), 'customer@example.com')
-    await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
-    expect(await screen.findByRole('heading', { name: /on the list/i })).toBeInTheDocument()
+    await user.click(within(screen.getByRole('dialog', { name: 'Join the Mirembe waitlist.' })).getByRole('button', { name: 'Join the Waitlist' }))
+    expect((await screen.findAllByRole('heading', { name: /on the list/i })).length).toBeGreaterThan(0)
+    expect(screen.getByRole('textbox', { name: 'ZIP code (optional)' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Close waitlist' }))
     await openModal(user)
     await user.click(screen.getByRole('button', { name: 'Close application form' }))
-    expect(screen.getByRole('heading', { name: /on the list/i })).toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: 'ZIP code (optional)' })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /you’re on the waitlist/i }).length).toBeGreaterThan(0)
   })
 })

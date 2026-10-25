@@ -8,12 +8,13 @@ describe('generated search files', () => {
     expect(page.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(business.websiteUrl)
     expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('index')
     expect(page.querySelector('meta[property="og:image"]')?.getAttribute('content')).toMatch(/^https:\/\//)
-    expect(page.querySelector('h1')?.textContent).toContain('A Cleaner Home.')
-    expect(page.querySelector('main')?.textContent).toContain(business.description)
+    expect(page.querySelector('h1')?.textContent).toContain('A Cleaner Home, More Peace.')
+    expect(page.querySelector('main')?.textContent).toContain('Greater Boston')
+    expect(page.querySelector('main')?.textContent).toContain('Newington')
     expect(page.querySelectorAll('#root h1')).toHaveLength(1)
-    expect(page.querySelector('#root #waitlist-email')).not.toBeNull()
-    expect(page.querySelector('#root #founder-heading')).not.toBeNull()
-    expect(page.querySelector('#root img[src="/hero.webp"]')).not.toBeNull()
+    expect(page.querySelector('#root button[aria-haspopup="dialog"]')).not.toBeNull()
+    expect(page.querySelector('#root #founders-heading')).not.toBeNull()
+    expect(page.querySelector('#root img[src="/landing/v2/hero.webp"]')).not.toBeNull()
     expect(page.querySelector('head link[rel="stylesheet"]')?.getAttribute('href')).toBe('/src/index.css')
     expect(page.querySelector('link[rel="icon"]')?.getAttribute('href')).toBe('/favicon.png')
     expect(page.querySelector('#root img.brand-symbol')?.getAttribute('src')).toBe('/icon.png')
@@ -34,11 +35,24 @@ describe('generated search files', () => {
     expect(schema['@graph'][0]).not.toHaveProperty('hasOfferCatalog')
   })
 
-  it('lists only the canonical homepage in sitemap and robots', () => {
+  it('lists the canonical homepage and Terms in sitemap and robots', () => {
     const sitemap = readFileSync('public/sitemap.xml', 'utf8')
     const robots = readFileSync('public/robots.txt', 'utf8')
-    expect(sitemap.match(/<loc>/g)).toHaveLength(1)
+    expect(sitemap.match(/<loc>/g)).toHaveLength(2)
+    expect(sitemap).toContain(`<loc>${business.websiteUrl}terms</loc>`)
     expect(sitemap).toContain(`<loc>${business.websiteUrl}</loc>`)
     expect(robots).toContain(`Sitemap: ${business.websiteUrl}sitemap.xml`)
+  })
+
+  it('prerenders dedicated booking documents with their own titles, canonical URLs and exact Vercel rewrites', () => {
+    const vercel = JSON.parse(readFileSync('vercel.json', 'utf8')) as { rewrites: Array<{ source: string; destination: string }> }
+    for (const path of ['/booking', '/booking/thank-you']) {
+      const page = new DOMParser().parseFromString(readFileSync(`${path.slice(1)}/index.html`, 'utf8'), 'text/html')
+      expect(page.querySelectorAll('#root h1')).toHaveLength(1)
+      expect(page.querySelector('title')?.textContent).not.toContain('House Cleaning in CT & MA')
+      expect(page.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(new URL(path, business.websiteUrl).href)
+      expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex,follow')
+      expect(vercel.rewrites).toContainEqual({ source: path, destination: `${path}/index.html` })
+    }
   })
 })

@@ -1,0 +1,51 @@
+.booking-page { min-height: 100vh; }
+/* ZenMaid owns a fixed estimate sidebar. Let this route's shared header scroll
+   naturally so the two interfaces never cover each other's controls. */
+.booking-page .landing-header { position: relative; margin-bottom: 0; }
+.booking-content { padding-block: 28px 64px; }
+.booking-intro { margin-bottom: 20px; }
+.booking-intro h1, .booking-thank-you h1 { margin: 16px 0 24px; font: 500 clamp(36px, 4vw, 56px)/1.15 var(--font-montserrat); letter-spacing: -.018em; }
+.booking-intro h1 { margin: 12px 0 16px; }
+.booking-intro h1 em { color: var(--brand-primary); font: italic 700 1.18em/1 var(--font-cormorant); }
+.booking-intro > p:not(.landing-eyebrow), .booking-thank-you > p:not(.landing-eyebrow) { color: var(--text-secondary); font-size: 18px; line-height: 1.65; }
+.booking-reassurance { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--space-6); margin-top: var(--space-3); }
+.booking-reassurance .booking-trust { flex: 1 1 50%; margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.65; }
+.booking-terms { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.booking-terms a { display: inline-block; min-height: 44px; align-content: center; color: var(--brand-primary); text-underline-offset: 4px; }
+.booking-terms a:hover { color: var(--brand-hover); }
+.booking-trust > span { color: var(--brand-primary); margin-right: 5px; }
+/* Reserve space while the Advanced form loads; its content owns the final height. */
+.booking-embed { min-width: 0; }
+.booking-embed.is-loading .zenmaid-container, .booking-embed.is-pending .zenmaid-container { min-height: 420px; }
+/* Advanced Install renders in this document. Only its outer surface is restyled;
+   fields, pricing, payment frames and vendor layout stay under ZenMaid's control. */
+.booking-page .zenmaid-container.cleanslate,
+.booking-page .zenmaid-container #new_booking,
+.booking-page .zenmaid-container .zenmaid-widget-container { background: transparent !important; }
+.booking-page .zenmaid-container .zm-booking-form-container { width: 100% !important; max-width: none !important; padding-bottom: 32px !important; }
+.booking-provider-help { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.booking-provider-help p { margin: 0; }
+.booking-provider-help > div { display: flex; align-items: center; flex-wrap: wrap; gap: 0 16px; }
+.booking-provider-help a, .booking-provider-help summary { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--brand-primary); font-weight: 500; text-underline-offset: 4px; }
+.booking-provider-help a:hover, .booking-provider-help summary:hover { color: var(--brand-hover); }
+.booking-provider-help details { position: relative; }
+.booking-provider-help summary { display: list-item; align-content: center; cursor: pointer; }
+.booking-provider-help summary:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
+.booking-provider-help details[open] a { display: flex; }
+.booking-status { margin: 16px 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.booking-basic-frame { display: block; width: 100%; height: 85svh; min-height: 640px; border: 0; background: #fff; }
+.booking-thank-you { max-width: 900px; padding-block: 80px 112px; text-align: center; }
+.booking-check { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 24px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-primary); font-size: 24px; }
+.booking-thank-you h1 > span { display: inline-block; max-width: 720px; margin-top: 12px; font-size: .67em; }
+.booking-thank-you > p:not(.landing-eyebrow) { max-width: 650px; margin: 20px auto; }
+.booking-thank-you .landing-button { margin-top: 16px; }
+@media (max-width: 767px) {
+  .booking-content { padding-block: 20px 40px; }
+  .booking-intro { margin-bottom: 16px; }
+  .booking-intro h1 { font-size: 34px; }
+  .booking-intro h1 em { display: block; margin-top: 4px; }
+  .booking-intro > p:not(.landing-eyebrow), .booking-thank-you > p:not(.landing-eyebrow) { font-size: 16px; }
+  .booking-thank-you { padding-block: 44px 64px; }
+  .booking-thank-you h1 { font-size: 38px; }
+  .booking-thank-you h1 > span { font-size: .67em; line-height: 1.3; }
+}
