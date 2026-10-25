@@ -259,6 +259,8 @@
 .landing-footer-grid .landing-social a img { width: 20px; height: 20px; }
 .landing-footer-bottom { display: flex; justify-content: space-between; gap: 20px; margin-top: 72px; padding-top: 26px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
 .landing-footer-bottom p { margin: 0; }
+.landing-footer-contact { display: flex; flex-direction: column; }
+.landing-footer-grid .landing-footer-contact a { display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 4px; }
 
 .landing-reveal.reveal-pending { opacity: 0; transform: translateY(20px); }
 .landing-reveal.reveal-visible { animation: landing-reveal 650ms var(--motion-ease) var(--reveal-delay, 0ms) both; }

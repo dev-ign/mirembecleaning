@@ -3,6 +3,7 @@ import { BrandLogo } from '../BrandLogo'
 import { CleaningTeamLink, CleaningTeamProvider } from '../CleaningTeamLink'
 import { AnalyticsConsent } from '../AnalyticsConsent'
 import { business } from '../../config/business'
+import { termsConfig } from '../../config/legal'
 import { marketing } from '../../config/marketing'
 import { holidayCampaign, isHolidayCampaignActive, launch } from '../../config/campaigns'
 import { bookingConfig } from '../../config/booking'
@@ -112,10 +113,10 @@ function Faq({ campaignActive }: { campaignActive: boolean }) {
 }
 
 export function Footer({ homePath = '' }: { homePath?: string }) {
-  return <footer className="landing-footer"><div className="landing-container"><div className="landing-footer-grid"><div><a className="landing-brand-link" href={homePath + '#top'} aria-label="Mirembe Cleaning Company, back to top"><BrandLogo /></a><p>Thoughtful home and rental cleaning serving Greater Hartford, CT, and Greater Boston, MA.</p><div className="landing-social"><a href={business.socialProfiles.instagram} aria-label="Instagram"><Icon name="instagram" /></a><a href={business.socialProfiles.facebook} aria-label="Facebook"><Icon name="facebook" /></a><a href={'mailto:' + business.publicEmail} aria-label="Email Mirembe"><Icon name="social-mail" /></a></div><a href={'mailto:' + business.publicEmail}>{business.publicEmail}</a></div><div><h2>Services</h2><a href={homePath + '#services'}>Standard Clean</a><a href={homePath + '#services'}>Deep Clean</a><a href={homePath + '#services'}>Rental Turnovers</a><a href={homePath + '#services'}>Move-In / Move-Out</a></div><div><h2>Areas We Serve</h2><a href={homePath + '#areas'}>Greater Hartford, CT</a><a href={homePath + '#areas'}>Greater Boston, MA</a><a href={homePath + '#areas'}>Don’t see your town?</a></div><div><h2>Company</h2><a href={homePath + '#about'}>About Mirembe</a><a href={homePath + '#faq'}>FAQ</a><CleaningTeamLink /><a href={'mailto:' + business.publicEmail}>Contact</a></div></div><div className="landing-footer-bottom"><p>© 2026 Mirembe Cleaning Company. Family-owned. “Mirembe” means peace and tranquility.</p>{marketing.privacyPolicyUrl && <a href={marketing.privacyPolicyUrl}>Privacy Policy</a>}</div></div></footer>
+  return <footer className="landing-footer"><div className="landing-container"><div className="landing-footer-grid"><div><a className="landing-brand-link" href={homePath + '#top'} aria-label="Mirembe Cleaning Company, back to top"><BrandLogo /></a><p>Thoughtful home and rental cleaning serving Greater Hartford, CT, and Greater Boston, MA.</p><div className="landing-social"><a href={business.socialProfiles.instagram} aria-label="Instagram"><Icon name="instagram" /></a><a href={business.socialProfiles.facebook} aria-label="Facebook"><Icon name="facebook" /></a><a href={'mailto:' + business.publicEmail} aria-label="Email Mirembe"><Icon name="social-mail" /></a></div><div className="landing-footer-contact"><a href={'mailto:' + business.publicEmail}>{business.publicEmail}</a><a href={business.phoneHref} onClick={() => trackEvent('phone_click')}>{business.phoneDisplay}</a></div></div><div><h2>Services</h2><a href={homePath + '#services'}>Standard Clean</a><a href={homePath + '#services'}>Deep Clean</a><a href={homePath + '#services'}>Rental Turnovers</a><a href={homePath + '#services'}>Move-In / Move-Out</a></div><div><h2>Areas We Serve</h2><a href={homePath + '#areas'}>Greater Hartford, CT</a><a href={homePath + '#areas'}>Greater Boston, MA</a><a href={homePath + '#areas'}>Don’t see your town?</a></div><div><h2>Company</h2><a href={homePath + '#about'}>About Mirembe</a><a href={homePath + '#faq'}>FAQ</a><CleaningTeamLink /><a href={'mailto:' + business.publicEmail}>Contact</a></div></div><div className="landing-footer-bottom"><p>© 2026 Mirembe Cleaning Company. Family-owned. “Mirembe” means peace and tranquility.</p><nav className="landing-footer-legal" aria-label="Legal"><a href={termsConfig.path}>Terms of Service</a>{marketing.privacyPolicyUrl && <a href={marketing.privacyPolicyUrl}>Privacy Policy</a>}</nav></div></div></footer>
 }
 
-export function LandingPage() {
+export function LandingPage({ promotionsAllowed }: { promotionsAllowed: boolean }) {
   const [waitlistOpen, setWaitlistOpen] = useState(false)
   const [joined, setJoined] = useState(false)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -124,6 +125,7 @@ export function LandingPage() {
   const [anyDialogOpen, setAnyDialogOpen] = useState(false)
   const [campaignActive, setCampaignActive] = useState(() => isHolidayCampaignActive())
   const [holidayReady, setHolidayReady] = useState(false)
+  const overlaysEnabled = promotionsAllowed && campaignActive
   const holidayShownThisLoad = useRef(false)
   const holidayBookingClicked = useRef(false)
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' | 'verification' | 'info' } | null>(null)
@@ -147,12 +149,12 @@ export function LandingPage() {
     return () => observer.disconnect()
   }, [])
   useEffect(() => {
-    if (!campaignActive) return
+    if (!overlaysEnabled) return
     const timeout = window.setTimeout(() => setHolidayReady(true), holidayCampaign.modalDelayMs)
     return () => window.clearTimeout(timeout)
-  }, [campaignActive])
+  }, [overlaysEnabled])
   useEffect(() => {
-    if (!holidayReady || !campaignActive || holidayShownThisLoad.current || holidayBookingClicked.current) return
+    if (!holidayReady || !overlaysEnabled || holidayShownThisLoad.current || holidayBookingClicked.current) return
     const showWhenAvailable = () => {
       if (holidayShownThisLoad.current || holidayBookingClicked.current || document.querySelector('dialog[open], .landing-nav.is-open') || document.activeElement?.matches('input, textarea, select, [contenteditable="true"]') || document.activeElement?.closest('form')) return
       holidayShownThisLoad.current = true
@@ -163,12 +165,12 @@ export function LandingPage() {
     showWhenAvailable()
     document.addEventListener('focusout', onFocusOut, true)
     return () => { document.removeEventListener('focusout', onFocusOut, true); if (retry !== undefined) window.clearTimeout(retry) }
-  }, [holidayReady, campaignActive, menuOpen, waitlistOpen, selectedService, anyDialogOpen])
+  }, [holidayReady, overlaysEnabled, menuOpen, waitlistOpen, selectedService, anyDialogOpen])
   function open() { if (!joined) { trigger.current = document.activeElement as HTMLElement; setHolidayOpen(false); setSelectedService(null); trackEvent('waitlist_cta_click'); setWaitlistOpen(true) } }
   function dismiss() { setWaitlistOpen(false); window.requestAnimationFrame(() => trigger.current?.focus({ preventScroll: true })) }
   function created() { setJoined(true); showToast('You’re on the waitlist.', 'success') }
   function bookHoliday() { holidayBookingClicked.current = true; setHolidayOpen(false) }
   function openService(service: Service) { setSelectedService(service) }
   const dialogOpen = waitlistOpen || Boolean(selectedService) || holidayOpen || anyDialogOpen
-  return <CleaningTeamProvider><div className="landing-page"><Header open={open} joined={joined} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero open={open} joined={joined} campaignActive={campaignActive} /><BrandStory /><Services openService={openService} /><HowItWorks open={open} joined={joined} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading">Ready for a cleaner home<br /><em>and more peace?</em></h2><p>Join our waitlist for the January 2027 launch{campaignActive ? ', or explore our limited holiday cleaning availability.' : '.'}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={selectedService} onDismiss={() => setSelectedService(null)} />{campaignActive && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{toast.message}</p><button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification">×</button></div>}</div></CleaningTeamProvider>
+  return <CleaningTeamProvider><div className="landing-page"><Header open={open} joined={joined} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero open={open} joined={joined} campaignActive={campaignActive} /><BrandStory /><Services openService={openService} /><HowItWorks open={open} joined={joined} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading">Ready for a cleaner home<br /><em>and more peace?</em></h2><p>Join our waitlist for the January 2027 launch{campaignActive ? ', or explore our limited holiday cleaning availability.' : '.'}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={selectedService} onDismiss={() => setSelectedService(null)} />{overlaysEnabled && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{toast.message}</p><button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification">×</button></div>}</div></CleaningTeamProvider>
 }

@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/booking/thank-you", "destination": "/booking/thank-you/index.html" },
-    { "source": "/booking", "destination": "/booking/index.html" }
+    { "source": "/booking", "destination": "/booking/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" }
   ],
   "crons": [
     { "path": "/api/email-worker", "schedule": "0 9 * * *" },

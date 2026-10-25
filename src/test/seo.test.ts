@@ -35,10 +35,11 @@ describe('generated search files', () => {
     expect(schema['@graph'][0]).not.toHaveProperty('hasOfferCatalog')
   })
 
-  it('lists only the canonical homepage in sitemap and robots', () => {
+  it('lists the canonical homepage and Terms in sitemap and robots', () => {
     const sitemap = readFileSync('public/sitemap.xml', 'utf8')
     const robots = readFileSync('public/robots.txt', 'utf8')
-    expect(sitemap.match(/<loc>/g)).toHaveLength(1)
+    expect(sitemap.match(/<loc>/g)).toHaveLength(2)
+    expect(sitemap).toContain(`<loc>${business.websiteUrl}terms</loc>`)
     expect(sitemap).toContain(`<loc>${business.websiteUrl}</loc>`)
     expect(robots).toContain(`Sitemap: ${business.websiteUrl}sitemap.xml`)
   })

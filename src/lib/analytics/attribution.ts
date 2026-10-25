@@ -1,4 +1,5 @@
 import { bookingConfig } from '../../config/booking'
+import { termsConfig } from '../../config/legal'
 
 export type CampaignField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_content' | 'utm_term'
 export type Campaign = Partial<Record<CampaignField, string>>
@@ -45,7 +46,7 @@ export function getAttribution() {
 
 export function safePagePath(): string {
   const path = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
-  return path === bookingConfig.path || path === bookingConfig.thankYouPath ? path : '/'
+  return path === bookingConfig.path || path === bookingConfig.thankYouPath || path === termsConfig.path ? path : '/'
 }
 
 export function safePageLocation(search: string): string {

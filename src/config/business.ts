@@ -23,7 +23,9 @@ export interface BusinessConfig {
   readonly profileOpeningMonth: string
   readonly profileListedHours: string
   readonly servesCustomersAtTheirLocations: true
-  readonly publicPhone?: string
+  readonly publicPhone: string
+  readonly phoneDisplay: string
+  readonly phoneHref: string
   readonly publicEmail: string
 }
 
@@ -57,5 +59,8 @@ export const business: BusinessConfig = {
   profileOpeningMonth: '2026-10',
   profileListedHours: '24/7',
   servesCustomersAtTheirLocations: true,
+  publicPhone: '+16179174137',
+  phoneDisplay: '(617) 917-4137',
+  phoneHref: 'tel:+16179174137',
   publicEmail: 'hello@mirembecleaning.com',
 }

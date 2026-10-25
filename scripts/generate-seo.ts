@@ -3,6 +3,7 @@ import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { createServer } from 'vite'
 import { business } from '../src/config/business.js'
+import { termsConfig } from '../src/config/legal.js'
 import { publicRoutes, seo, structuredData } from '../src/config/seo.js'
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (character) => ({
@@ -19,6 +20,7 @@ const pages = [
   { path: '/', file: 'index.html', title: seo.title, description: seo.description, robots: 'index,follow,max-image-preview:large' },
   { path: '/booking', file: 'booking/index.html', title: 'Book Your Holiday Cleaning | Mirembe Cleaning Company', description: 'Request your holiday cleaning with Mirembe Cleaning Company. Our team will follow up to confirm availability.', robots: 'noindex,follow' },
   { path: '/booking/thank-you', file: 'booking/thank-you/index.html', title: 'Cleaning Request Received | Mirembe Cleaning Company', description: 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.', robots: 'noindex,follow' },
+  { path: termsConfig.path, file: 'terms/index.html', title: termsConfig.title, description: 'Read the Mirembe Cleaning Company Terms of Service for residential and rental property cleaning services. Last updated October 25, 2026.', robots: 'index,follow' },
 ] as const
 const renderedPages: Array<{ page: (typeof pages)[number]; markup: string }> = []
 try {

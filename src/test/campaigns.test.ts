@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { holidayCampaign, isHolidayCampaignActive, readCampaignFlag, writeCampaignFlag } from '../config/campaigns'
+import { allowsPromotionalOverlays, holidayCampaign, isHolidayCampaignActive, readCampaignFlag, writeCampaignFlag } from '../config/campaigns'
 
 describe('holiday campaign boundaries', () => {
+  it('allows overlays only on the homepage, including document route aliases', () => {
+    for (const path of ['/', '/index.html']) expect(allowsPromotionalOverlays(path)).toBe(true)
+    for (const path of ['/terms', '/terms/', '/terms/index.html', '/booking', '/booking/index.html', '/booking/thank-you', '/booking/thank-you/', '/unknown']) {
+      expect(allowsPromotionalOverlays(path)).toBe(false)
+    }
+  })
   it('is active immediately when enabled and expires at the configured end', () => {
     expect(isHolidayCampaignActive(new Date('2026-10-01T00:00:00Z'))).toBe(true)
     expect(isHolidayCampaignActive(new Date(holidayCampaign.endsAt))).toBe(true)

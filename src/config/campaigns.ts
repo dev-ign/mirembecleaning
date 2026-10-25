@@ -32,3 +32,10 @@ export function writeCampaignFlag(storage: Storage | undefined, key: string): vo
 }
 
 export const holidayCtaDismissedKey = `${holidayCampaign.id}.ctaDismissed`
+
+// Promotional overlays belong only on the homepage. Document routes and unknown
+// paths stay interruption-free, including aliases used by prerendered entries.
+export function allowsPromotionalOverlays(path: string): boolean {
+  const route = path.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/'
+  return route === '/'
+}

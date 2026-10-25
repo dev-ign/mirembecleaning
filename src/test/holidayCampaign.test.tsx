@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { holidayCampaign, holidayCtaDismissedKey } from '../config/campaigns'
 
+vi.mock('../lib/zenmaid', () => ({ loadZenMaid: vi.fn().mockResolvedValue(undefined) }))
+
 const campaign = holidayCampaign as unknown as { enabled: boolean }
 const modal = () => document.querySelector<HTMLDialogElement>('.holiday-modal')!
 
@@ -27,6 +29,38 @@ afterEach(() => {
 function advance(ms: number) { act(() => vi.advanceTimersByTime(ms)) }
 
 describe('holiday promotion page-load behavior', () => {
+  it.each(['/terms', '/booking', '/booking/thank-you'])('never mounts promotional controls or delayed overlays on %s', path => {
+    render(<App path={path} />)
+    advance(60_000)
+    expect(document.querySelector('.holiday-floating-cta,.holiday-modal')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Close holiday cleaning promotion', hidden: true })).not.toBeInTheDocument()
+    expect(document.body.style.overflow).not.toBe('hidden')
+  })
+
+  it('cancels a pending home promotion when entering Terms and keeps home eligibility on return', () => {
+    const view = render(<App />)
+    advance(3000)
+    view.rerender(<App path="/terms" />)
+    advance(60_000)
+    expect(document.querySelector('.holiday-floating-cta,.holiday-modal')).toBeNull()
+    view.rerender(<App />)
+    expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()
+    advance(3999)
+    expect(modal()).not.toHaveAttribute('open')
+    advance(1)
+    expect(modal()).toHaveAttribute('open')
+  })
+
+  it('unmounts an open home modal and releases its scroll lock on a protected route', () => {
+    const view = render(<App />)
+    advance(4000)
+    expect(modal()).toHaveAttribute('open')
+    expect(document.body.style.overflow).toBe('hidden')
+    view.rerender(<App path="/booking/thank-you" />)
+    advance(60_000)
+    expect(document.querySelector('.holiday-floating-cta,.holiday-modal')).toBeNull()
+    expect(document.body.style.overflow).not.toBe('hidden')
+  })
   it('opens after four seconds despite legacy localStorage and only once per load', () => {
     render(<App />)
     expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()

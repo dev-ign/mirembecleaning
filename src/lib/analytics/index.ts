@@ -1,7 +1,9 @@
 import { marketing } from '../../config/marketing'
+import { termsConfig } from '../../config/legal'
 import { captureCampaign, getAttribution, safePageLocation, safePagePath } from './attribution'
 
 export type MarketingEvent =
+  | 'phone_click' | 'booking_fallback_click' | 'terms_view' | 'booking_terms_click'
   | 'waitlist_cta_click' | 'waitlist_form_start' | 'waitlist_form_submit' | 'waitlist_signup_success' | 'waitlist_signup_error'
   | 'hiring_cta_click' | 'hiring_form_start' | 'hiring_form_submit'
   | 'hiring_application_success' | 'hiring_application_error'
@@ -91,6 +93,9 @@ export function startAnalytics(): void {
     window.fbq('track', 'PageView')
     addScript('https://connect.facebook.net/en_US/fbevents.js', 'mirembe-meta-pixel')
   }
+  // Emitted once per document when analytics starts, including consent granted
+  // after reading the page. Declining tracking never emits a legal-page event.
+  if (safePagePath() === termsConfig.path) trackEvent('terms_view')
 }
 
 export function trackEvent(event: MarketingEvent, conversionId?: string): void {

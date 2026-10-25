@@ -38,6 +38,26 @@ describe('consent-gated analytics', () => {
     expect(window.fbq?.queue?.filter((entry) => entry[1] === 'Lead')).toHaveLength(1)
   })
 
+  it('tracks one Terms view when consent starts and filters all new interaction events', async () => {
+    history.replaceState(null, '', '/terms?email=private%40example.com&utm_source=holiday')
+    const analytics = await import('../lib/analytics')
+    analytics.trackEvent('phone_click')
+    analytics.trackEvent('booking_terms_click')
+    expect(window.dataLayer).toBeUndefined()
+    analytics.setConsent('accepted')
+    analytics.startAnalytics()
+    analytics.trackEvent('phone_click')
+    analytics.trackEvent('booking_terms_click')
+    analytics.trackEvent('booking_fallback_click')
+    const events = window.dataLayer!.filter(entry => entry[0] === 'event')
+    expect(events.filter(entry => entry[1] === 'terms_view')).toHaveLength(1)
+    for (const name of ['terms_view', 'phone_click', 'booking_terms_click', 'booking_fallback_click']) {
+      expect(events.find(entry => entry[1] === name)?.[2]).toMatchObject({ page_path: '/terms' })
+    }
+    expect(JSON.stringify(events)).not.toContain('private@example.com')
+    expect(window.fbq?.queue?.filter(entry => entry[1] === 'Lead')).toHaveLength(0)
+  })
+
   it('honors a browser privacy opt-out even after a stored acceptance', async () => {
     Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: true })
     const analytics = await import('../lib/analytics')
