@@ -12,9 +12,10 @@
 .legal-content a:hover { color: var(--brand-hover); }
 .legal-closing { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
 .legal-closing a { display: inline-block; min-height: 44px; align-content: center; }
-.landing-footer-legal { display: flex; flex-wrap: wrap; gap: 0 24px; }
-.landing-footer-legal a { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-secondary); text-underline-offset: 4px; }
-.landing-footer-legal a:hover { color: var(--brand-primary); }
+.landing-footer-legal { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; }
+.landing-footer-legal :is(a, button) { display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: none; color: var(--text-secondary); font: inherit; text-decoration: none; text-underline-offset: 4px; cursor: pointer; }
+.landing-footer-legal :is(a, button):hover { color: var(--brand-primary); text-decoration: underline; }
+.landing-footer-legal :is(a, button):focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
 @media (max-width: 767px) {
   .legal-content { padding-block: var(--space-7) var(--space-10); font-size: 16px; line-height: 1.75; }
   .legal-header { margin-bottom: 24px; padding-bottom: 20px; }

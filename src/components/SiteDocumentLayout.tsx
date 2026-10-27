@@ -3,7 +3,7 @@ import { Header, Footer } from './landing/LandingPage'
 import { WaitlistModal } from './landing/WaitlistModal'
 import { CleaningTeamProvider } from './CleaningTeamLink'
 import { AnalyticsConsent } from './AnalyticsConsent'
-import { trackEvent } from '../lib/analytics'
+import { trackEvent } from '../lib/optionalEvents'
 
 export function SiteDocumentLayout({ children, pageClass = 'booking-page', mainId = 'booking-main' }: { children: ReactNode; pageClass?: string; mainId?: string }) {
   const [menuOpen, setMenuOpen] = useState(false)

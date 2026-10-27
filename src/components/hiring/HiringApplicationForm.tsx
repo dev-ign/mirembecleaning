@@ -15,7 +15,7 @@ import {
   type HiringField,
   type SpokenLanguage,
 } from '../../types/hiring'
-import { trackEvent } from '../../lib/analytics'
+import { trackEvent } from '../../lib/optionalEvents'
 import { privacyConfig } from '../../config/legal'
 
 type SubmissionStatus = 'idle' | 'submitting' | 'error'

@@ -11,7 +11,8 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
   const ready = useHydrated()
   const [dismissed, setDismissed] = useState(() => readCampaignFlag(safeSessionStorage(), holidayCtaDismissedKey))
   const [compact, setCompact] = useState(false)
-  const [lifted, setLifted] = useState(false)
+  const [footerVisible, setFooterVisible] = useState(false)
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
     const update = () => setCompact(window.innerWidth <= 360 || window.scrollY > 600)
@@ -23,21 +24,28 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
-    const observer = new IntersectionObserver(entries => setLifted(entries.some(entry => entry.isIntersecting)), { rootMargin: '0px 0px 120px 0px' })
-    const observed = new Set<Element>()
-    const sync = () => {
-      document.querySelectorAll('.landing-footer, .analytics-consent-panel').forEach(element => {
-        if (!observed.has(element)) { observed.add(element); observer.observe(element) }
-      })
-    }
-    sync()
-    const mutation = new MutationObserver(sync)
-    mutation.observe(document.body, { childList: true, subtree: true })
-    return () => { observer.disconnect(); mutation.disconnect() }
+    // Yield the floating space instead of lifting over footer links.
+    const observer = new IntersectionObserver(entries => setFooterVisible(entries.some(entry => entry.isIntersecting)), { rootMargin: '0px 0px 16px 0px' })
+    const footer = document.querySelector('.landing-footer')
+    if (footer) observer.observe(footer)
+    return () => observer.disconnect()
   }, [])
 
-  if (!ready || hidden || dismissed || !holidayCampaign.floatingCtaEnabled) return null
-  return <div className={`holiday-floating-cta${compact ? ' is-compact' : ''}${lifted ? ' is-lifted' : ''}`}>
+  useEffect(() => {
+    const update = () => setEditing(Boolean(document.activeElement?.closest('form') || document.activeElement?.matches('input, textarea, select, [contenteditable="true"]')))
+    document.addEventListener('focusin', update)
+    document.addEventListener('focusout', update)
+    window.visualViewport?.addEventListener('resize', update)
+    update()
+    return () => {
+      document.removeEventListener('focusin', update)
+      document.removeEventListener('focusout', update)
+      window.visualViewport?.removeEventListener('resize', update)
+    }
+  }, [])
+
+  if (!ready || hidden || dismissed || footerVisible || editing || !holidayCampaign.floatingCtaEnabled) return null
+  return <div className={`holiday-floating-cta${compact ? ' is-compact' : ''}`}>
     <a href={bookingConfig.path} onClick={() => { trackBookingCTA('holiday_floating'); onBooking() }} aria-label={`Book a holiday cleaning, ${holidayCampaign.discount} off`}>
       <span className="holiday-floating-icon"><img src="/landing/v2/holiday_floating_calendar.svg" alt="" width="20" height="20" /></span>
       <span className="holiday-floating-copy"><strong className="holiday-floating-title">Holiday Cleaning</strong><small>Save {holidayCampaign.discount} · Limited Dates</small><strong className="holiday-floating-mobile-title">{compact ? `${holidayCampaign.discount} Off` : `Holiday Cleaning · ${holidayCampaign.discount} Off`}</strong></span>

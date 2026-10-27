@@ -3,7 +3,7 @@ import mailIcon from '../assets/icons/mail.svg'
 import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } from './TurnstileWidget'
 import { createWaitlistEntry, WaitlistRequestError } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
-import { trackEvent } from '../lib/analytics'
+import { trackEvent } from '../lib/optionalEvents'
 import { privacyConfig } from '../config/legal'
 
 type FormStatus = 'idle' | 'invalid' | 'submitting' | 'error'

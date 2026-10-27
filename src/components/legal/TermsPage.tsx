@@ -3,7 +3,7 @@ import { business } from '../../config/business'
 import { termsConfig } from '../../config/legal'
 import { marketing } from '../../config/marketing'
 import { termsDocument } from '../../content/terms'
-import { trackEvent } from '../../lib/analytics'
+import { trackEvent } from '../../lib/optionalEvents'
 
 function LegalText({ text }: { text: string }) {
   return <>{text.split(/(Privacy Policy|[\w.+-]+@[\w.-]+\.\w+|\d{3}-\d{3}-\d{4})/).map((part, index) => {

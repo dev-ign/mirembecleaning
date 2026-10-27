@@ -222,3 +222,44 @@ describe('consent-gated marketing events', () => {
     expect(metaEvents('PageView')).toHaveLength(1)
   })
 })
+
+it.each([
+  ['accepted', 'declined'],
+  ['declined', 'accepted'],
+] as const)('uses the latest %s → %s choice when storage is readable but unwritable', async (previous, next) => {
+  const { consentKey, consentPersistenceFailed } = await import('../lib/consent')
+  localStorage.setItem(consentKey, previous)
+  const analytics = await import('../lib/analytics')
+  analytics.startAnalytics()
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota exceeded') })
+  analytics.setConsent(next)
+  expect(analytics.getConsent()).toBe(next)
+  expect(consentPersistenceFailed()).toBe(true)
+  expect(localStorage.getItem(consentKey)).toBe(previous)
+  if (next === 'declined') {
+    expect(window.fbq?.queue).toContainEqual(['consent', 'revoke'])
+    analytics.trackEvent('waitlist_signup_success', 'not-a-new-record')
+    expect(metaEvents('Lead')).toHaveLength(0)
+  } else expect(metaEvents('PageView')).toHaveLength(1)
+
+  // A new document loses the volatile override; no cross-reload persistence is promised.
+  vi.resetModules()
+  expect((await import('../lib/consent')).getConsent()).toBe(previous)
+  write.mockRestore()
+})
+
+it('returns to persisted consent after a failed write recovers and still honors GPC', async () => {
+  const consent = await import('../lib/consent')
+  localStorage.setItem(consent.consentKey, 'accepted')
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => { throw new Error('quota exceeded') })
+  consent.saveConsent('declined')
+  expect(consent.getConsent()).toBe('declined')
+  consent.saveConsent('accepted')
+  expect(consent.consentPersistenceFailed()).toBe(false)
+  expect(localStorage.getItem(consent.consentKey)).toBe('accepted')
+  Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: true })
+  expect(consent.getConsent()).toBe('declined')
+  consent.saveConsent('accepted')
+  expect(localStorage.getItem(consent.consentKey)).toBe('declined')
+  write.mockRestore()
+})
