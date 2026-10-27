@@ -1,5 +1,5 @@
 import { business } from './business.js'
-import { termsConfig } from './legal.js'
+import { privacyConfig, termsConfig } from './legal.js'
 
 export const seo = {
   title: 'Mirembe Cleaning Company | House Cleaning in CT & MA',
@@ -9,7 +9,7 @@ export const seo = {
   themeColor: '#ffffff',
 } as const
 
-export const publicRoutes = ['/', termsConfig.path] as const
+export const publicRoutes = ['/', termsConfig.path, ...(privacyConfig.approved ? [privacyConfig.path] : [])] as const
 
 export function structuredData() {
   return {

@@ -35,7 +35,8 @@ describe('approved Terms document', () => {
     expect(article.querySelector('a[href^="mailto:"]')).toHaveAttribute('href', 'mailto:hello@mirembecleaning.com')
     expect(article.querySelector('a[href^="tel:"]')).toHaveTextContent('617-917-4137')
     expect(article.querySelector('a[href^="tel:"]')).toHaveAttribute('href', 'tel:+16179174137')
-    expect(screen.queryByRole('link', { name: 'Privacy Policy' })).not.toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Legal' }).querySelector('a[href="/privacy"]')).toHaveTextContent('Privacy Policy')
+    expect(article.querySelector('a[href$="/privacy"]')).toBeNull()
   })
 
   it('links existing configured privacy policy references without changing any legal wording', () => {

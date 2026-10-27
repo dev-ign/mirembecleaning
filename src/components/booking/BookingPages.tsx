@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { SiteDocumentLayout } from '../SiteDocumentLayout'
 import { ZenMaidEmbed } from './ZenMaidEmbed'
 import { termsConfig } from '../../config/legal'
@@ -19,12 +20,14 @@ export function BookingPage() {
 }
 
 export function BookingThankYouPage() {
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { heading.current?.focus({ preventScroll: true }) }, [])
   return <SiteDocumentLayout><div className="landing-container booking-thank-you">
-    <span className="booking-check" aria-hidden="true">✓</span>
-    <p className="landing-eyebrow">Request received</p>
-    <h1>Thank You!<br /><span>Your Cleaning Request Has Been Received.</span></h1>
-    <p>We’ve received your booking request. Our team will review the details and contact you to confirm availability and your appointment.</p>
+    <span className="booking-check" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="m11 20 6 6 12-12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
+    <p className="landing-eyebrow">A little more peace of mind</p>
+    <h1 ref={heading} tabIndex={-1}>Your Cleaning<br /> <em>Request Is In</em></h1>
+    <p>Thank you for choosing Mirembe Cleaning. We’ve received your request, and our team will reach out to confirm the details.</p>
     <p>We look forward to helping you enjoy a cleaner home and a little more peace.</p>
-    <a className="landing-button" href="/">Back to Home</a>
+    <div className="booking-thank-you-actions"><a className="landing-button" href="/">Back to Home</a><a className="landing-button is-secondary" href="/#services">Explore Our Services</a></div>
   </div></SiteDocumentLayout>
 }

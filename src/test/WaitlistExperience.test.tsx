@@ -1,9 +1,12 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { trackEvent } from '../lib/analytics'
 import { WaitlistExperience } from '../components/WaitlistExperience'
 import { createWaitlistEntry, updateWaitlistZip } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
+
+vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }))
 
 let autoVerifyWaitlist = true
 let emitWaitlistVerification: ((status: string, token?: string) => void) | undefined
@@ -84,8 +87,10 @@ describe('waitlist experience', () => {
     await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
     expect(screen.getByRole('alert')).toHaveTextContent('valid email')
     expect(createWaitlistEntry).not.toHaveBeenCalled()
+    expect(trackEvent).not.toHaveBeenCalledWith('waitlist_signup_success', expect.anything())
     expect(screen.queryByRole('heading', { name: /on the list/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Privacy Policy' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Privacy Policy/ })).toHaveAttribute('href', '/privacy')
+    expect(screen.getByRole('link', { name: /Privacy Policy/ })).toHaveAttribute('target', '_blank')
   })
 
   it('normalizes email and submits via Enter once', async () => {
@@ -114,6 +119,15 @@ describe('waitlist experience', () => {
 
     finishCreate(createdRecord)
     expect(await screen.findByRole('heading', { name: /on the list/i })).toBeInTheDocument()
+    expect(vi.mocked(trackEvent).mock.calls.filter(([name]) => name === 'waitlist_signup_success')).toEqual([['waitlist_signup_success', createdRecord.id]])
+  })
+
+  it('acknowledges an existing subscriber without a conversion', async () => {
+    vi.mocked(createWaitlistEntry).mockResolvedValueOnce({ ...createdRecord, id: null, zip_token: null, created_at: null })
+    const user = userEvent.setup()
+    render(<WaitlistExperience />)
+    await joinWaitlist(user)
+    expect(trackEvent).not.toHaveBeenCalledWith('waitlist_signup_success', expect.anything())
   })
 
   it('shows a create error and permits retry', async () => {
@@ -124,6 +138,7 @@ describe('waitlist experience', () => {
     await user.type(screen.getByLabelText('Email address'), 'person@example.com')
     await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Please try again')
+    expect(trackEvent).not.toHaveBeenCalledWith('waitlist_signup_success', expect.anything())
     await user.click(screen.getByRole('button', { name: 'Join the Waitlist' }))
     expect(await screen.findByRole('heading', { name: /on the list/i })).toBeInTheDocument()
     expect(createWaitlistEntry).toHaveBeenCalledTimes(2)

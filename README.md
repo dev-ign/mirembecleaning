@@ -105,3 +105,11 @@ Run `npm run sheets:admin -- --dry-run` with the production Supabase and Google 
 3. Deploy only after approval. Confirm the server-only Google variables, service-account Editor access, existing Resend variables, and both Vercel cron routes.
 4. With approved test data, submit one waitlist registration and one cleaning application against production. Verify Supabase rows, email delivery, one row in each tab, retry behavior, editable Status/Notes, and no browser credential exposure. Production readiness remains unconfirmed until this actual-sheet test passes.
 5. Review and approve the dry-run counts and test-record exclusions before applying any production backfill.
+
+## Meta Pixel and ZenMaid conversions
+
+See [the Meta Pixel and ZenMaid engineering report](docs/meta-pixel-zenmaid-conversions.md) for the canonical `/booking/thankyou` route, exact administrator redirect setting, consent/environment setup, measured events, booking-verification limits, QA and release prerequisites. Local implementation does not deploy the site or change ZenMaid/Meta account settings.
+
+## Approved Privacy Policy
+
+The `/privacy` page renders the founder-approved policy verbatim from `src/content/privacy.txt`, effective October 26, 2026. `src/content/privacy.ts` adds semantic structure without rewriting the text. Integrity tests pin the source hash and compare every rendered heading, paragraph and list item with that source. `privacyConfig.approved` is true; marketing still requires a valid policy URL/provider configuration and affirmative visitor consent. Deployment, live HTTPS policy verification, Meta Test Events and authorized ZenMaid validation remain separate release steps requiring explicit approval. Older internal draft/audit documents remain local and excluded from Git; they are not the public policy source.

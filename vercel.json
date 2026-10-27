@@ -1,8 +1,12 @@
 {
+  "redirects": [
+    { "source": "/booking/thank-you/:path*", "destination": "/booking/thankyou", "permanent": true }
+  ],
   "rewrites": [
-    { "source": "/booking/thank-you", "destination": "/booking/thank-you/index.html" },
+    { "source": "/booking/thankyou", "destination": "/booking/thankyou/index.html" },
     { "source": "/booking", "destination": "/booking/index.html" },
-    { "source": "/terms", "destination": "/terms/index.html" }
+    { "source": "/terms", "destination": "/terms/index.html" },
+    { "source": "/privacy", "destination": "/privacy/index.html" }
   ],
   "crons": [
     { "path": "/api/email-worker", "schedule": "0 9 * * *" },
@@ -19,7 +23,7 @@
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Referrer-Policy", "value": "origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         { "key": "X-Frame-Options", "value": "DENY" }
       ]

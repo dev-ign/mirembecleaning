@@ -1,14 +1,27 @@
 import { useEffect, useState } from 'react'
-import { browserOptedOut, getConsent, hasConfiguredProvider, setConsent, startAnalytics } from '../lib/analytics'
+import { browserOptedOut, getConsent, hasConfiguredProvider, setConsent, startAnalytics, stopAnalytics } from '../lib/analytics'
+import { consentChanged, consentKey } from '../lib/analytics/consent'
 import { marketing } from '../config/marketing'
+import { privacyConfig } from '../config/legal'
 import { useHydrated } from '../lib/useHydrated'
 
 export function AnalyticsConsent() {
   const ready = useHydrated()
-  const [choiceOverride, setChoiceOverride] = useState<'accepted' | 'declined' | null>(null)
+  const [, refreshChoice] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const enabled = hasConfiguredProvider()
-  const choice = choiceOverride ?? (ready ? getConsent() : null)
+  const choice = ready ? getConsent() : null
+
+  useEffect(() => {
+    const update = () => {
+      if (getConsent() !== 'accepted') stopAnalytics()
+      refreshChoice(value => value + 1)
+    }
+    const storage = (event: StorageEvent) => { if (event.key === consentKey || event.key === null) update() }
+    window.addEventListener(consentChanged, update)
+    window.addEventListener('storage', storage)
+    return () => { window.removeEventListener(consentChanged, update); window.removeEventListener('storage', storage) }
+  }, [])
 
   useEffect(() => {
     if (choice === 'accepted') startAnalytics()
@@ -18,7 +31,7 @@ export function AnalyticsConsent() {
 
   function choose(value: 'accepted' | 'declined') {
     setConsent(value)
-    setChoiceOverride(value)
+    refreshChoice(choice => choice + 1)
     setShowSettings(false)
   }
 
@@ -35,8 +48,8 @@ export function AnalyticsConsent() {
             </>
           ) : (
             <>
-              <p>May we use optional analytics{marketing.metaPixelId ? ' and advertising cookies' : ''} to understand visits and waitlist signups? Forms work either way.</p>
-              <p><a href={marketing.privacyPolicyUrl}>Privacy Policy</a></p>
+              <p>May we use optional analytics{marketing.metaPixelId ? ' and advertising cookies' : ''} to understand visits, booking interest, and waitlist signups? Forms work either way.</p>
+              <p><a href={privacyConfig.path} target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></a></p>
               <div className="analytics-consent-actions">
                 <button type="button" onClick={() => choose('declined')}>Decline</button>
                 <button type="button" onClick={() => choose('accepted')}>Allow tracking</button>

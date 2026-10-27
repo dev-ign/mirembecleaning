@@ -83,8 +83,6 @@ html { scroll-behavior: smooth; }
 .landing-benefit p { line-height: 1.55; }
 .landing-area-card { height: 100%; }
 .landing-area-content { padding-bottom: 36px; }
-.landing-area-content .landing-text-link { min-height: 44px; margin-top: 16px; }
-.landing-area-content .landing-text-link:hover { text-decoration: underline; }
 .landing-area-badge { white-space: nowrap; }
 .landing-area-prompt { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-top: 32px; padding: 30px 40px; border-radius: var(--radius-xl); background: var(--brand-soft); }
 .landing-area-prompt h3 { margin: 0 0 6px; font: 600 20px/1.3 var(--font-montserrat); }

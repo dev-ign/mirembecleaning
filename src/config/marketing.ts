@@ -1,3 +1,5 @@
+import { privacyConfig } from './legal'
+
 const ga4Id = import.meta.env.VITE_GA4_MEASUREMENT_ID?.trim() ?? ''
 const metaPixelId = import.meta.env.VITE_META_PIXEL_ID?.trim() ?? ''
 const policyCandidate = import.meta.env.VITE_PRIVACY_POLICY_URL?.trim() ?? ''
@@ -10,9 +12,10 @@ function validPolicyUrl(value: string): string {
 }
 
 const privacyPolicyUrl = validPolicyUrl(policyCandidate)
+const enabled = privacyConfig.approved && (import.meta.env.PROD || import.meta.env.VITE_ENABLE_MARKETING_IN_DEVELOPMENT === 'true')
 
 export const marketing = {
   privacyPolicyUrl,
-  ga4Id: privacyPolicyUrl && /^G-[A-Z0-9]+$/.test(ga4Id) ? ga4Id : '',
-  metaPixelId: privacyPolicyUrl && /^\d{5,20}$/.test(metaPixelId) ? metaPixelId : '',
+  ga4Id: enabled && privacyPolicyUrl && /^G-[A-Z0-9]+$/.test(ga4Id) ? ga4Id : '',
+  metaPixelId: enabled && privacyPolicyUrl && /^\d{5,20}$/.test(metaPixelId) ? metaPixelId : '',
 } as const
