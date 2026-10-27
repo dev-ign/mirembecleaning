@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { SiteDocumentLayout } from '../SiteDocumentLayout'
 import { ZenMaidEmbed } from './ZenMaidEmbed'
 import { termsConfig } from '../../config/legal'
-import { trackEvent } from '../../lib/analytics'
+import { trackEvent } from '../../lib/optionalEvents'
 
 export function BookingPage() {
   return <SiteDocumentLayout><div className="landing-container booking-content">

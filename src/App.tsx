@@ -6,8 +6,7 @@ import { PrivacyPage } from './components/legal/PrivacyPage'
 import { privacyConfig, termsConfig } from './config/legal'
 import { allowsPromotionalOverlays } from './config/campaigns'
 import { bookingConfig } from './config/booking'
-import { startAnalytics } from './lib/analytics'
-import { prepareOptionalEvents } from './lib/optionalEvents'
+import { prepareOptionalEvents, startAnalytics } from './lib/optionalEvents'
 
 export default function App({ path = '/' }: { path?: string }) {
   const route = path.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/'

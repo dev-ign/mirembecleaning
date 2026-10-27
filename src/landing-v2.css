@@ -141,7 +141,7 @@ html { scroll-behavior: smooth; }
 .waitlist-dialog-close { width: 44px; height: 44px; padding: 0; line-height: 1; }
 .waitlist-dialog-close svg { display: block; width: 18px; height: 18px; }
 
-.holiday-floating-cta { position: fixed; z-index: 50; right: 24px; bottom: 24px; display: flex; align-items: center; gap: 12px; width: 329px; height: 60px; padding: 8px 10px 8px 8px; border: 1px solid rgb(255 255 255 / 22%); border-radius: var(--radius-pill); background: var(--brand-deep); color: #fff; box-shadow: 0 8px 28px rgb(36 20 60 / 16%), 0 2px 8px rgb(36 20 60 / 8%); animation: holiday-float-in 300ms ease-out both; transition: background-color 180ms ease, border-color 180ms ease; }
+.holiday-floating-cta { position: fixed; z-index: 50; right: max(24px, env(safe-area-inset-right)); bottom: calc(24px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; width: 352px; height: 60px; padding: 8px 10px 8px 8px; border: 1px solid rgb(255 255 255 / 22%); border-radius: var(--radius-pill); background: var(--brand-deep); color: #fff; box-shadow: 0 8px 28px rgb(36 20 60 / 16%), 0 2px 8px rgb(36 20 60 / 8%); animation: holiday-float-in 300ms ease-out both; transition: background-color 180ms ease, border-color 180ms ease; }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .holiday-floating-cta { background: color-mix(in srgb, var(--brand-deep) 76%, transparent); -webkit-backdrop-filter: blur(16px) saturate(120%); backdrop-filter: blur(16px) saturate(120%); }
 }
@@ -152,7 +152,6 @@ html { scroll-behavior: smooth; }
   .holiday-floating-cta:hover { background: color-mix(in srgb, var(--brand-deep) 82%, transparent); }
   .holiday-floating-cta:active { background: color-mix(in srgb, var(--brand-deep) 88%, transparent); }
 }
-.holiday-floating-cta.is-lifted { bottom: 104px; }
 .holiday-floating-cta a { display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; height: 100%; color: #fff; text-decoration: none; }
 .holiday-floating-cta a:hover .holiday-floating-arrow { transform: translateX(3px); }
 .holiday-floating-icon { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: var(--brand-soft); }
@@ -164,7 +163,7 @@ html { scroll-behavior: smooth; }
 .holiday-floating-arrow { display: block; flex: 0 0 20px; width: 20px; height: 20px; margin-left: auto; transition: transform 180ms ease; }
 .holiday-floating-arrow img { display: block; width: 20px; height: 20px; filter: brightness(0) invert(1); }
 .holiday-floating-divider { flex: 0 0 1px; width: 1px; height: 28px; background: rgb(255 255 255 / 32%); }
-.holiday-floating-cta button { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: var(--brand-soft); cursor: pointer; }
+.holiday-floating-cta button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--brand-soft); cursor: pointer; }
 .holiday-floating-cta button:hover { background: #fff; }
 .holiday-floating-cta button img { display: block; width: 16px; height: 16px; }
 .holiday-floating-cta :is(a, button):focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 5px var(--brand-deep); }
@@ -259,13 +258,13 @@ html { scroll-behavior: smooth; }
   .landing-faq .landing-eyebrow { display: block; }
   .landing-faq-item button { align-items: start; }
   .landing-final-cta h2 { font-size: clamp(32px, 8vw, 42px); }
-  .holiday-floating-cta { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); gap: 10px; width: 298px; height: 44px; padding: 6px 6px 6px 16px; }
-  .holiday-floating-cta.is-lifted { bottom: calc(88px + env(safe-area-inset-bottom)); }
-  .holiday-floating-cta a { gap: 10px; }
+  .holiday-floating-cta { right: max(16px, env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); gap: 8px; width: min(312px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))); height: 56px; padding: 4px 4px 4px 16px; }
+  .holiday-floating-cta a { gap: 8px; min-height: 44px; }
+  .holiday-floating-cta button { flex-basis: 44px; width: 44px; height: 44px; }
   .holiday-floating-icon, .holiday-floating-title, .holiday-floating-copy small, .holiday-floating-divider { display: none; }
   .holiday-floating-mobile-title { display: block; }
   .holiday-floating-arrow, .holiday-floating-arrow img { flex-basis: 18px; width: 18px; height: 18px; }
-  .holiday-floating-cta.is-compact { gap: 8px; width: 179px; padding: 6px; }
+  .holiday-floating-cta.is-compact { gap: 8px; width: 192px; padding: 4px; }
   .holiday-floating-cta.is-compact a { gap: 8px; }
   .holiday-floating-cta.is-compact .holiday-floating-icon { display: grid; flex-basis: 32px; width: 32px; height: 32px; }
   .holiday-floating-cta.is-compact .holiday-floating-icon img { width: 16px; height: 16px; }

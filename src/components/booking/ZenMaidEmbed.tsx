@@ -3,7 +3,7 @@ import { bookingConfig } from '../../config/booking'
 import { useHydrated } from '../../lib/useHydrated'
 import { loadZenMaid } from '../../lib/zenmaid'
 import { business } from '../../config/business'
-import { setBookingFormVisible, trackEvent } from '../../lib/analytics'
+import { setBookingFormVisible, trackEvent } from '../../lib/optionalEvents'
 
 export function ZenMaidEmbed() {
   const hydrated = useHydrated()

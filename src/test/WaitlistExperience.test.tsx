@@ -1,12 +1,12 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { trackEvent } from '../lib/analytics'
+import { trackEvent } from '../lib/optionalEvents'
 import { WaitlistExperience } from '../components/WaitlistExperience'
 import { createWaitlistEntry, updateWaitlistZip } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
 
-vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }))
+vi.mock('../lib/optionalEvents', () => ({ trackEvent: vi.fn() }))
 
 let autoVerifyWaitlist = true
 let emitWaitlistVerification: ((status: string, token?: string) => void) | undefined

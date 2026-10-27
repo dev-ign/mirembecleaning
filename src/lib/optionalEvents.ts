@@ -1,3 +1,5 @@
+import { getConsent, saveConsent } from './consent'
+import type { MarketingEvent } from './analytics'
 import type { BookingLocation, ServiceSlug } from './analytics/types'
 
 type EventHelpers = typeof import('./analytics/events')
@@ -31,9 +33,31 @@ function deliver(send: (events: EventHelpers) => void): void {
 }
 
 export function trackBookingCTA(location: BookingLocation): void {
-  deliver(events => events.trackBookingCTA(location))
+  if (getConsent() === 'accepted') deliver(events => events.trackBookingCTA(location))
 }
 
 export function trackServiceView(service: ServiceSlug): void {
-  deliver(events => events.trackServiceView(service))
+  if (getConsent() === 'accepted') deliver(events => events.trackServiceView(service))
+}
+
+export function startAnalytics(): void {
+  deliver(events => events.startAnalytics())
+}
+
+export function stopAnalytics(): void {
+  deliver(events => { if (getConsent() !== 'accepted') events.stopAnalytics() })
+}
+
+export function setConsent(value: 'accepted' | 'declined'): void {
+  saveConsent(value)
+  if (getConsent() === 'accepted') startAnalytics()
+  else stopAnalytics()
+}
+
+export function trackEvent(event: MarketingEvent, conversionId?: string): void {
+  if (getConsent() === 'accepted') deliver(events => events.trackEvent(event, conversionId))
+}
+
+export function setBookingFormVisible(visible: boolean): void {
+  deliver(events => events.setBookingFormVisible(visible))
 }

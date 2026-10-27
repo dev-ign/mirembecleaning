@@ -1,6 +1,18 @@
+import { createElement } from 'react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
-beforeEach(() => vi.resetModules())
+vi.mock('../config/marketing', () => ({ marketing: { ga4Id: '', metaPixelId: '39772457375733047', privacyPolicyUrl: 'https://www.mirembecleaning.com/privacy' } }))
+
+vi.mock('../lib/zenmaid', () => ({ loadZenMaid: vi.fn().mockResolvedValue(undefined) }))
+vi.mock('../components/TurnstileWidget', () => ({ TurnstileWidget: () => null }))
+
+beforeEach(async () => {
+  vi.resetModules()
+  localStorage.clear()
+  Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: false })
+  ;(await import('../lib/consent')).saveConsent('accepted')
+})
 afterEach(() => vi.doUnmock('../lib/analytics/events'))
 
 it('warms one optional import, delivers pending events once, and then dispatches synchronously', async () => {
@@ -36,4 +48,72 @@ it('isolates a blocked module without retrying or preventing caller actions', as
   events.trackBookingCTA('header')
   await Promise.resolve()
   expect(factory).toHaveBeenCalledTimes(1)
+})
+
+it('dispatches warm calls and withdrawal synchronously, and drops denied interactions', async () => {
+  const calls = { startAnalytics: vi.fn(), stopAnalytics: vi.fn(), trackEvent: vi.fn(), setBookingFormVisible: vi.fn(), trackBookingCTA: vi.fn(), trackServiceView: vi.fn() }
+  vi.doMock('../lib/analytics/events', () => calls)
+  const events = await import('../lib/optionalEvents')
+  events.prepareOptionalEvents()
+  await vi.waitFor(() => {
+    events.startAnalytics()
+    expect(calls.startAnalytics).toHaveBeenCalled()
+  })
+  events.trackEvent('phone_click')
+  events.setBookingFormVisible(true)
+  expect(calls.trackEvent).toHaveBeenCalledExactlyOnceWith('phone_click', undefined)
+  expect(calls.setBookingFormVisible).toHaveBeenCalledExactlyOnceWith(true)
+  events.setConsent('declined')
+  expect(calls.stopAnalytics).toHaveBeenCalledTimes(1)
+  events.trackEvent('waitlist_signup_success', 'ignored')
+  events.trackBookingCTA('hero')
+  events.trackServiceView('deep')
+  expect(calls.trackEvent).toHaveBeenCalledTimes(1)
+  expect(calls.trackBookingCTA).not.toHaveBeenCalled()
+  expect(calls.trackServiceView).not.toHaveBeenCalled()
+})
+
+it('does not replay interactions made before consent while the helper is loading', async () => {
+  const calls = { trackEvent: vi.fn(), trackBookingCTA: vi.fn(), trackServiceView: vi.fn() }
+  vi.doMock('../lib/analytics/events', () => calls)
+  const consent = await import('../lib/consent')
+  consent.saveConsent('declined')
+  const events = await import('../lib/optionalEvents')
+  events.prepareOptionalEvents()
+  events.trackEvent('waitlist_signup_success', 'ignored')
+  events.trackBookingCTA('hero')
+  consent.saveConsent('accepted')
+  await Promise.resolve()
+  expect(calls.trackEvent).not.toHaveBeenCalled()
+  expect(calls.trackBookingCTA).not.toHaveBeenCalled()
+})
+
+it('keeps the actual app interactive when the provider module graph cannot load', async () => {
+  const factory = vi.fn(() => { throw new Error('ERR_BLOCKED_BY_CONTENT_BLOCKER') })
+  vi.doMock('../lib/analytics/events', factory)
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value: function (this: HTMLDialogElement) { this.open = true } })
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.open = false } })
+  Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }) })
+  const consent = await import('../lib/consent')
+  consent.saveConsent('declined')
+  const { default: App } = await import('../App')
+  const view = render(createElement(App))
+  await waitFor(() => expect(factory).toHaveBeenCalledTimes(1))
+  fireEvent.click(screen.getByRole('button', { name: 'Tracking preferences' }))
+  expect(screen.getByRole('dialog', { name: 'Tracking preferences' })).toHaveTextContent('currently declined')
+  fireEvent.click(screen.getByRole('button', { name: 'Allow tracking' }))
+  expect(consent.getConsent()).toBe('accepted')
+  fireEvent.click(screen.getAllByRole('button', { name: 'Join the Waitlist' })[0])
+  expect(screen.getByRole('dialog', { name: 'Join the Mirembe waitlist.' })).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Close waitlist' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Interested in joining our cleaning team?' }))
+  expect(document.querySelector('#hiring-dialog')).toHaveAttribute('open')
+  view.unmount()
+  history.replaceState(null, '', '/booking')
+  const booking = render(createElement(App, { path: '/booking' }))
+  await screen.findByText(/Your booking form is being prepared/)
+  expect(screen.getByRole('link', { name: /Open secure booking/ })).toHaveAttribute('href', 'https://app.zenmaid.com/book/mirembe-cleaning-company-holiday')
+  expect(factory).toHaveBeenCalledTimes(1)
+  booking.unmount()
+  history.replaceState(null, '', '/')
 })

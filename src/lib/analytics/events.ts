@@ -13,3 +13,5 @@ export function trackServiceView(service: ServiceSlug): void {
   if (!services.includes(service)) return
   trackFunnelEvent({ name: 'ViewContent', data: { content_type: 'service', content_name: service } }, 'service_detail_view')
 }
+
+export { startAnalytics, stopAnalytics, trackEvent, setBookingFormVisible } from './index'

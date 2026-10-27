@@ -1,7 +1,7 @@
 import { createContext, useContext, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import arrowIcon from '../assets/icons/arrow-right.svg'
 import { HiringModal } from './hiring/HiringModal'
-import { trackEvent } from '../lib/analytics'
+import { trackEvent } from '../lib/optionalEvents'
 
 const HiringContext = createContext<{ modalOpen: boolean; open: (event: MouseEvent<HTMLButtonElement>) => void } | null>(null)
 
