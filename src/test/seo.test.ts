@@ -35,23 +35,30 @@ describe('generated search files', () => {
     expect(schema['@graph'][0]).not.toHaveProperty('hasOfferCatalog')
   })
 
-  it('lists the canonical homepage and Terms in sitemap and robots', () => {
+  it('lists the canonical homepage, Terms and approved Privacy Policy in sitemap and robots', () => {
     const sitemap = readFileSync('public/sitemap.xml', 'utf8')
     const robots = readFileSync('public/robots.txt', 'utf8')
-    expect(sitemap.match(/<loc>/g)).toHaveLength(2)
+    expect(sitemap.match(/<loc>/g)).toHaveLength(3)
     expect(sitemap).toContain(`<loc>${business.websiteUrl}terms</loc>`)
+    expect(sitemap).toContain(`<loc>${business.websiteUrl}privacy</loc>`)
     expect(sitemap).toContain(`<loc>${business.websiteUrl}</loc>`)
     expect(robots).toContain(`Sitemap: ${business.websiteUrl}sitemap.xml`)
   })
 
   it('prerenders dedicated booking documents with their own titles, canonical URLs and exact Vercel rewrites', () => {
-    const vercel = JSON.parse(readFileSync('vercel.json', 'utf8')) as { rewrites: Array<{ source: string; destination: string }> }
-    for (const path of ['/booking', '/booking/thank-you']) {
+    const vercel = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
+      rewrites: Array<{ source: string; destination: string }>
+      redirects: Array<{ source: string; destination: string; permanent: boolean }>
+    }
+    expect(vercel.redirects).toContainEqual({ source: '/booking/thank-you/:path*', destination: '/booking/thankyou', permanent: true })
+    for (const path of ['/booking', '/booking/thankyou']) {
       const page = new DOMParser().parseFromString(readFileSync(`${path.slice(1)}/index.html`, 'utf8'), 'text/html')
       expect(page.querySelectorAll('#root h1')).toHaveLength(1)
       expect(page.querySelector('title')?.textContent).not.toContain('House Cleaning in CT & MA')
       expect(page.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(new URL(path, business.websiteUrl).href)
       expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex,follow')
+      expect(page.querySelector('meta[name="referrer"]')?.getAttribute('content')).toBe('origin')
+      expect(page.querySelector('script[src*="fbevents"], script[src*="gtag"], noscript img')).toBeNull()
       expect(vercel.rewrites).toContainEqual({ source: path, destination: `${path}/index.html` })
     }
   })

@@ -4,7 +4,7 @@ import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } fro
 import { createWaitlistEntry, WaitlistRequestError } from '../services/waitlistService'
 import type { WaitlistRecord } from '../types/waitlist'
 import { trackEvent } from '../lib/analytics'
-import { marketing } from '../config/marketing'
+import { privacyConfig } from '../config/legal'
 
 type FormStatus = 'idle' | 'invalid' | 'submitting' | 'error'
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -135,7 +135,7 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
             </div>
             <p id="waitlist-privacy" className="privacy-note entrance" style={{ animationDelay: '480ms' }}>
               Get launch updates and early access to booking. No spam.
-              {marketing.privacyPolicyUrl && <> <a href={marketing.privacyPolicyUrl}>Privacy Policy</a></>}
+              {' '}<a href={privacyConfig.path} target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></a>
             </p>
             <button className="submit-button" type="submit" disabled={status === 'submitting' || exiting || verificationPending}>
               {(status === 'submitting' || verificationPending) && <span className="loading-spinner" aria-hidden="true" />}

@@ -16,6 +16,7 @@ import {
   type SpokenLanguage,
 } from '../../types/hiring'
 import { trackEvent } from '../../lib/analytics'
+import { privacyConfig } from '../../config/legal'
 
 type SubmissionStatus = 'idle' | 'submitting' | 'error'
 
@@ -265,6 +266,7 @@ export function HiringApplicationForm({ active, onAccepted }: HiringApplicationF
         </section>
       </div>
       <footer className="hiring-footer">
+        <p className="hiring-privacy">We use your details to review your application and contact you about opportunities. <a href={privacyConfig.path} target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></a></p>
         {active && <TurnstileWidget ref={turnstileRef} action="applicants" onStatusChange={handleVerificationChange} />}
         {status === 'error' && <p className="hiring-submit-error" role="alert">{submitError}</p>}
         <button className="hiring-submit" type="submit" disabled={status === 'submitting' || verificationPending} aria-disabled={status === 'submitting' || verificationPending}>

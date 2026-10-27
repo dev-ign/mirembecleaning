@@ -193,9 +193,6 @@
 .landing-area-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 10px; }
 .landing-area-badge img { width: 14px; height: 14px; }
 .landing-area-badge.is-coming { border: 1px dashed #cbc3d3; background: transparent; color: var(--text-muted); }
-.landing-area-content .landing-text-link { margin-top: 8px; color: var(--brand-primary); text-decoration: none; }
-.landing-area-card:hover .landing-text-link, .landing-area-card:focus-within .landing-text-link { text-decoration: underline; text-underline-offset: 3px; }
-.landing-area-content .landing-text-link img { width: 18px; height: 18px; }
 .landing-availability-card { display: flex; justify-content: space-between; align-items: center; gap: 32px; margin-top: 32px; padding: 32px 40px; border-radius: var(--radius-xl); background: var(--brand-soft); scroll-margin-top: 110px; }
 .landing-availability-card h3 { margin: 0 0 6px; font: 600 20px var(--font-montserrat); }
 .landing-availability-card > div:first-child { max-width: 520px; }
@@ -238,7 +235,7 @@
 .landing-faq-item button span { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: var(--brand-soft); color: var(--brand-primary); font: 500 26px/1 var(--font-inter); transition: background-color 220ms ease-in-out, color 220ms ease-in-out; }
 .landing-faq-item button[aria-expanded="true"] span { background: var(--brand-primary); color: #fff; }
 .landing-faq-item button span img { width: 18px; height: 18px; }
-.landing-faq-item p { max-width: 70ch; margin: 0; color: var(--text-secondary); }
+.landing-faq-item p { max-width: none; margin: 0; color: var(--text-secondary); }
 .landing-final-cta { position: relative; padding: 160px 0; text-align: center; background: url('/landing/10%20Final%20CTA%20image.webp') center 52% / cover; }
 .landing-final-cta h2 { margin: 0; font-size: clamp(48px, 5vw, 64px); }
 .landing-final-cta h2 em { display: block; font-size: 1.5em; line-height: 1; }

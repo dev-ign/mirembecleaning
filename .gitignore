@@ -12,4 +12,15 @@ dist
 /test-results/
 /coverage/
 *.log
-/docs
+/.vite/
+
+# Internal engineering and privacy review documentation
+/docs/meta-pixel-zenmaid-conversions.md
+/docs/privacy-policy-audit.md
+/docs/privacy-policy-draft.md
+/docs/booking-integration.md
+/docs/booking-refinements.md
+/docs/phone-booking-refinement.md
+/docs/prelaunch-refinement.md
+/docs/prelaunch-screenshots.md
+/docs/refinement-screenshots.md

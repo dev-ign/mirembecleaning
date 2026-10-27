@@ -4,12 +4,13 @@ import { business } from './business'
 export const bookingConfig = {
   mode: 'holiday',
   path: '/booking',
-  thankYouPath: '/booking/thank-you',
+  thankYouPath: '/booking/thankyou',
+  legacyThankYouPath: '/booking/thank-you',
   scriptUrl: 'https://app.zenmaid.com/scripts/booking-form.js',
   holiday: {
     formId: 'V4Q5E',
     hostedUrl: 'https://app.zenmaid.com/book/mirembe-cleaning-company-holiday',
     basicEmbedUrl: 'https://app.zenmaid.com/booking-forms/V4Q5E/book',
   },
-  confirmationUrl: new URL('booking/thank-you', business.websiteUrl).href,
+  confirmationUrl: new URL('booking/thankyou', business.websiteUrl).href,
 } as const

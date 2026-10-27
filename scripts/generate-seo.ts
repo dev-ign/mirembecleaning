@@ -3,7 +3,7 @@ import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { createServer } from 'vite'
 import { business } from '../src/config/business.js'
-import { termsConfig } from '../src/config/legal.js'
+import { privacyConfig, termsConfig } from '../src/config/legal.js'
 import { publicRoutes, seo, structuredData } from '../src/config/seo.js'
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (character) => ({
@@ -19,8 +19,9 @@ const vite = await createServer({ mode, server: { middlewareMode: true, hmr: fal
 const pages = [
   { path: '/', file: 'index.html', title: seo.title, description: seo.description, robots: 'index,follow,max-image-preview:large' },
   { path: '/booking', file: 'booking/index.html', title: 'Book Your Holiday Cleaning | Mirembe Cleaning Company', description: 'Request your holiday cleaning with Mirembe Cleaning Company. Our team will follow up to confirm availability.', robots: 'noindex,follow' },
-  { path: '/booking/thank-you', file: 'booking/thank-you/index.html', title: 'Cleaning Request Received | Mirembe Cleaning Company', description: 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.', robots: 'noindex,follow' },
+  { path: '/booking/thankyou', file: 'booking/thankyou/index.html', title: 'Cleaning Request Received | Mirembe Cleaning Company', description: 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.', robots: 'noindex,follow' },
   { path: termsConfig.path, file: 'terms/index.html', title: termsConfig.title, description: 'Read the Mirembe Cleaning Company Terms of Service for residential and rental property cleaning services. Last updated October 25, 2026.', robots: 'index,follow' },
+  { path: privacyConfig.path, file: 'privacy/index.html', title: privacyConfig.title, description: 'Read the Mirembe Cleaning Company Privacy Policy, effective October 26, 2026, covering service requests, applications, communications, and optional tracking.', robots: privacyConfig.approved ? 'index,follow' : 'noindex,nofollow' },
 ] as const
 const renderedPages: Array<{ page: (typeof pages)[number]; markup: string }> = []
 try {
@@ -37,6 +38,7 @@ for (const { page, markup } of renderedPages) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="origin" />
     <meta name="theme-color" content="${seo.themeColor}" />
     <meta name="description" content="${escapeHtml(page.description)}" />
     <meta name="robots" content="${page.robots}" />
