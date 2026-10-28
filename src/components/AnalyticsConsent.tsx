@@ -1,3 +1,5 @@
+import { useLocalizedHref } from '../i18n/useLocalizedHref'
+import { t, useLocale } from '../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { setConsent, startAnalytics, stopAnalytics } from '../lib/optionalEvents'
 import { browserOptedOut, getConsent, hasConfiguredProvider, consentChanged, consentKey, consentPersistenceFailed } from '../lib/consent'
@@ -8,13 +10,16 @@ import { useHydrated } from '../lib/useHydrated'
 const openPreferences = 'mirembe:open-tracking-preferences'
 
 export function TrackingPreferencesButton() {
+  useLocale()
   return <button type="button" aria-haspopup="dialog" onClick={event => {
     event.currentTarget.focus({ preventScroll: true })
     window.dispatchEvent(new Event(openPreferences))
-  }}>Tracking preferences</button>
+  }}>{t('consent.preferences')}</button>
 }
 
 export function AnalyticsConsent() {
+  const localHref = useLocalizedHref()
+  useLocale()
   const ready = useHydrated()
   const [, refreshChoice] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
@@ -65,19 +70,19 @@ export function AnalyticsConsent() {
   if (choice && !showSettings) return null
 
   const controls = <>
-    {!enabled ? <p>Optional tracking is not enabled for this site.</p> : browserOptedOut() ? (
-      <p>Your browser privacy setting blocks optional tracking.</p>
+    {!enabled ? <p>{t('consent.disabled')}</p> : browserOptedOut() ? (
+      <p>{t('consent.browserBlocked')}</p>
     ) : (
       <>
-        {showSettings && <p>Optional tracking is currently <strong>{choice === 'accepted' ? 'allowed' : choice === 'declined' ? 'declined' : 'not selected'}</strong>.{choice === 'accepted' ? ' Decline to withdraw your consent.' : ''}</p>}
-        <p>May we use optional analytics{marketing.metaPixelId ? ' and advertising cookies' : ''} to understand visits, booking interest, and waitlist signups? Forms work either way.</p>
+        {showSettings && <p>{t(choice === 'accepted' ? 'consent.allowed' : choice === 'declined' ? 'consent.declined' : 'consent.unselected')}</p>}
+        <p>{t(marketing.metaPixelId ? 'consent.askAdvertising' : 'consent.askAnalytics')}</p>
       </>
     )}
-    {consentPersistenceFailed() && <p role="alert">Your choice applies to this page only. It could not be saved and may reset when you reload.</p>}
-    <p><a href={privacyConfig.path} target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></a></p>
+    {consentPersistenceFailed() && <p role="alert">{t('consent.saveFailed')}</p>}
+    <p><a href={localHref(privacyConfig.path)} target="_blank" rel="noopener noreferrer">{t('common.privacy')}<span className="sr-only"> {t('common.newTab')}</span></a></p>
     {enabled && !browserOptedOut() && <div className="analytics-consent-actions">
-      <button type="button" onClick={() => choose('declined')}>Decline</button>
-      <button type="button" onClick={() => choose('accepted')}>Allow tracking</button>
+      <button type="button" onClick={() => choose('declined')}>{t('consent.decline')}</button>
+      <button type="button" onClick={() => choose('accepted')}>{t('consent.allow')}</button>
     </div>}
   </>
 
@@ -89,11 +94,11 @@ export function AnalyticsConsent() {
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
   }}>
-    <div className="analytics-preferences-heading"><h2 id="tracking-preferences-heading">Tracking preferences</h2><button type="button" data-close-preferences aria-label="Close tracking preferences" onClick={() => setShowSettings(false)}>×</button></div>
+    <div className="analytics-preferences-heading"><h2 id="tracking-preferences-heading">{t('consent.preferences')}</h2><button type="button" data-close-preferences aria-label={t('consent.close')} onClick={() => setShowSettings(false)}>×</button></div>
     {controls}
   </dialog>
 
-  return <div className="analytics-consent" aria-label="Tracking preferences">
-    <div className="analytics-consent-panel" role="group" aria-label="Optional tracking choice">{controls}</div>
+  return <div className="analytics-consent" aria-label={t('consent.preferences')}>
+    <div className="analytics-consent-panel" role="group" aria-label={t('consent.choice')}>{controls}</div>
   </div>
 }

@@ -1,3 +1,4 @@
+import { t, useLocale, type MessageKey } from '../i18n'
 import { useEffect, useRef, useState, type AnimationEvent, type FormEvent } from 'react'
 import savedIcon from '../assets/icons/zip-saved.svg'
 import { updateWaitlistZip, WaitlistRequestError } from '../services/waitlistService'
@@ -12,9 +13,10 @@ interface ZipCodeFormProps {
 }
 
 export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
+  useLocale()
   const [zipInput, setZipInput] = useState(record.zip_code ?? '')
   const [status, setStatus] = useState<ZipSaveStatus>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState<MessageKey>('')
   const [isEditing, setIsEditing] = useState(false)
   const [touched, setTouched] = useState(false)
   const savePending = useRef(false)
@@ -54,8 +56,8 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
     } catch (error) {
       setStatus('error')
       setErrorMessage(error instanceof WaitlistRequestError && error.kind === 'invalid_token'
-        ? 'ZIP updates are unavailable for this registration.'
-        : 'We couldn’t save your ZIP code. Please try again.')
+        ? 'errors.zipUnavailable'
+        : 'errors.zipSave')
     } finally {
       savePending.current = false
     }
@@ -84,14 +86,14 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
   return (
     <section
       className="zip-section"
-      aria-label={status === 'saved' ? 'ZIP code confirmation' : undefined}
+      aria-label={status === 'saved' ? t('zip.confirmation') : undefined}
       aria-labelledby={status === 'saved' ? undefined : 'zip-heading'}
     >
       {status === 'saved' ? (
         <div className="zip-saved-state">
           <img src={savedIcon} width="32" height="32" alt="" aria-hidden="true" />
-          <p className="zip-saved-message" ref={savedMessageRef} tabIndex={-1}>Zip code saved. Thank you!</p>
-          <button className="zip-edit-button" type="button" onClick={handleEdit}>Edit ZIP</button>
+          <p className="zip-saved-message" ref={savedMessageRef} tabIndex={-1}>{t('zip.saved')}</p>
+          <button className="zip-edit-button" type="button" onClick={handleEdit}>{t('zip.edit')}</button>
         </div>
       ) : (
         <div
@@ -102,14 +104,14 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
         >
           <div className="zip-intro">
             <div className="zip-intro-heading-row">
-              <h3 id="zip-heading" className="zip-heading">Help us bring Mirembe to your neighborhood</h3>
-              {isEditing && <button className="zip-cancel-button" type="button" onClick={handleCancel}>Cancel</button>}
+              <h3 id="zip-heading" className="zip-heading">{t('zip.title')}</h3>
+              {isEditing && <button className="zip-cancel-button" type="button" onClick={handleCancel}>{t('common.cancel')}</button>}
             </div>
-            <p id="zip-description" className="zip-description">Share your ZIP code so we know where to prioritize availability.</p>
+            <p id="zip-description" className="zip-description">{t('zip.description')}</p>
           </div>
           <form className="zip-form" onSubmit={handleSave} noValidate aria-busy={status === 'saving'}>
             <div className={'zip-controls' + (showFormatError || status === 'error' ? ' has-error' : '')}>
-              <label className="sr-only" htmlFor="waitlist-zip">ZIP code (optional)</label>
+              <label className="sr-only" htmlFor="waitlist-zip">{t('zip.optionalLabel')}</label>
               <input
                 ref={inputRef}
                 id="waitlist-zip"
@@ -118,7 +120,7 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
                 inputMode="numeric"
                 autoComplete="postal-code"
                 maxLength={10}
-                placeholder="Your ZIP code (optional)"
+                placeholder={t('zip.placeholder')}
                 value={zipInput}
                 readOnly={status === 'saving' || status === 'exiting'}
                 aria-invalid={showFormatError}
@@ -136,15 +138,15 @@ export function ZipCodeForm({ record, onSaved }: ZipCodeFormProps) {
                 aria-disabled={status === 'saving'}
               >
                 {(status === 'saving' || status === 'exiting') && <span className="loading-spinner" aria-hidden="true" />}
-                <span>{status === 'saving' || status === 'exiting' ? 'Saving...' : 'Save'}</span>
+                <span>{status === 'saving' || status === 'exiting' ? t('common.saving') : t('common.save')}</span>
               </button>
             </div>
           </form>
           {showFormatError && status !== 'error' && (
-            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">Enter a five-digit ZIP code or ZIP+4.</p>
+            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">{t('errors.zipFormat')}</p>
           )}
           {status === 'error' && (
-            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">{errorMessage}</p>
+            <p id="zip-feedback" className="zip-feedback zip-error" role="alert">{t(errorMessage)}</p>
           )}
         </div>
       )}

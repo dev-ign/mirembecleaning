@@ -1,3 +1,4 @@
+import { t, useLocale } from '../../i18n'
 import { useEffect, useRef, useState, type AnimationEvent, type KeyboardEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import calendarIcon from '../../assets/icons/hiring-calendar.svg'
@@ -14,6 +15,7 @@ interface HiringModalProps {
 }
 
 export function HiringModal({ open, onDismiss }: HiringModalProps) {
+  useLocale()
   const portalReady = useHydrated()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const closeTimer = useRef<number | null>(null)
@@ -112,14 +114,14 @@ export function HiringModal({ open, onDismiss }: HiringModalProps) {
       {stage === 'success' && submittedApplication ? <HiringSuccess onClose={requestDismissal} /> : (
       <div className={'hiring-surface' + (stage === 'exiting' ? ' is-exiting' : '')} onAnimationEnd={handleFormExitEnd}>
         <header className="hiring-header">
-          <button className="hiring-close" type="button" aria-label="Close application form" onClick={requestDismissal}>
+          <button className="hiring-close" type="button" aria-label={t('hiring.closeForm')} onClick={requestDismissal}>
             <img src={closeIcon} width="24" height="24" alt="" aria-hidden="true" />
           </button>
-          <h2 id="hiring-heading" tabIndex={-1}>Join the Mirembe team.</h2>
-          <p id="hiring-description">Help us bring a little more peace to homes across Connecticut and Massachusetts</p>
-          <div className="hiring-badges" aria-label="Hiring location and launch">
+          <h2 id="hiring-heading" tabIndex={-1}>{t('hiring.title')}</h2>
+          <p id="hiring-description">{t('hiring.intro')}</p>
+          <div className="hiring-badges" aria-label={t('hiring.locationLaunch')}>
             <span className="hiring-badge"><img src={locationIcon} width="18" height="18" alt="" aria-hidden="true" />CT + MA</span>
-            <span className="hiring-badge"><img src={calendarIcon} alt="" aria-hidden="true" />Preparing to launch</span>
+            <span className="hiring-badge"><img src={calendarIcon} alt="" aria-hidden="true" />{t('hiring.launch')}</span>
           </div>
         </header>
         <HiringApplicationForm active={open} onAccepted={handleAccepted} />

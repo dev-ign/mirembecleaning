@@ -1,31 +1,408 @@
 {
   "redirects": [
-    { "source": "/booking/thank-you/:path*", "destination": "/booking/thankyou", "permanent": true }
+    {
+      "source": "/booking/thank-you/:path*",
+      "destination": "/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/booking/index.html",
+      "destination": "/booking",
+      "permanent": true
+    },
+    {
+      "source": "/booking/",
+      "destination": "/booking",
+      "permanent": true
+    },
+    {
+      "source": "/en/booking",
+      "destination": "/booking",
+      "permanent": true
+    },
+    {
+      "source": "/en/booking/",
+      "destination": "/booking",
+      "permanent": true
+    },
+    {
+      "source": "/booking/thankyou/index.html",
+      "destination": "/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/booking/thankyou/",
+      "destination": "/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/en/booking/thankyou",
+      "destination": "/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/en/booking/thankyou/",
+      "destination": "/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/terms/index.html",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/terms/",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/en/terms",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/en/terms/",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/privacy/index.html",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/privacy/",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/en/privacy",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/en/privacy/",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/es/index.html",
+      "destination": "/es/",
+      "permanent": true
+    },
+    {
+      "source": "/es",
+      "destination": "/es/",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/index.html",
+      "destination": "/es/booking",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/",
+      "destination": "/es/booking",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/thankyou/index.html",
+      "destination": "/es/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/thankyou/",
+      "destination": "/es/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/thank-you",
+      "destination": "/es/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/es/booking/thank-you/",
+      "destination": "/es/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/es/terms/index.html",
+      "destination": "/es/terms",
+      "permanent": true
+    },
+    {
+      "source": "/es/terms/",
+      "destination": "/es/terms",
+      "permanent": true
+    },
+    {
+      "source": "/es/privacy/index.html",
+      "destination": "/es/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/es/privacy/",
+      "destination": "/es/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/ht/index.html",
+      "destination": "/ht/",
+      "permanent": true
+    },
+    {
+      "source": "/ht",
+      "destination": "/ht/",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/index.html",
+      "destination": "/ht/booking",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/",
+      "destination": "/ht/booking",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/thankyou/index.html",
+      "destination": "/ht/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/thankyou/",
+      "destination": "/ht/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/thank-you",
+      "destination": "/ht/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/ht/booking/thank-you/",
+      "destination": "/ht/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/ht/terms/index.html",
+      "destination": "/ht/terms",
+      "permanent": true
+    },
+    {
+      "source": "/ht/terms/",
+      "destination": "/ht/terms",
+      "permanent": true
+    },
+    {
+      "source": "/ht/privacy/index.html",
+      "destination": "/ht/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/ht/privacy/",
+      "destination": "/ht/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/pt/index.html",
+      "destination": "/pt/",
+      "permanent": true
+    },
+    {
+      "source": "/pt",
+      "destination": "/pt/",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/index.html",
+      "destination": "/pt/booking",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/",
+      "destination": "/pt/booking",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/thankyou/index.html",
+      "destination": "/pt/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/thankyou/",
+      "destination": "/pt/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/thank-you",
+      "destination": "/pt/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/pt/booking/thank-you/",
+      "destination": "/pt/booking/thankyou",
+      "permanent": true
+    },
+    {
+      "source": "/pt/terms/index.html",
+      "destination": "/pt/terms",
+      "permanent": true
+    },
+    {
+      "source": "/pt/terms/",
+      "destination": "/pt/terms",
+      "permanent": true
+    },
+    {
+      "source": "/pt/privacy/index.html",
+      "destination": "/pt/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/pt/privacy/",
+      "destination": "/pt/privacy",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/booking/thankyou", "destination": "/booking/thankyou/index.html" },
-    { "source": "/booking", "destination": "/booking/index.html" },
-    { "source": "/terms", "destination": "/terms/index.html" },
-    { "source": "/privacy", "destination": "/privacy/index.html" }
+    {
+      "source": "/booking",
+      "destination": "/booking/index.html"
+    },
+    {
+      "source": "/booking/thankyou",
+      "destination": "/booking/thankyou/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/es/",
+      "destination": "/es/index.html"
+    },
+    {
+      "source": "/es/booking",
+      "destination": "/es/booking/index.html"
+    },
+    {
+      "source": "/es/booking/thankyou",
+      "destination": "/es/booking/thankyou/index.html"
+    },
+    {
+      "source": "/es/terms",
+      "destination": "/es/terms/index.html"
+    },
+    {
+      "source": "/es/privacy",
+      "destination": "/es/privacy/index.html"
+    },
+    {
+      "source": "/ht/",
+      "destination": "/ht/index.html"
+    },
+    {
+      "source": "/ht/booking",
+      "destination": "/ht/booking/index.html"
+    },
+    {
+      "source": "/ht/booking/thankyou",
+      "destination": "/ht/booking/thankyou/index.html"
+    },
+    {
+      "source": "/ht/terms",
+      "destination": "/ht/terms/index.html"
+    },
+    {
+      "source": "/ht/privacy",
+      "destination": "/ht/privacy/index.html"
+    },
+    {
+      "source": "/pt/",
+      "destination": "/pt/index.html"
+    },
+    {
+      "source": "/pt/booking",
+      "destination": "/pt/booking/index.html"
+    },
+    {
+      "source": "/pt/booking/thankyou",
+      "destination": "/pt/booking/thankyou/index.html"
+    },
+    {
+      "source": "/pt/terms",
+      "destination": "/pt/terms/index.html"
+    },
+    {
+      "source": "/pt/privacy",
+      "destination": "/pt/privacy/index.html"
+    }
   ],
   "crons": [
-    { "path": "/api/email-worker", "schedule": "0 9 * * *" },
-    { "path": "/api/sheets-worker", "schedule": "0 10 * * *" }
+    {
+      "path": "/api/email-worker",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/sheets-worker",
+      "schedule": "0 10 * * *"
+    }
   ],
   "functions": {
-    "api/email-worker.ts": { "maxDuration": 60 },
-    "api/sheets-worker.ts": { "maxDuration": 60 },
-    "api/waitlist.ts": { "maxDuration": 60 },
-    "api/applicants.ts": { "maxDuration": 60 }
+    "api/email-worker.ts": {
+      "maxDuration": 60
+    },
+    "api/sheets-worker.ts": {
+      "maxDuration": 60
+    },
+    "api/waitlist.ts": {
+      "maxDuration": 60
+    },
+    "api/applicants.ts": {
+      "maxDuration": 60
+    }
   },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
     }
   ]

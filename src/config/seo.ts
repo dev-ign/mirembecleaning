@@ -1,3 +1,4 @@
+import { indexablePages } from '../i18n/routes.js'
 import { business } from './business.js'
 import { privacyConfig, termsConfig } from './legal.js'
 
@@ -9,7 +10,7 @@ export const seo = {
   themeColor: '#ffffff',
 } as const
 
-export const publicRoutes = ['/', termsConfig.path, ...(privacyConfig.approved ? [privacyConfig.path] : [])] as const
+export const publicRoutes = indexablePages.filter(route => route.basePath !== privacyConfig.path || privacyConfig.approved).map(route => route.path)
 
 export function pageTitle(path: string): string {
   if (path === '/booking') return 'Book Your Holiday Cleaning | Mirembe Cleaning Company'

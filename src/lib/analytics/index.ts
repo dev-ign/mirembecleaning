@@ -1,3 +1,5 @@
+import { resolveSiteRoute } from '../../i18n/routes'
+import { isSupportedLocale } from '../../i18n/config'
 import { marketing } from '../../config/marketing'
 import { bookingConfig } from '../../config/booking'
 import { consumeBookingJourney, establishBookingJourney, revokeBookingJourney, type BookingProviders } from '../bookingJourney'
@@ -141,7 +143,7 @@ export function startAnalytics(): void {
   captureCampaign(window.location.search)
   try { startGoogle() } catch { gaFailed = true }
   trackPageView()
-  if (safePagePath() === bookingConfig.thankYouPath) trackBookingCompletion()
+  if (resolveSiteRoute(safePagePath()).basePath === bookingConfig.thankYouPath) trackBookingCompletion()
   if (formVisible) setBookingFormVisible(true)
 }
 
@@ -158,7 +160,7 @@ function trackBookingCompletion(): void {
   if (attempt.providers.meta && bookingProviders().meta) sendMetaEvent({ name: 'Schedule', data, eventId: attempt.eventId })
 }
 
-// Navigation is document-based today; App also calls this on a changed route.
+// Document navigation and same-page language history transitions share this dedupe.
 // A -> B -> A counts three visits; StrictMode's repeated effect counts once.
 export function trackPageView(): void {
   if (!eligible()) return
@@ -168,7 +170,7 @@ export function trackPageView(): void {
     lastPage = path
     formViewSent = false
     googleEvent('page_view')
-    if (path === termsConfig.path) googleEvent('terms_view')
+    if (resolveSiteRoute(path).basePath === termsConfig.path) googleEvent('terms_view')
   }
   if (lastMetaPage !== path && sendMetaEvent({ name: 'PageView', data: {} })) lastMetaPage = path
 }
@@ -182,7 +184,7 @@ export function trackFunnelEvent(event: MetaEvent, googleName: string): void {
 
 export function setBookingFormVisible(visible: boolean): void {
   formVisible = visible
-  if (!visible || !eligible() || formViewSent || safePagePath() !== '/booking') return
+  if (!visible || !eligible() || formViewSent || resolveSiteRoute(safePagePath()).basePath !== '/booking') return
   trackPageView()
   formViewSent = true
   establishBookingJourney(bookingProviders())
@@ -209,4 +211,10 @@ export function trackEvent(event: MarketingEvent, conversionId?: string): void {
       sendMetaEvent({ name: 'Lead', data: { lead_type: 'waitlist' }, eventId: crypto.randomUUID() })
     } catch { /* Unavailable browser crypto must not turn a saved signup into a form error. */ }
   }
+}
+
+/** Language preferences never grant consent and are not Meta conversions. */
+export function trackLanguageChange(from: string, to: string): void {
+  if (!isSupportedLocale(from) || !isSupportedLocale(to) || from === to || !eligible()) return
+  googleEvent('language_change', { from_language: from, to_language: to })
 }

@@ -1,3 +1,4 @@
+import { t, useLocale } from '../../i18n'
 import { SiteDocumentLayout } from '../SiteDocumentLayout'
 import { business } from '../../config/business'
 import { termsConfig } from '../../config/legal'
@@ -15,8 +16,10 @@ function LegalText({ text }: { text: string }) {
 }
 
 export function TermsPage() {
+  const locale = useLocale()
   return <SiteDocumentLayout pageClass="legal-page" mainId="legal-main">
-    <article className="landing-container legal-content" aria-labelledby="terms-heading">
+    {locale !== 'en' && <p className="landing-container legal-language-notice">{t('legal.englishNotice')}</p>}
+    <article lang="en" className="landing-container legal-content" aria-labelledby="terms-heading">
       <header className="legal-header">
         <h1 id="terms-heading">{termsDocument.title}</h1>
         <p><time dateTime={termsConfig.updatedAt}>{termsDocument.updated}</time></p>

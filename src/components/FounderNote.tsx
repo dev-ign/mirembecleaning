@@ -1,8 +1,10 @@
+import { t, useLocale } from '../i18n'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 
 const mobileQuery = '(max-width: 1023px)'
 
 export function FounderNote() {
+  useLocale()
   // Match the server render first; the media query updates interaction state after hydration.
   const [isMobile, setIsMobile] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -62,7 +64,7 @@ export function FounderNote() {
         ref={toggleRef}
         className="founder-toggle"
         type="button"
-        aria-label={expanded ? 'Close the founders note' : 'Read a note from our founders'}
+        aria-label={expanded ? t('founderNote.close') : t('founderNote.open')}
         aria-expanded={expanded}
         aria-controls="founder-content"
         onClick={() => expanded ? close() : setExpanded(true)}
@@ -71,24 +73,22 @@ export function FounderNote() {
       </button>
       <div id="founder-content" className="founder-content" inert={isMobile && !expanded} aria-hidden={isMobile && !expanded}>
       <div className="founder-story">
-        <p className="founder-eyebrow">A note from our founders</p>
+        <p className="founder-eyebrow">{t('home.founders.eyebrow')}</p>
         <div className="founder-body">
-          <h2 id="founder-heading" ref={headingRef} tabIndex={-1}>We Believe Peace Begins At Home.</h2>
+          <h2 id="founder-heading" ref={headingRef} tabIndex={-1}>{t('founderNote.title')}</h2>
           <div className="founder-paragraphs">
             <p>
-              As busy professionals, homeowners, landlords, and children of aging parents & grandparents, we know firsthand how difficult it can be to find cleaning help that's reliable, thoughtful, and fairly priced.
-            </p>
+              {t('founderNote.experience')}</p>
             <p>
-              So we created Mirembe, the cleaning company we always wished we could call. A family-owned business built on care, trust, and the belief that every home deserves a little more peace.
-            </p>
-            <p className="founder-meaning">“Mirembe” means peace and tranquility.</p>
+              {t('founderNote.mission')}</p>
+            <p className="founder-meaning">{t('home.founders.meaning')}</p>
           </div>
         </div>
       </div>
       <div className="founder-signature">
-        <p>With care,</p>
+        <p>{t('home.founders.signoff')}</p>
         <p>Felix &amp; Bria</p>
-        <p>Founders, Mirembe Cleaning Company</p>
+        <p>{t('home.founders.role')}</p>
       </div>
       </div>
       </aside>

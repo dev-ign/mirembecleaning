@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
 export const navigationSections = [
-  { id: 'services', label: 'Services' },
-  { id: 'why-mirembe', label: 'Why Mirembe' },
-  { id: 'areas', label: 'Areas We Serve' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'services', labelKey: 'navigation.services' },
+  { id: 'why-mirembe', labelKey: 'navigation.why' },
+  { id: 'areas', labelKey: 'navigation.areas' },
+  { id: 'faq', labelKey: 'navigation.faq' },
 ] as const
 
 type SectionId = (typeof navigationSections)[number]['id']

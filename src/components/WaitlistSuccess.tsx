@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n'
 import { useEffect, useRef } from 'react'
 import type { WaitlistRecord } from '../types/waitlist'
 import { AnimatedSuccessIcon } from './AnimatedSuccessIcon'
@@ -9,6 +10,7 @@ interface WaitlistSuccessProps {
 }
 
 export function WaitlistSuccess({ record, onRecordUpdated }: WaitlistSuccessProps) {
+  useLocale()
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -21,13 +23,12 @@ export function WaitlistSuccess({ record, onRecordUpdated }: WaitlistSuccessProp
         <div className="success-row">
           <AnimatedSuccessIcon />
           <div className="success-heading-group">
-            <h2 className="success-heading" ref={headingRef} tabIndex={-1}>You’re on the list!</h2>
-            <p className="success-subtitle">A little more peace is on its way.</p>
+            <h2 className="success-heading" ref={headingRef} tabIndex={-1}>{t('waitlist.successTitle')}</h2>
+            <p className="success-subtitle">{t('waitlist.successSubtitle')}</p>
           </div>
         </div>
         <p className="success-message">
-          We’ll be in touch when booking opens, along with your $50 recurring-clean offer.
-        </p>
+          {t('waitlist.successMessage')}</p>
       </div>
       <ZipCodeForm record={record} onSaved={onRecordUpdated} />
     </div>

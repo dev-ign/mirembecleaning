@@ -1,5 +1,5 @@
+import { resolveSiteRoute } from '../../i18n/routes'
 import { bookingConfig } from '../../config/booking'
-import { privacyConfig, termsConfig } from '../../config/legal'
 
 export type CampaignField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_content' | 'utm_term'
 export type Campaign = Partial<Record<CampaignField, string>>
@@ -60,9 +60,8 @@ export function clearAttribution(): void {
 }
 
 export function safePagePath(): string {
-  const path = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
-  if (path === bookingConfig.legacyThankYouPath) return bookingConfig.thankYouPath
-  return path === bookingConfig.path || path === bookingConfig.thankYouPath || path === termsConfig.path || path === privacyConfig.path ? path : '/'
+  const route = resolveSiteRoute(window.location.pathname)
+  return route.found ? route.path : '/'
 }
 
 export function safePageLocation(search: string): string {
@@ -78,12 +77,13 @@ export function safePageLocation(search: string): string {
 export function isSafeMetaContext(): boolean {
   const current = new URL(window.location.href)
   const path = current.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/'
-  if (!['/', bookingConfig.path, bookingConfig.thankYouPath, bookingConfig.legacyThankYouPath, termsConfig.path, privacyConfig.path].includes(path)) return false
+  const route = resolveSiteRoute(path)
+  if (!route.found) return false
   if (current.hash && !['#top', '#story', '#services', '#how-it-works', '#why-mirembe', '#areas', '#about', '#faq'].includes(current.hash)) return false
   const campaign = readCurrentCampaign(current.search)
   for (const [key, value] of current.searchParams) {
     if (current.searchParams.getAll(key).length !== 1) return false
-    if (key === 'embed' && value === 'basic' && path === bookingConfig.path) continue
+    if (key === 'embed' && value === 'basic' && route.basePath === bookingConfig.path) continue
     if (key === 'fbclid' && /^[A-Za-z0-9_-]{10,500}$/.test(value)) continue
     if (campaign[key as CampaignField] !== value) return false
   }
@@ -93,11 +93,11 @@ export function isSafeMetaContext(): boolean {
       if (referrer.username || referrer.password) return false
       if (referrer.search || referrer.hash) return false
       if (referrer.origin !== current.origin && referrer.protocol !== 'https:') return false
-      if ((path === bookingConfig.thankYouPath || path === bookingConfig.legacyThankYouPath)
+      if ((route.basePath === bookingConfig.thankYouPath)
         && referrer.origin === 'https://app.zenmaid.com'
         && bookingConfig.holiday.publicReferrerPaths.some(publicPath => publicPath === referrer.pathname)) return true
       if (referrer.origin !== current.origin && referrer.pathname !== '/') return false
-      if (referrer.origin === current.origin && !['/', '/booking', '/booking/thankyou', '/booking/thank-you', '/terms', privacyConfig.path].includes(referrer.pathname)) return false
+      if (referrer.origin === current.origin && !resolveSiteRoute(referrer.pathname).found) return false
     } catch { return false }
   }
   return true

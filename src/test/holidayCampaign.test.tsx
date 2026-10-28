@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { HolidayFloatingCTA } from '../components/landing/HolidayCampaign'
 import { holidayCampaign, holidayCtaDismissedKey } from '../config/campaigns'
 
 vi.mock('../lib/zenmaid', () => ({ loadZenMaid: vi.fn().mockResolvedValue(undefined) }))
@@ -29,6 +30,25 @@ afterEach(() => {
 function advance(ms: number) { act(() => vi.advanceTimersByTime(ms)) }
 
 describe('holiday promotion page-load behavior', () => {
+  it('yields floating space to visible hero conversion actions and returns after they leave', () => {
+    const observers: { callback: IntersectionObserverCallback; elements: Element[] }[] = []
+    vi.stubGlobal('IntersectionObserver', class {
+      record: typeof observers[number]
+      constructor(callback: IntersectionObserverCallback) { this.record = { callback, elements: [] }; observers.push(this.record) }
+      observe(element: Element) { this.record.elements.push(element) }
+      disconnect() {}
+    })
+    try {
+      const view = render(<><div className="landing-hero-actions" /><HolidayFloatingCTA hidden={false} onBooking={vi.fn()} /></>)
+      const observer = observers.find(item => item.elements.some(element => element.matches('.landing-hero-actions')))!
+      expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()
+      act(() => observer.callback([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+      expect(document.querySelector('.holiday-floating-cta')).toBeNull()
+      act(() => observer.callback([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver))
+      expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()
+      view.unmount()
+    } finally { vi.unstubAllGlobals() }
+  })
   it.each(['/terms', '/booking', '/booking/thank-you'])('never mounts promotional controls or delayed overlays on %s', path => {
     render(<App path={path} />)
     advance(60_000)
