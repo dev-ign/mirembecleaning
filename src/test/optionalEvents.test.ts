@@ -88,6 +88,25 @@ it('does not replay interactions made before consent while the helper is loading
   expect(calls.trackBookingCTA).not.toHaveBeenCalled()
 })
 
+it('drops delayed interactions across decline/reaccept instead of dispatching with renewed consent', async () => {
+  let release!: () => void
+  const gate = new Promise<void>(resolve => { release = resolve })
+  const calls = { trackEvent: vi.fn(), trackBookingCTA: vi.fn(), startAnalytics: vi.fn(), stopAnalytics: vi.fn(), setBookingFormVisible: vi.fn() }
+  vi.doMock('../lib/analytics/events', async () => { await gate; return calls })
+  const events = await import('../lib/optionalEvents')
+  events.trackBookingCTA('hero')
+  events.trackEvent('phone_click')
+  events.setBookingFormVisible(true)
+  events.startAnalytics()
+  events.setConsent('declined')
+  events.setConsent('accepted')
+  release()
+  await vi.waitFor(() => expect(calls.startAnalytics).toHaveBeenCalledTimes(1))
+  expect(calls.trackBookingCTA).not.toHaveBeenCalled()
+  expect(calls.trackEvent).not.toHaveBeenCalled()
+  expect(calls.setBookingFormVisible).not.toHaveBeenCalled()
+})
+
 it('keeps the actual app interactive when the provider module graph cannot load', async () => {
   const factory = vi.fn(() => { throw new Error('ERR_BLOCKED_BY_CONTENT_BLOCKER') })
   vi.doMock('../lib/analytics/events', factory)

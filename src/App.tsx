@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { LandingPage } from './components/landing/LandingPage'
 import { BookingPage, BookingThankYouPage } from './components/booking/BookingPages'
 import { TermsPage } from './components/legal/TermsPage'
@@ -6,10 +6,13 @@ import { PrivacyPage } from './components/legal/PrivacyPage'
 import { privacyConfig, termsConfig } from './config/legal'
 import { allowsPromotionalOverlays } from './config/campaigns'
 import { bookingConfig } from './config/booking'
+import { pageTitle } from './config/seo'
 import { prepareOptionalEvents, startAnalytics } from './lib/optionalEvents'
 
 export default function App({ path = '/' }: { path?: string }) {
   const route = path.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/'
+  // Child consent effects can dispatch before App's passive startup effect.
+  useLayoutEffect(() => { document.title = pageTitle(route) }, [route])
   useEffect(() => {
     const actual = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
     if (actual === bookingConfig.legacyThankYouPath) {

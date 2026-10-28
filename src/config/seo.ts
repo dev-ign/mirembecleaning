@@ -11,6 +11,14 @@ export const seo = {
 
 export const publicRoutes = ['/', termsConfig.path, ...(privacyConfig.approved ? [privacyConfig.path] : [])] as const
 
+export function pageTitle(path: string): string {
+  if (path === '/booking') return 'Book Your Holiday Cleaning | Mirembe Cleaning Company'
+  if (path === '/booking/thankyou' || path === '/booking/thank-you') return 'Cleaning Request Received | Mirembe Cleaning Company'
+  if (path === termsConfig.path) return termsConfig.title
+  if (path === privacyConfig.path) return privacyConfig.title
+  return seo.title
+}
+
 export function structuredData() {
   return {
     '@context': 'https://schema.org',

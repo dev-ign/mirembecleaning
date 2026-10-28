@@ -1,4 +1,4 @@
-import { getConsent, saveConsent } from './consent'
+import { getConsent, getConsentRevision, invalidatePendingAnalytics, saveConsent } from './consent'
 import { revokeBookingJourney } from './bookingJourney'
 import type { MarketingEvent } from './analytics'
 import type { BookingLocation, ServiceSlug } from './analytics/types'
@@ -22,9 +22,10 @@ export function prepareOptionalEvents(): void {
   void loadHelpers()
 }
 
-function deliver(send: (events: EventHelpers) => void): void {
+function deliver(send: (events: EventHelpers) => void, guard = true): void {
+  const revision = getConsentRevision()
   const safelySend = (events: EventHelpers | undefined) => {
-    if (!events) return
+    if (!events || (guard && revision !== getConsentRevision())) return
     try { send(events) } catch { /* Optional measurement cannot interrupt navigation or forms. */ }
   }
   // Warm helpers dispatch synchronously before document navigation. Only an
@@ -47,8 +48,9 @@ export function startAnalytics(): void {
 }
 
 export function stopAnalytics(): void {
+  invalidatePendingAnalytics()
   revokeBookingJourney()
-  deliver(events => { if (getConsent() !== 'accepted') events.stopAnalytics() })
+  deliver(events => { if (getConsent() !== 'accepted') events.stopAnalytics() }, false)
 }
 
 export function setConsent(value: 'accepted' | 'declined'): void {

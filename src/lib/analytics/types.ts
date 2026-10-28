@@ -19,7 +19,7 @@ export type Fbq = ((...args: unknown[]) => void) & {
 
 declare global {
   interface Window {
-    dataLayer?: unknown[][]
+    dataLayer?: Array<IArguments | unknown[]>
     gtag?: (...args: unknown[]) => void
     fbq?: Fbq
     _fbq?: Fbq
