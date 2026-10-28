@@ -117,3 +117,26 @@ it('keeps the actual app interactive when the provider module graph cannot load'
   booking.unmount()
   history.replaceState(null, '', '/')
 })
+
+it('invalidates a pending journey during a delayed import, including decline then reacceptance', async () => {
+  const { establishBookingJourney, bookingJourneyKey } = await import('../lib/bookingJourney')
+  sessionStorage.clear()
+  establishBookingJourney({ meta: true, ga4: false })
+  expect(sessionStorage.getItem(bookingJourneyKey)).not.toBeNull()
+  let release!: () => void
+  const gate = new Promise<void>(resolve => { release = resolve })
+  vi.doMock('../lib/analytics/events', async () => {
+    await gate
+    return vi.importActual('../lib/analytics/events')
+  })
+  const events = await import('../lib/optionalEvents')
+  history.replaceState(null, '', '/booking/thankyou')
+  events.startAnalytics()
+  events.setConsent('declined')
+  expect(sessionStorage.getItem(bookingJourneyKey)).toBeNull()
+  events.setConsent('accepted')
+  release()
+  await vi.waitFor(() => expect(document.getElementById('mirembe-meta-pixel')).not.toBeNull())
+  expect(window.fbq?.queue?.filter(entry => entry[2] === 'Schedule') ?? []).toHaveLength(0)
+  history.replaceState(null, '', '/')
+})

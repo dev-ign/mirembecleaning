@@ -7,6 +7,10 @@ let initialized = false
 let failed = false
 const scriptId = 'mirembe-meta-pixel'
 
+export function isMetaEligible(): boolean {
+  try { return Boolean(marketing.metaPixelId) && !failed && getConsent() === 'accepted' && isSafeMetaContext() } catch { return false }
+}
+
 export function revokeMetaConsent(): void {
   try {
     const queue = window.fbq?.queue

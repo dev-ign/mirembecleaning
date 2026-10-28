@@ -90,7 +90,12 @@ export function isSafeMetaContext(): boolean {
   if (document.referrer) {
     try {
       const referrer = new URL(document.referrer)
+      if (referrer.username || referrer.password) return false
       if (referrer.search || referrer.hash) return false
+      if (referrer.origin !== current.origin && referrer.protocol !== 'https:') return false
+      if ((path === bookingConfig.thankYouPath || path === bookingConfig.legacyThankYouPath)
+        && referrer.origin === 'https://app.zenmaid.com'
+        && bookingConfig.holiday.publicReferrerPaths.some(publicPath => publicPath === referrer.pathname)) return true
       if (referrer.origin !== current.origin && referrer.pathname !== '/') return false
       if (referrer.origin === current.origin && !['/', '/booking', '/booking/thankyou', '/booking/thank-you', '/terms', privacyConfig.path].includes(referrer.pathname)) return false
     } catch { return false }

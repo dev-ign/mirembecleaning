@@ -1,8 +1,10 @@
 import { marketing } from '../../config/marketing'
+import { bookingConfig } from '../../config/booking'
+import { consumeBookingJourney, establishBookingJourney, revokeBookingJourney, type BookingProviders } from '../bookingJourney'
 import { termsConfig } from '../../config/legal'
 import { captureCampaign, clearAttribution, getAttribution, safePageLocation, safePagePath } from './attribution'
 import { browserOptedOut, getConsent, hasConfiguredProvider, saveConsent } from './consent'
-import { revokeMetaConsent, sendMetaEvent } from './metaPixel'
+import { isMetaEligible, revokeMetaConsent, sendMetaEvent } from './metaPixel'
 import type { Consent, MetaEvent } from './types'
 
 export { browserOptedOut, getConsent, hasConfiguredProvider } from './consent'
@@ -30,6 +32,7 @@ export function setConsent(value: Exclude<Consent, null>): void {
 }
 
 export function stopAnalytics(): void {
+  revokeBookingJourney()
   revokeMetaConsent()
   if (marketing.ga4Id) {
     ;(window as unknown as Record<string, unknown>)[`ga-disable-${marketing.ga4Id}`] = true
@@ -95,11 +98,25 @@ function googleEvent(name: string, data: Record<string, string> = {}): void {
 }
 
 export function startAnalytics(): void {
-  if (!eligible()) return
+  if (!eligible()) { revokeBookingJourney(); return }
   captureCampaign(window.location.search)
   try { startGoogle() } catch { gaFailed = true }
   trackPageView()
+  if (safePagePath() === bookingConfig.thankYouPath) trackBookingCompletion()
   if (formVisible) setBookingFormVisible(true)
+}
+
+function bookingProviders(): BookingProviders {
+  return { meta: isMetaEligible(), ga4: getConsent() === 'accepted' && Boolean(marketing.ga4Id) && !gaFailed }
+}
+
+function trackBookingCompletion(): void {
+  const attempt = consumeBookingJourney(bookingProviders())
+  if (!attempt) return
+  const data = { attribution_method: 'thank_you_redirect', booking_type: 'holiday' } as const
+  // Recheck each provider immediately before sending; one failure cannot block the other.
+  if (attempt.providers.ga4 && bookingProviders().ga4) googleEvent('booking_complete', data)
+  if (attempt.providers.meta && bookingProviders().meta) sendMetaEvent({ name: 'Schedule', data, eventId: attempt.eventId })
 }
 
 // Navigation is document-based today; App also calls this on a changed route.
@@ -129,6 +146,7 @@ export function setBookingFormVisible(visible: boolean): void {
   if (!visible || !eligible() || formViewSent || safePagePath() !== '/booking') return
   trackPageView()
   formViewSent = true
+  establishBookingJourney(bookingProviders())
   googleEvent('booking_form_view', { booking_type: 'holiday' })
   sendMetaEvent({ name: 'BookingFormView', data: { booking_type: 'holiday' } })
 }
