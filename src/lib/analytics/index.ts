@@ -22,8 +22,24 @@ let lastMetaPage: string | undefined
 let formVisible = false
 let formViewSent = false
 const sentConversions = new Set<string>()
+const deniedConsent = { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' } as const
+const analyticsConsent = { ...deniedConsent, analytics_storage: 'granted' } as const
 
-function eligible(): boolean { return getConsent() === 'accepted' && hasConfiguredProvider() && !browserOptedOut() }
+function debug(action: string, event?: string): void {
+  if (!marketing.debug) return
+  // Fixed event names and eligibility only; never log URLs, payloads or identifiers.
+  // eslint-disable-next-line no-console
+  console.info('[analytics]', { action, event, consent: getConsent(), ga4Configured: Boolean(marketing.ga4Id), gaFailed })
+}
+
+function eligible(): boolean {
+  const allowed = getConsent() === 'accepted' && hasConfiguredProvider() && !browserOptedOut()
+  if (!allowed) {
+    if (gaInitialized) stopAnalytics()
+    debug('suppressed')
+  }
+  return allowed
+}
 
 export function setConsent(value: Exclude<Consent, null>): void {
   saveConsent(value)
@@ -38,10 +54,13 @@ export function stopAnalytics(): void {
     ;(window as unknown as Record<string, unknown>)[`ga-disable-${marketing.ga4Id}`] = true
     if (!gaLoaded && window.dataLayer) {
       const setup = window.dataLayer.filter(entry => entry[0] !== 'event' && entry[0] !== 'consent')
-      window.dataLayer.splice(0, window.dataLayer.length,
-        ['consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }], ...setup)
+      window.dataLayer.length = 0
+      try { window.gtag?.('consent', 'default', deniedConsent) } catch { /* Optional provider. */ }
+      window.dataLayer.push(...setup)
+      // Unsent views were discarded; reacceptance may measure the current page.
+      lastPage = undefined
     }
-    try { window.gtag?.('consent', 'update', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' }) } catch { /* Optional provider. */ }
+    try { window.gtag?.('consent', 'update', deniedConsent) } catch { /* Optional provider. */ }
   }
   clearAttribution()
   for (const cookie of document.cookie.split(';')) {
@@ -51,22 +70,28 @@ export function stopAnalytics(): void {
     const parts = window.location.hostname.split('.')
     for (let i = 0; i < parts.length - 1; i++) document.cookie = `${name}=; Max-Age=0; path=/; domain=.${parts.slice(i).join('.')}`
   }
+  debug('consent-denied')
 }
 
 function startGoogle(): void {
-  if (!marketing.ga4Id || gaFailed) return
+  if (!marketing.ga4Id || gaFailed || getConsent() !== 'accepted') return
   ;(window as unknown as Record<string, unknown>)[`ga-disable-${marketing.ga4Id}`] = false
   if (gaInitialized) {
-    window.gtag?.('consent', 'update', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' })
+    window.gtag?.('consent', 'update', analyticsConsent)
     return
   }
   window.dataLayer ??= []
-  window.gtag ??= (...args: unknown[]) => { window.dataLayer!.push(args) }
-  window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' })
+  // Match Google's command queue contract (Arguments objects, not dataLayer arrays).
+  // eslint-disable-next-line prefer-rest-params
+  window.gtag ??= function () { window.dataLayer!.push(arguments) }
+  // Basic mode: this queue and the external script exist only after permission.
+  window.gtag('consent', 'default', deniedConsent)
+  window.gtag('consent', 'update', analyticsConsent)
   window.gtag('js', new Date())
   window.gtag('config', marketing.ga4Id, {
     send_page_view: false, page_location: safePageLocation(window.location.search),
     page_referrer: safeReferrer(), allow_google_signals: false, allow_ad_personalization_signals: false,
+    ...(marketing.debug ? { debug_mode: true } : {}),
   })
   gaInitialized = true
   if (!document.getElementById('mirembe-ga4')) {
@@ -75,10 +100,22 @@ function startGoogle(): void {
     script.async = true
     script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(marketing.ga4Id)}`
     script.referrerPolicy = 'origin'
-    script.onload = () => { gaLoaded = true }
-    script.onerror = () => { gaFailed = true }
+    script.onload = () => {
+      gaLoaded = true
+      if (getConsent() !== 'accepted') stopAnalytics()
+      debug('script-loaded')
+    }
+    script.onerror = () => {
+      gaFailed = true
+      if (window.dataLayer) {
+        const setup = window.dataLayer.filter(entry => entry[0] !== 'event')
+        window.dataLayer.splice(0, window.dataLayer.length, ...setup)
+      }
+      debug('script-failed')
+    }
     document.head.appendChild(script)
   }
+  debug('initialized')
 }
 
 function safeReferrer(): string {
@@ -86,14 +123,16 @@ function safeReferrer(): string {
 }
 
 function googleEvent(name: string, data: Record<string, string> = {}): void {
-  if (!marketing.ga4Id || gaFailed) return
+  if (!marketing.ga4Id || gaFailed || !gaInitialized || getConsent() !== 'accepted') { debug('suppressed', name); return }
   try {
     const attribution = getAttribution()
     window.gtag?.('event', name, {
       page_path: safePagePath(), page_location: safePageLocation(window.location.search), page_referrer: safeReferrer(),
+      page_title: document.title, send_to: marketing.ga4Id,
       ...Object.fromEntries(Object.entries(attribution.firstTouch).map(([key, value]) => [`first_${key}`, value])),
       ...attribution.lastTouch, ...data,
     })
+    debug('queued', name)
   } catch { /* Tracking failure cannot block any interaction. */ }
 }
 

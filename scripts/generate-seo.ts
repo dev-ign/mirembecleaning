@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server'
 import { createServer } from 'vite'
 import { business } from '../src/config/business.js'
 import { privacyConfig, termsConfig } from '../src/config/legal.js'
-import { publicRoutes, seo, structuredData } from '../src/config/seo.js'
+import { pageTitle, publicRoutes, seo, structuredData } from '../src/config/seo.js'
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (character) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -18,8 +18,8 @@ if (mode !== 'development' && mode !== 'production') throw new Error('Expected -
 const vite = await createServer({ mode, server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' })
 const pages = [
   { path: '/', file: 'index.html', title: seo.title, description: seo.description, robots: 'index,follow,max-image-preview:large' },
-  { path: '/booking', file: 'booking/index.html', title: 'Book Your Holiday Cleaning | Mirembe Cleaning Company', description: 'Request your holiday cleaning with Mirembe Cleaning Company. Our team will follow up to confirm availability.', robots: 'noindex,follow' },
-  { path: '/booking/thankyou', file: 'booking/thankyou/index.html', title: 'Cleaning Request Received | Mirembe Cleaning Company', description: 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.', robots: 'noindex,follow' },
+  { path: '/booking', file: 'booking/index.html', title: pageTitle('/booking'), description: 'Request your holiday cleaning with Mirembe Cleaning Company. Our team will follow up to confirm availability.', robots: 'noindex,follow' },
+  { path: '/booking/thankyou', file: 'booking/thankyou/index.html', title: pageTitle('/booking/thankyou'), description: 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.', robots: 'noindex,follow' },
   { path: termsConfig.path, file: 'terms/index.html', title: termsConfig.title, description: 'Read the Mirembe Cleaning Company Terms of Service for residential and rental property cleaning services. Last updated October 25, 2026.', robots: 'index,follow' },
   { path: privacyConfig.path, file: 'privacy/index.html', title: privacyConfig.title, description: 'Read the Mirembe Cleaning Company Privacy Policy, effective October 26, 2026, covering service requests, applications, communications, and optional tracking.', robots: privacyConfig.approved ? 'index,follow' : 'noindex,nofollow' },
 ] as const

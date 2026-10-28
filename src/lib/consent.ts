@@ -6,6 +6,11 @@ export const consentChanged = 'mirembe:consent-changed'
 export const consentKey = `mirembe:marketing-consent:v2:${marketing.ga4Id}:${marketing.metaPixelId}`
 let memoryChoice: Consent = null
 let volatileChoice = false
+let consentRevision = 0
+
+// Pending optional imports must not replay interactions across withdrawal.
+export function getConsentRevision(): number { return consentRevision }
+export function invalidatePendingAnalytics(): void { consentRevision++ }
 
 export function browserOptedOut(): boolean {
   return typeof navigator !== 'undefined'
@@ -29,7 +34,7 @@ export function consentPersistenceFailed(): boolean { return volatileChoice }
 
 export function saveConsent(value: Exclude<Consent, null>): void {
   memoryChoice = browserOptedOut() ? 'declined' : value
-  if (memoryChoice === 'declined') revokeBookingJourney()
+  if (memoryChoice === 'declined') { invalidatePendingAnalytics(); revokeBookingJourney() }
   try { localStorage.setItem(consentKey, memoryChoice); volatileChoice = false } catch { volatileChoice = true }
   window.dispatchEvent(new Event(consentChanged))
 }

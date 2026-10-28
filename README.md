@@ -33,6 +33,8 @@ The applicant API maps `first_name` and `last_name` to their own columns and to 
 
 See [the discoverability launch guide](docs/discoverability-launch.md) for SEO implementation, tracking events, business facts to verify, external setup, and release checks. The production build renders the complete homepage into `index.html`, then the browser hydrates it without replacing the initial content. The build also generates metadata, `robots.txt`, and the sitemap from `src/config/business.ts` and `src/config/seo.ts`. [Image asset notes](docs/asset-optimization.md) record the lossless hero conversion, raster logo export, and visual/performance checks. No new database migration is needed for these SEO, analytics, rendering, and asset changes; campaign attribution remains in browser session storage and analytics events.
 
+The current [GA4 integration report](docs/ga4-integration-report.md) documents consent, booking attribution, configuration, verified local behavior, and remaining account-side release checks. It supersedes the launch guide's older analytics withdrawal and primary-conversion setup notes.
+
 ## Privacy and launch copy
 
 The form describes launch and booking updates; the optional ZIP prompt explains its use for prioritizing availability. Set `VITE_PRIVACY_POLICY_URL` to a published privacy-policy URL to show the form link. Until it is set, no policy link is rendered. Before deployment, publish a policy that matches the actual data handling and outreach, configure the URL, and review the final waitlist wording and consent approach for the messages Mirembe will send. The current record shape contains no consent metadata; add it only if a defined requirement calls for it.

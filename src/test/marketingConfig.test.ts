@@ -45,3 +45,26 @@ it('requires explicit development opt-in even with valid provider configuration'
   vi.stubEnv('VITE_ENABLE_MARKETING_IN_DEVELOPMENT', 'true')
   expect((await import('../config/marketing')).marketing.metaPixelId).toBe('39772457375733047')
 })
+
+it.each(['', 'your-GA4-measurement-id', 'AW-123456', 'G-invalid', 'https://example.com'])('disables malformed or missing GA4 configuration: %s', async id => {
+  vi.resetModules()
+  vi.stubEnv('PROD', true)
+  vi.stubEnv('VITE_PRIVACY_POLICY_URL', 'https://www.mirembecleaning.com/privacy')
+  vi.stubEnv('VITE_GA4_MEASUREMENT_ID', id)
+  expect((await import('../config/marketing')).marketing.ga4Id).toBe('')
+})
+
+it('uses the requested public GA4 destination through the existing environment source', async () => {
+  vi.resetModules()
+  vi.stubEnv('PROD', true)
+  vi.stubEnv('VITE_PRIVACY_POLICY_URL', 'https://www.mirembecleaning.com/privacy')
+  vi.stubEnv('VITE_GA4_MEASUREMENT_ID', ' G-3KNYRGPRD5 ')
+  expect((await import('../config/marketing')).marketing.ga4Id).toBe('G-3KNYRGPRD5')
+})
+
+it.each([false, true])('permits debug_mode only in development (DEV=%s)', async dev => {
+  vi.resetModules()
+  vi.stubEnv('DEV', dev)
+  vi.stubEnv('VITE_ANALYTICS_DEBUG', 'true')
+  expect((await import('../config/marketing')).marketing.debug).toBe(dev)
+})
