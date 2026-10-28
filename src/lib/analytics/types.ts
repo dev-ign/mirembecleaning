@@ -5,6 +5,7 @@ export type MetaEvent =
   | { name: 'PageView'; data: Record<string, never> }
   | { name: 'ViewContent'; data: { content_type: 'service'; content_name: ServiceSlug } }
   | { name: 'Lead'; data: { lead_type: 'waitlist' }; eventId: string }
+  | { name: 'Schedule'; data: { attribution_method: 'thank_you_redirect'; booking_type: 'holiday' }; eventId: string }
   | { name: 'BookingCTA_Click'; data: { location: BookingLocation; campaign: 'holiday_2026' } }
   | { name: 'BookingFormView'; data: { booking_type: 'holiday' } }
 

@@ -71,6 +71,9 @@ it('gates real UI interactions under StrictMode, observes form visibility, and a
   expect(events('PageView')).toHaveLength(3)
   expect(events('Lead')).toHaveLength(0)
   expect(events('BookingRequestSubmitted')).toHaveLength(0)
+  expect(events('Schedule')).toHaveLength(1)
+  view.rerender(<StrictMode><App path="/booking/thankyou" /></StrictMode>)
+  expect(events('Schedule')).toHaveLength(1)
   const eventCount = commands().length
   fireEvent.click(screen.getByRole('button', { name: 'Tracking preferences' }))
   expect(screen.getByRole('dialog')).toHaveTextContent('currently allowed')

@@ -1,4 +1,5 @@
 import { marketing } from '../config/marketing'
+import { revokeBookingJourney } from './bookingJourney'
 import type { Consent } from './analytics/types'
 
 export const consentChanged = 'mirembe:consent-changed'
@@ -28,6 +29,7 @@ export function consentPersistenceFailed(): boolean { return volatileChoice }
 
 export function saveConsent(value: Exclude<Consent, null>): void {
   memoryChoice = browserOptedOut() ? 'declined' : value
+  if (memoryChoice === 'declined') revokeBookingJourney()
   try { localStorage.setItem(consentKey, memoryChoice); volatileChoice = false } catch { volatileChoice = true }
   window.dispatchEvent(new Event(consentChanged))
 }

@@ -1,4 +1,5 @@
 import { getConsent, saveConsent } from './consent'
+import { revokeBookingJourney } from './bookingJourney'
 import type { MarketingEvent } from './analytics'
 import type { BookingLocation, ServiceSlug } from './analytics/types'
 
@@ -41,10 +42,12 @@ export function trackServiceView(service: ServiceSlug): void {
 }
 
 export function startAnalytics(): void {
+  if (getConsent() !== 'accepted') revokeBookingJourney()
   deliver(events => events.startAnalytics())
 }
 
 export function stopAnalytics(): void {
+  revokeBookingJourney()
   deliver(events => { if (getConsent() !== 'accepted') events.stopAnalytics() })
 }
 
