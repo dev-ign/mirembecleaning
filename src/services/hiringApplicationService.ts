@@ -1,3 +1,4 @@
+import en from '../i18n/locales/en.json'
 import {
   availabilityOptions,
   experienceOptions,
@@ -27,29 +28,29 @@ export function normalizePhone(phone: string): string | null {
   return digits.length === 10 ? digits : null
 }
 
-export function validateHiringApplication(input: HiringApplicationInput): HiringErrors {
+export function validateHiringApplication(input: HiringApplicationInput, translate: (key: keyof typeof en) => string = key => en[key]): HiringErrors {
   const errors: HiringErrors = {}
-  if (!input.first_name.trim()) errors.first_name = 'Enter your first name.'
-  else if (input.first_name.trim().length > 80) errors.first_name = 'Use 80 characters or fewer.'
-  if (!input.last_name.trim()) errors.last_name = 'Enter your last name.'
-  else if (input.last_name.trim().length > 80) errors.last_name = 'Use 80 characters or fewer.'
-  if (!isValidEmail(input.email)) errors.email = 'Enter a valid email address.'
-  if (!normalizePhone(input.phone)) errors.phone = 'Enter a valid 10-digit phone number.'
-  if (!input.city.trim()) errors.city = 'Enter your city or town.'
-  else if (input.city.trim().length > 100) errors.city = 'Use 100 characters or fewer.'
-  if (input.state !== 'CT' && input.state !== 'MA') errors.state = 'Select Connecticut or Massachusetts.'
-  if (typeof input.has_vehicle !== 'boolean') errors.has_vehicle = 'Choose Yes or No.'
-  if (!experienceOptions.some((option) => option.value === input.cleaning_experience)) errors.cleaning_experience = 'Choose your experience level.'
+  if (!input.first_name.trim()) errors.first_name = translate('errors.firstName')
+  else if (input.first_name.trim().length > 80) errors.first_name = translate('errors.max80')
+  if (!input.last_name.trim()) errors.last_name = translate('errors.lastName')
+  else if (input.last_name.trim().length > 80) errors.last_name = translate('errors.max80')
+  if (!isValidEmail(input.email)) errors.email = translate('errors.email')
+  if (!normalizePhone(input.phone)) errors.phone = translate('errors.phone')
+  if (!input.city.trim()) errors.city = translate('errors.city')
+  else if (input.city.trim().length > 100) errors.city = translate('errors.max100')
+  if (input.state !== 'CT' && input.state !== 'MA') errors.state = translate('errors.state')
+  if (typeof input.has_vehicle !== 'boolean') errors.has_vehicle = translate('errors.vehicle')
+  if (!experienceOptions.some((option) => option.value === input.cleaning_experience)) errors.cleaning_experience = translate('errors.experience')
   if (input.languages.length === 0 || new Set(input.languages).size !== input.languages.length
     || input.languages.some((language) => !languageOptions.some((option) => option.value === language))) {
-    errors.languages = 'Select at least one language.'
+    errors.languages = translate('errors.languages')
   }
   if (input.languages.includes('other')) {
-    if (!input.other_language?.trim()) errors.other_language = 'Specify the other language.'
-    else if (input.other_language.trim().length > 80) errors.other_language = 'Use 80 characters or fewer.'
+    if (!input.other_language?.trim()) errors.other_language = translate('errors.otherLanguage')
+    else if (input.other_language.trim().length > 80) errors.other_language = translate('errors.max80')
   }
-  if (!travelOptions.some((option) => option.value === input.travel_distance)) errors.travel_distance = 'Choose a travel distance.'
-  if (!availabilityOptions.some((option) => option.value === input.preferred_availability)) errors.preferred_availability = 'Choose your availability.'
+  if (!travelOptions.some((option) => option.value === input.travel_distance)) errors.travel_distance = translate('errors.travel')
+  if (!availabilityOptions.some((option) => option.value === input.preferred_availability)) errors.preferred_availability = translate('errors.availability')
   return errors
 }
 

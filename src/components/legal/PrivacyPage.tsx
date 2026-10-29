@@ -1,3 +1,4 @@
+import { t, useLocale } from '../../i18n'
 import { SiteDocumentLayout } from '../SiteDocumentLayout'
 import { privacyConfig } from '../../config/legal'
 import { privacyDocument } from '../../content/privacy'
@@ -11,8 +12,10 @@ function PrivacyText({ text }: { text: string }) {
 }
 
 export function PrivacyPage() {
+  const locale = useLocale()
   return <SiteDocumentLayout pageClass="legal-page privacy-page" mainId="privacy-main">
-    <article className="landing-container legal-content" aria-labelledby="privacy-heading">
+    {locale !== 'en' && <p className="landing-container legal-language-notice">{t('legal.englishNotice')}</p>}
+    <article lang="en" className="landing-container legal-content" aria-labelledby="privacy-heading">
       <header className="legal-header">
         <h1 id="privacy-heading">{privacyDocument.title}</h1>
         <p><time dateTime={privacyConfig.effectiveAt}>{privacyDocument.effectiveDate}</time></p>

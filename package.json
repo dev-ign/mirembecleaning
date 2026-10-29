@@ -11,7 +11,9 @@
     "sheets:admin": "tsx scripts/sheets-admin.ts",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:seo": "node --import tsx scripts/verify-seo-build.ts",
+    "test:http": "node --import tsx scripts/verify-site-http.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.3.0",
@@ -21,8 +23,10 @@
     "@supabase/supabase-js": "2.117.3",
     "@vercel/functions": "3.9.11",
     "google-auth-library": "^10.5.0",
+    "i18next": "^26.5.11",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-i18next": "^17.1.9",
     "resend": "6.12.4",
     "zod": "^4.6.5"
   },

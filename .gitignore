@@ -15,6 +15,7 @@ dist
 /.vite/
 
 # Internal engineering and privacy review documentation
+/docs/
 /docs/meta-pixel-zenmaid-conversions.md
 /docs/privacy-policy-audit.md
 /docs/privacy-policy-draft.md

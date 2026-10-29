@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 type WidgetId = string
@@ -61,6 +62,7 @@ function loadTurnstile(): Promise<TurnstileApi> {
 
 export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidgetProps>(
   function TurnstileWidget({ action, onStatusChange }, ref) {
+    useLocale()
     const containerRef = useRef<HTMLDivElement>(null)
     const widgetIdRef = useRef<WidgetId | null>(null)
     const apiRef = useRef<TurnstileApi | null>(null)
@@ -109,6 +111,6 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
       }
     }, [action, attempt, onStatusChange])
 
-    return <div ref={containerRef} className="turnstile-widget" role="group" aria-label="Security verification" />
+    return <div ref={containerRef} className="turnstile-widget" role="group" aria-label={t('common.security')} />
   },
 )

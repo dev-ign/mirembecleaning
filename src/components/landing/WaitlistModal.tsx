@@ -1,3 +1,5 @@
+import type { MessageKey } from '../../i18n'
+import { t, useLocale } from '../../i18n'
 import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { WaitlistExperience } from '../WaitlistExperience'
@@ -8,10 +10,11 @@ interface Props {
   open: boolean
   onDismiss: () => void
   onCreated: (record: WaitlistRecord) => void
-  onFeedback: (message: string, kind: 'error' | 'verification') => void
+  onFeedback: (message: MessageKey, kind: 'error' | 'verification') => void
 }
 
 export function WaitlistModal({ open, onDismiss, onCreated, onFeedback }: Props) {
+  useLocale()
   const ready = useHydrated()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const submitting = useRef(false)
@@ -43,10 +46,10 @@ export function WaitlistModal({ open, onDismiss, onCreated, onFeedback }: Props)
   return createPortal(<dialog ref={dialogRef} className="waitlist-dialog" aria-modal="true" aria-labelledby="waitlist-dialog-heading" aria-describedby="waitlist-dialog-description"
     onCancel={(event) => { if (submitting.current) event.preventDefault(); else onDismiss() }} onClick={backdropClick} onKeyDown={trapFocus}>
     <div className="waitlist-dialog-inner">
-      <button className="waitlist-dialog-close" type="button" aria-label="Close waitlist" onClick={dismiss}><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5 15 15M15 5 5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>
-      <p className="landing-eyebrow">A little more peace is coming</p>
-      <h2 id="waitlist-dialog-heading" tabIndex={-1}>{complete ? 'You’re on the list!' : 'Join the Mirembe waitlist.'}</h2>
-      <p id="waitlist-dialog-description">{complete ? 'Thanks for joining us. Add your ZIP code so we know where to prioritize availability.' : 'Be the first to hear when new cleaning slots open in your area.'}</p>
+      <button className="waitlist-dialog-close" type="button" aria-label={t('waitlist.close')} onClick={dismiss}><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5 15 15M15 5 5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></button>
+      <p className="landing-eyebrow">{t('waitlist.eyebrow')}</p>
+      <h2 id="waitlist-dialog-heading" tabIndex={-1}>{complete ? t('waitlist.successTitle') : t('waitlist.title')}</h2>
+      <p id="waitlist-dialog-description">{complete ? t('waitlist.zipPrompt') : t('waitlist.intro')}</p>
       {open && <WaitlistExperience onCreated={(record) => { setComplete(true); onCreated(record) }} onFeedback={onFeedback} onSubmittingChange={(value) => { submitting.current = value }} />}
     </div>
   </dialog>, document.body)

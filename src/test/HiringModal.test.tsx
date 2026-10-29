@@ -134,7 +134,7 @@ describe('hiring modal', () => {
   it('opens the waitlist dialog accessibly and keeps booking as a separate link', async () => {
     const user = userEvent.setup()
     render(<App />)
-    const trigger = screen.getAllByRole('button', { name: 'Join the Waitlist' })[0]
+    const trigger = within(document.querySelector('.landing-header-actions') as HTMLElement).getByRole('button', { name: 'Join the Waitlist' })
     await user.click(trigger)
     const dialog = screen.getByRole('dialog', { name: 'Join the Mirembe waitlist.' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')

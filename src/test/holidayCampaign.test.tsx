@@ -1,7 +1,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
+import { HolidayFloatingCTA } from '../components/landing/HolidayCampaign'
 import { holidayCampaign, holidayCtaDismissedKey } from '../config/campaigns'
+import { i18n, t } from '../i18n'
+import { localeCodes, locales } from '../i18n/config'
 
 vi.mock('../lib/zenmaid', () => ({ loadZenMaid: vi.fn().mockResolvedValue(undefined) }))
 
@@ -29,6 +32,55 @@ afterEach(() => {
 function advance(ms: number) { act(() => vi.advanceTimersByTime(ms)) }
 
 describe('holiday promotion page-load behavior', () => {
+  it('keeps the same floating campaign and its dismissal state across localized navigation', async () => {
+    history.replaceState(null, '', '/')
+    await act(() => i18n.changeLanguage('en'))
+    try {
+      render(<App />)
+      const original = document.querySelector('.holiday-floating-cta')
+      for (const code of localeCodes) {
+        fireEvent.click(screen.getByRole('button', { name: t('language.current', { language: locales[i18n.language as keyof typeof locales].label }) }))
+        fireEvent.click(screen.getByRole('menuitemradio', { name: locales[code].label }))
+        expect(document.querySelector('.holiday-floating-cta')).toBe(original)
+        expect(screen.getByRole('link', { name: t('holiday.bookLabel', { discount: holidayCampaign.discount }) })).toHaveAttribute('href', locales[code].pathPrefix + '/booking')
+        expect(screen.getByRole('button', { name: t('holiday.dismiss') })).toBeEnabled()
+      }
+      fireEvent.click(screen.getByRole('button', { name: t('holiday.dismiss') }))
+      fireEvent.click(screen.getByRole('button', { name: t('language.current', { language: locales.pt.label }) }))
+      fireEvent.click(screen.getByRole('menuitemradio', { name: locales.en.label }))
+      expect(document.querySelector('.holiday-floating-cta')).toBeNull()
+      expect(sessionStorage.getItem(holidayCtaDismissedKey)).toBe('1')
+      advance(4000)
+      expect(modal()).toHaveAttribute('open')
+    } finally {
+      history.replaceState(null, '', '/')
+      await act(() => i18n.changeLanguage('en'))
+    }
+  })
+  it('yields to visible conversion actions and returns only after all observed actions leave', () => {
+    const observers: { callback: IntersectionObserverCallback; elements: Element[] }[] = []
+    vi.stubGlobal('IntersectionObserver', class {
+      record: typeof observers[number]
+      constructor(callback: IntersectionObserverCallback) { this.record = { callback, elements: [] }; observers.push(this.record) }
+      observe(element: Element) { this.record.elements.push(element) }
+      disconnect() {}
+    })
+    try {
+      const view = render(<><div className="landing-hero-actions" /><div className="landing-how"><div className="landing-cta-group" /></div><HolidayFloatingCTA hidden={false} onBooking={vi.fn()} /></>)
+      const observer = observers.find(item => item.elements.some(element => element.matches('.landing-hero-actions')))!
+      const hero = observer.elements.find(element => element.matches('.landing-hero-actions'))!
+      const otherActions = observer.elements.find(element => element.matches('.landing-cta-group'))!
+      expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()
+      act(() => observer.callback([{ target: hero, isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+      expect(document.querySelector('.holiday-floating-cta')).toBeNull()
+      act(() => observer.callback([{ target: otherActions, isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+      act(() => observer.callback([{ target: hero, isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver))
+      expect(document.querySelector('.holiday-floating-cta')).toBeNull()
+      act(() => observer.callback([{ target: otherActions, isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver))
+      expect(document.querySelector('.holiday-floating-cta')).not.toBeNull()
+      view.unmount()
+    } finally { vi.unstubAllGlobals() }
+  })
   it.each(['/terms', '/booking', '/booking/thank-you'])('never mounts promotional controls or delayed overlays on %s', path => {
     render(<App path={path} />)
     advance(60_000)

@@ -155,3 +155,52 @@ it.each([false, true])('logs fixed event names and adds debug_mode only with dev
     expect(log).not.toHaveBeenCalled()
   }
 })
+
+it('measures language changes only with consent, without Meta events or preference mutations', async () => {
+  const analytics = await import('../lib/analytics')
+  const consent = await import('../lib/consent')
+  analytics.trackLanguageChange('en', 'es')
+  expect(window.dataLayer).toBeUndefined()
+  expect(consent.getConsent()).toBeNull()
+  analytics.setConsent('accepted')
+  const metaBefore = [...(window.fbq?.queue ?? [])]
+  analytics.trackLanguageChange('en', 'ht')
+  expect(events('language_change')).toHaveLength(1)
+  expect(events('language_change')[0][2]).toMatchObject({ from_language: 'en', to_language: 'ht' })
+  expect(window.fbq?.queue ?? []).toEqual(metaBefore)
+  expect(consent.getConsent()).toBe('accepted')
+  analytics.trackLanguageChange('ht', 'ht')
+  analytics.trackLanguageChange('en', 'fr')
+  expect(events('language_change')).toHaveLength(1)
+  Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: true })
+  analytics.trackLanguageChange('ht', 'pt')
+  expect(events('language_change')).toHaveLength(0) // GPC revokes the unsent Google queue.
+  Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: false })
+  analytics.setConsent('declined')
+  analytics.trackLanguageChange('ht', 'es')
+  expect(events('language_change')).toHaveLength(0)
+})
+
+it.each(['/', '/es/', '/ht/', '/pt/'])('measures %s pageviews once and retains the localized path without introducing conversions', async path => {
+  history.replaceState(null, '', path + '?utm_source=holiday&utm_campaign=holiday_2026&email=private@example.com')
+  const analytics = await import('../lib/analytics')
+  analytics.setConsent('accepted')
+  analytics.startAnalytics(); analytics.startAnalytics()
+  expect(events('page_view')).toHaveLength(1)
+  expect(events('page_view')[0][2]).toMatchObject({ page_path: path, page_location: location.origin + path + '?utm_source=holiday&utm_campaign=holiday_2026' })
+  expect(events('booking_complete')).toHaveLength(0)
+  expect(JSON.stringify(events('page_view'))).not.toMatch(/email=|private/)
+})
+
+it('measures language history transitions once per actual URL without a second provider initialization', async () => {
+  const analytics = await import('../lib/analytics')
+  analytics.setConsent('accepted')
+  for (const path of ['/es/', '/ht/', '/es/']) {
+    history.pushState(null, '', path)
+    analytics.startAnalytics(); analytics.startAnalytics()
+  }
+  expect(events('page_view').map(event => (event[2] as { page_path: string }).page_path)).toEqual(['/', '/es/', '/ht/', '/es/'])
+  expect(commands().filter(command => command[0] === 'config')).toHaveLength(1)
+  expect(document.querySelectorAll('#mirembe-ga4')).toHaveLength(1)
+  expect(events('booking_complete')).toHaveLength(0)
+})

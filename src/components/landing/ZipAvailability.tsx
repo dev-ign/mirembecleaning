@@ -1,22 +1,24 @@
+import { t, useLocale } from '../../i18n'
 type ZipAvailabilityProps = {
   openWaitlist: () => void
   joined: boolean
 }
 
 export function ZipAvailability({ openWaitlist, joined }: ZipAvailabilityProps) {
+  useLocale()
   return <div className="landing-availability-card" id="availability">
     <div>
-      <h3>Not sure if we serve your area?</h3>
-      <p>Enter your ZIP code to check availability. If we’re not there yet, join the waitlist and we’ll let you know when we are.</p>
+      <h3>{t('zipAvailability.title')}</h3>
+      <p>{t('zipAvailability.description')}</p>
     </div>
     <div className="landing-zip-controls">
-      <label htmlFor="availability-zip">ZIP code</label>
+      <label htmlFor="availability-zip">{t('zipAvailability.label')}</label>
       <div>
-        <input id="availability-zip" type="text" inputMode="numeric" autoComplete="postal-code" maxLength={5} placeholder="e.g. 02134" aria-describedby="availability-note" />
-        <button className="landing-button" type="button" disabled>Check availability</button>
+        <input id="availability-zip" type="text" inputMode="numeric" autoComplete="postal-code" maxLength={5} placeholder={t('zipAvailability.placeholder')} aria-describedby="availability-note" />
+        <button className="landing-button" type="button" disabled>{t('zipAvailability.check')}</button>
       </div>
-      <p id="availability-note">ZIP checking is coming soon.{' '}
-        <button type="button" onClick={openWaitlist} disabled={joined}>{joined ? 'You’re on the waitlist' : 'Join the waitlist for area updates'}</button>
+      <p id="availability-note">{t('zipAvailability.comingSoon')}{' '}
+        <button type="button" onClick={openWaitlist} disabled={joined}>{joined ? t('waitlist.joined') : t('zipAvailability.join')}</button>
       </p>
     </div>
   </div>

@@ -71,8 +71,12 @@ describe('booking documents', () => {
     expect(fallback).toHaveAttribute('rel', 'noopener noreferrer')
     expect(document.querySelector('.zenmaid-container')!.compareDocumentPosition(document.querySelector('.booking-provider-help')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(document.querySelector('.booking-request-note')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Request a Cleaning/ })).toHaveAttribute('href', bookingConfig.path)
-    expect(screen.getByRole('link', { name: /Request a Cleaning/ })).not.toHaveAttribute('target')
+    const requestLinks = screen.getAllByRole('link', { name: /Request a Cleaning/ })
+    expect(requestLinks).toHaveLength(2) // Desktop actions and the compact menu.
+    for (const link of requestLinks) {
+      expect(link).toHaveAttribute('href', bookingConfig.path)
+      expect(link).not.toHaveAttribute('target')
+    }
     expect(screen.getByRole('navigation', { name: 'Main navigation' }).querySelector('a[href="/#services"]')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Interested in joining our cleaning team?' })).toBeInTheDocument()
     await screen.findByText(/Your booking form is being prepared/)
@@ -84,8 +88,12 @@ describe('booking documents', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Your Cleaning Request Is In')
     expect(screen.getByRole('link', { name: 'Back to Home' })).toHaveAttribute('href', '/')
     expect(screen.getByText(/our team will reach out to confirm the details/)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Request a Cleaning/ })).toHaveAttribute('href', bookingConfig.path)
-    expect(screen.getByRole('link', { name: /Request a Cleaning/ })).not.toHaveAttribute('target')
+    const confirmationRequests = screen.getAllByRole('link', { name: /Request a Cleaning/ })
+    expect(confirmationRequests).toHaveLength(2)
+    for (const link of confirmationRequests) {
+      expect(link).toHaveAttribute('href', bookingConfig.path)
+      expect(link).not.toHaveAttribute('target')
+    }
     expect(screen.getByRole('link', { name: 'Explore Our Services' })).toHaveAttribute('href', '/#services')
     expect(screen.getByRole('heading', { level: 1 })).toHaveFocus()
     expect(loadZenMaid).not.toHaveBeenCalled()

@@ -1,3 +1,4 @@
+import type { MessageKey } from '../i18n'
 import { useEffect, useState } from 'react'
 import type { WaitlistRecord } from '../types/waitlist'
 import { WaitlistForm } from './WaitlistForm'
@@ -7,7 +8,7 @@ type Phase = 'form' | 'exiting' | 'success'
 
 interface WaitlistExperienceProps {
   onCreated?: (record: WaitlistRecord) => void
-  onFeedback?: (message: string, kind: 'error' | 'verification') => void
+  onFeedback?: (message: MessageKey, kind: 'error' | 'verification') => void
   onSubmittingChange?: (submitting: boolean) => void
 }
 

@@ -66,3 +66,7 @@ export function trackEvent(event: MarketingEvent, conversionId?: string): void {
 export function setBookingFormVisible(visible: boolean): void {
   deliver(events => events.setBookingFormVisible(visible))
 }
+
+export function trackLanguageChange(from: string, to: string): void {
+  if (getConsent() === 'accepted') deliver(events => events.trackLanguageChange(from, to))
+}

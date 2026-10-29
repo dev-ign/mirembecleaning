@@ -1,3 +1,5 @@
+import { useLocalizedHref } from '../i18n/useLocalizedHref'
+import { t, Trans, useLocale, type MessageKey } from '../i18n'
 import { useCallback, useRef, useState, type AnimationEvent, type FormEvent } from 'react'
 import mailIcon from '../assets/icons/mail.svg'
 import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } from './TurnstileWidget'
@@ -11,16 +13,18 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface WaitlistFormProps {
   onCreated: (record: WaitlistRecord) => void
-  onFeedback?: (message: string, kind: 'error' | 'verification') => void
+  onFeedback?: (message: MessageKey, kind: 'error' | 'verification') => void
   onSubmittingChange?: (submitting: boolean) => void
   exiting: boolean
   onExitComplete: () => void
 }
 
 export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exiting, onExitComplete }: WaitlistFormProps) {
+  const localHref = useLocalizedHref()
+  useLocale()
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<FormStatus>('idle')
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState<MessageKey>('')
   const [turnstileToken, setTurnstileToken] = useState('')
   const [verificationStatus, setVerificationStatus] = useState<TurnstileStatus>('loading')
   const turnstileRef = useRef<TurnstileWidgetHandle>(null)
@@ -33,8 +37,8 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
     if (nextStatus === 'error') {
       verificationErrorActive.current = true
       setStatus((current) => current === 'submitting' ? current : 'error')
-      setMessage('Verification could not load. Try again.')
-      onFeedback?.('Verification could not load. Try again.', 'verification')
+      setMessage('errors.verificationLoad')
+      onFeedback?.('errors.verificationLoad', 'verification')
     } else if (nextStatus === 'verified' && verificationErrorActive.current) {
       verificationErrorActive.current = false
       setStatus((current) => current === 'error' ? 'idle' : current)
@@ -59,7 +63,7 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
 
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       setStatus('invalid')
-      setMessage('Enter a valid email address to join the waitlist.')
+      setMessage('errors.waitlistEmail')
       return
     }
     if (verificationStatus !== 'verified' || !turnstileToken) return
@@ -83,10 +87,10 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
       verificationErrorActive.current = verification
       setStatus(invalid ? 'invalid' : 'error')
       setMessage(invalid
-        ? 'Enter a valid email address to join the waitlist.'
-        : verification ? 'Verification failed. Please try again.'
-        : 'We couldn’t add you right now. Please try again.')
-      onFeedback?.(invalid ? 'Enter a valid email address to join the waitlist.' : verification ? 'Verification failed. Please try again.' : 'We couldn’t add you right now. Please try again.', verification ? 'verification' : 'error')
+        ? 'errors.waitlistEmail'
+        : verification ? 'errors.verificationFailed'
+        : 'errors.waitlistSubmit')
+      onFeedback?.(invalid ? 'errors.waitlistEmail' : verification ? 'errors.verificationFailed' : 'errors.waitlistSubmit', verification ? 'verification' : 'error')
       turnstileRef.current?.reset()
     }
   }
@@ -98,14 +102,14 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
   return (
     <div className={'waitlist-email-stage' + (exiting ? ' is-exiting' : '')} onAnimationEnd={handleExitAnimation} inert={exiting} aria-hidden={exiting}>
       <p className="incentive entrance" style={{ animationDelay: '320ms' }}>
-        <strong>Priority booking</strong> + <strong>$50 off</strong> the first recurring clean
+        <Trans i18nKey="waitlist.incentive" components={{ strong: <strong /> }} values={{ discount: "$50" }} />
       </p>
       <div className="waitlist-block">
         <form className={'waitlist-form entrance' + (verificationStatus === 'ready' || verificationStatus === 'expired' || verificationStatus === 'error' ? ' is-verifying' : '')} style={{ animationDelay: '400ms' }} onSubmit={handleSubmit} noValidate aria-busy={status === 'submitting'}>
           <div className={'waitlist-controls' + (status === 'invalid' || status === 'error' ? ' has-error' : '')}>
             <div className="email-field">
               <img src={mailIcon} width="24" height="24" alt="" aria-hidden="true" />
-              <label htmlFor="waitlist-email" className="sr-only">Email address</label>
+              <label htmlFor="waitlist-email" className="sr-only">{t('waitlist.emailLabel')}</label>
               <input
                 id="waitlist-email"
                 name="email"
@@ -113,7 +117,7 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
                 maxLength={254}
                 autoComplete="email"
                 inputMode="email"
-                placeholder="Enter your email address"
+                placeholder={t('waitlist.emailPlaceholder')}
                 value={email}
                 readOnly={status === 'submitting' || exiting}
                 aria-invalid={status === 'invalid'}
@@ -134,21 +138,20 @@ export function WaitlistForm({ onCreated, onFeedback, onSubmittingChange, exitin
               />
             </div>
             <p id="waitlist-privacy" className="privacy-note entrance" style={{ animationDelay: '480ms' }}>
-              Get launch updates and early access to booking. No spam.
-              {' '}<a href={privacyConfig.path} target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></a>
+              {t('waitlist.privacyNote')}{' '}<a href={localHref(privacyConfig.path)} target="_blank" rel="noopener noreferrer">{t('common.privacy')}<span className="sr-only"> {t('common.newTab')}</span></a>
             </p>
             <button className="submit-button" type="submit" disabled={status === 'submitting' || exiting || verificationPending}>
               {(status === 'submitting' || verificationPending) && <span className="loading-spinner" aria-hidden="true" />}
-              <span>{status === 'submitting' ? 'Joining...' : verificationPending ? 'Verifying...' : verificationStatus === 'error' || verificationStatus === 'expired' ? 'Retry verification' : 'Join the Waitlist'}</span>
+              <span>{status === 'submitting' ? t('waitlist.joining') : verificationPending ? t('common.verifying') : verificationStatus === 'error' || verificationStatus === 'expired' ? t('common.retryVerification') : t('waitlist.join')}</span>
             </button>
           </div>
           <TurnstileWidget ref={turnstileRef} action="waitlist" onStatusChange={handleVerificationChange} />
         </form>
         <span className="sr-only" aria-live="polite">
-          {status === 'submitting' ? 'Joining the waitlist…' : verificationPending ? 'Security verification in progress…' : ''}
+          {status === 'submitting' ? t('waitlist.joiningAnnouncement') : verificationPending ? t('common.verificationProgress') : ''}
         </span>
         {(status === 'invalid' || status === 'error') && (
-          <p id="waitlist-feedback" className="form-feedback" role="alert">{message}</p>
+          <p id="waitlist-feedback" className="form-feedback" role="alert">{t(message)}</p>
         )}
       </div>
     </div>

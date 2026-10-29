@@ -1,3 +1,4 @@
+import { t, Trans, useLocale } from '../i18n'
 import { createContext, useContext, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import arrowIcon from '../assets/icons/arrow-right.svg'
 import { HiringModal } from './hiring/HiringModal'
@@ -6,6 +7,7 @@ import { trackEvent } from '../lib/optionalEvents'
 const HiringContext = createContext<{ modalOpen: boolean; open: (event: MouseEvent<HTMLButtonElement>) => void } | null>(null)
 
 export function CleaningTeamProvider({ children }: { children: ReactNode }) {
+  useLocale()
   const [modalOpen, setModalOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
@@ -25,6 +27,7 @@ export function CleaningTeamProvider({ children }: { children: ReactNode }) {
 }
 
 export function CleaningTeamLink({ variant = 'footer' }: { variant?: 'footer' | 'hero' }) {
+  useLocale()
   const hiring = useContext(HiringContext)
   if (!hiring) throw new Error('CleaningTeamLink requires CleaningTeamProvider')
   const hero = variant === 'hero'
@@ -39,7 +42,7 @@ export function CleaningTeamLink({ variant = 'footer' }: { variant?: 'footer' | 
         aria-controls="hiring-dialog"
         onClick={hiring.open}
       >
-        <span>{hero ? <>Looking for cleaning work? <strong>Join our team</strong></> : 'Interested in joining our cleaning team?'}</span>
+        <span>{hero ? <><Trans i18nKey="hiring.heroLink" components={{ strong: <strong /> }} /></> : t('hiring.link')}</span>
         <img src={arrowIcon} width="24" height="24" alt="" aria-hidden="true" />
       </button>
     </div>

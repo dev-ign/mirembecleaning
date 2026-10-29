@@ -1,3 +1,4 @@
+import { t, useLocale, type MessageKey } from '../i18n'
 import { useRef, useState, type ReactNode } from 'react'
 import { Header, Footer } from './landing/LandingPage'
 import { WaitlistModal } from './landing/WaitlistModal'
@@ -6,10 +7,11 @@ import { AnalyticsConsent } from './AnalyticsConsent'
 import { trackEvent } from '../lib/optionalEvents'
 
 export function SiteDocumentLayout({ children, pageClass = 'booking-page', mainId = 'booking-main' }: { children: ReactNode; pageClass?: string; mainId?: string }) {
+  useLocale()
   const [menuOpen, setMenuOpen] = useState(false)
   const [waitlistOpen, setWaitlistOpen] = useState(false)
   const [joined, setJoined] = useState(false)
-  const [feedback, setFeedback] = useState('')
+  const [feedback, setFeedback] = useState<MessageKey>('')
   const trigger = useRef<HTMLElement | null>(null)
   function open() {
     trigger.current = document.activeElement as HTMLElement
@@ -27,7 +29,7 @@ export function SiteDocumentLayout({ children, pageClass = 'booking-page', mainI
     <Footer homePath="/" />
     <AnalyticsConsent />
     <WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={() => setJoined(true)} onFeedback={message => setFeedback(message)} />
-    {feedback && <div className="landing-toast is-error" role="alert"><p>{feedback}</p><button type="button" aria-label="Dismiss notification" onClick={() => setFeedback('')}>×</button></div>}
+    {feedback && <div className="landing-toast is-error" role="alert"><p>{t(feedback)}</p><button type="button" aria-label={t('common.dismissNotification')} onClick={() => setFeedback('')}>×</button></div>}
   </div></CleaningTeamProvider>
 }
 

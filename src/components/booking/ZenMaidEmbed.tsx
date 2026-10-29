@@ -1,3 +1,5 @@
+import { useLocalizedHref } from '../../i18n/useLocalizedHref'
+import { t, useLocale } from '../../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { bookingConfig } from '../../config/booking'
 import { useHydrated } from '../../lib/useHydrated'
@@ -6,6 +8,8 @@ import { business } from '../../config/business'
 import { setBookingFormVisible, trackEvent } from '../../lib/optionalEvents'
 
 export function ZenMaidEmbed() {
+  const localHref = useLocalizedHref()
+  const locale = useLocale()
   const hydrated = useHydrated()
   const basic = hydrated && new URLSearchParams(window.location.search).get('embed') === 'basic'
   const container = useRef<HTMLDivElement>(null)
@@ -42,25 +46,26 @@ export function ZenMaidEmbed() {
     return () => { observer.disconnect(); setBookingFormVisible(false) }
   }, [hydrated, basic, status])
 
-  return <section className={`booking-embed is-${basic ? 'basic' : status}`} aria-label="Holiday cleaning booking form">
+  return <section className={`booking-embed is-${basic ? 'basic' : status}`} aria-label={t('booking.formRegion')}>
     {basic ? <>
-      <p className="booking-status">The simple form may scroll within its frame. You can also open secure booking below.</p>
-      <iframe ref={frame} className="booking-basic-frame" src={bookingConfig.holiday.basicEmbedUrl} title="Mirembe Cleaning booking form" onLoad={() => setStatus('ready')} />
+      <p className="booking-status">{t('booking.simpleHelp')}</p>
+      <iframe ref={frame} className="booking-basic-frame" src={bookingConfig.holiday.basicEmbedUrl} title={t('booking.frameTitle')} onLoad={() => setStatus('ready')} />
     </> : <>
       {status !== 'ready' && <p className="booking-status" role="status">
-        {status === 'loading' ? 'Loading your booking form…' : status === 'error'
-          ? 'The booking form couldn’t load. Please try the simple form or open secure booking below.'
-          : 'Your booking form is being prepared. If it doesn’t appear, try the simple form or open secure booking below.'}
+        {status === 'loading' ? t('booking.loading') : status === 'error'
+          ? t('booking.loadError')
+          : t('booking.pending')}
       </p>}
-      <div ref={container} className="zenmaid-container" />
+      <div ref={container} lang="en" className="zenmaid-container" />
     </>}
     <div className="booking-provider-help">
-      <p>Need help booking? <a href={business.phoneHref} onClick={() => trackEvent('phone_click')}>Call {business.phoneDisplay}</a></p>
-      <div><span>Having trouble with the form?</span>
-        <a href={bookingConfig.holiday.hostedUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('booking_fallback_click')}>Open secure booking <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
-        <details><summary>More options</summary>
-          {!basic ? <a href={`${bookingConfig.path}?embed=basic`} onClick={() => trackEvent('booking_fallback_click')}>Try the simple form</a>
-            : <a href={bookingConfig.path} onClick={() => trackEvent('booking_fallback_click')}>Use the full booking form</a>}
+      {locale !== 'en' && <p>{t('booking.vendorNotice')}</p>}
+      <p>{t('booking.help')}{' '}<a href={business.phoneHref} onClick={() => trackEvent('phone_click')}>{t('booking.call', { phone: business.phoneDisplay })}</a></p>
+      <div><span>{t('booking.trouble')}</span>
+        <a href={bookingConfig.holiday.hostedUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('booking_fallback_click')}>{t('booking.secure')}<span aria-hidden="true">↗</span><span className="sr-only"> {t('common.newTab')}</span></a>
+        <details><summary>{t('booking.more')}</summary>
+          {!basic ? <a href={localHref(`${bookingConfig.path}?embed=basic`)} onClick={() => trackEvent('booking_fallback_click')}>{t('booking.simple')}</a>
+            : <a href={localHref(bookingConfig.path)} onClick={() => trackEvent('booking_fallback_click')}>{t('booking.full')}</a>}
         </details>
       </div>
     </div>

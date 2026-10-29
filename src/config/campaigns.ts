@@ -1,3 +1,4 @@
+import { resolveSiteRoute } from '../i18n/routes'
 import { bookingConfig } from './booking'
 
 /** The seasonal promotion is deliberately independent of booking and form operations. */
@@ -8,6 +9,7 @@ export const holidayCampaign = {
   bookingUrl: bookingConfig.holiday.hostedUrl,
   discount: '10%',
   windows: ['November 20–23, 2026', 'December 18–23, 2026'],
+  dateRanges: [['2026-11-20', '2026-11-23'], ['2026-12-18', '2026-12-23']],
   modalDelayMs: 4000,
   floatingCtaEnabled: true,
 } as const
@@ -36,6 +38,5 @@ export const holidayCtaDismissedKey = `${holidayCampaign.id}.ctaDismissed`
 // Promotional overlays belong only on the homepage. Document routes and unknown
 // paths stay interruption-free, including aliases used by prerendered entries.
 export function allowsPromotionalOverlays(path: string): boolean {
-  const route = path.replace(/\/index\.html$/, '').replace(/\/+$/, '') || '/'
-  return route === '/'
+  return resolveSiteRoute(path).kind === 'home'
 }
