@@ -21,7 +21,8 @@ describe('landing navigation and booking actions', () => {
   it('uses same-tab booking navigation for every general request link and service drawer', () => {
     render(<App />)
     const requests = screen.getAllByRole('link', { name: /Request a Cleaning/i })
-    expect(requests).toHaveLength(5)
+    // Both responsive header presentations share the existing booking destination.
+    expect(requests).toHaveLength(6)
     for (const link of requests) {
       expect(link).toHaveAttribute('href', bookingConfig.path)
       expect(link).not.toHaveAttribute('target')

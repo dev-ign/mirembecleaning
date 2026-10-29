@@ -250,7 +250,7 @@ describe('waitlist experience', () => {
     expect(updateWaitlistZip).toHaveBeenCalledTimes(1)
     expect(screen.queryByText('Zip code saved. Thank you!')).not.toBeInTheDocument()
 
-    finishUpdate({ ...createdRecord, zip_code: '02108' })
+    await act(async () => { finishUpdate({ ...createdRecord, zip_code: '02108' }) })
     expect(await screen.findByText('Zip code saved. Thank you!')).toHaveFocus()
   })
 

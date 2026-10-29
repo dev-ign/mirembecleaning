@@ -16,7 +16,7 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
   const [dismissed, setDismissed] = useState(() => readCampaignFlag(safeSessionStorage(), holidayCtaDismissedKey))
   const [compact, setCompact] = useState(false)
   const [footerVisible, setFooterVisible] = useState(false)
-  const [heroActionsVisible, setHeroActionsVisible] = useState(false)
+  const [conversionActionsVisible, setConversionActionsVisible] = useState(false)
   const [editing, setEditing] = useState(false)
 
   useEffect(() => {
@@ -29,10 +29,16 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return
-    // The floating promotion must not cover the hero's booking or waitlist actions.
-    const observer = new IntersectionObserver(entries => setHeroActionsVisible(entries.some(entry => entry.isIntersecting)), { rootMargin: '16px' })
-    const actions = document.querySelector('.landing-hero-actions')
-    if (actions) observer.observe(actions)
+    // Visible booking/waitlist actions take priority over the floating promotion.
+    const visible = new Set<Element>()
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visible.add(entry.target)
+        else visible.delete(entry.target)
+      }
+      setConversionActionsVisible(visible.size > 0)
+    }, { rootMargin: '16px' })
+    document.querySelectorAll('.landing-hero-actions, .landing-how .landing-cta-group, .landing-final-cta .landing-cta-group, .landing-services-request, .landing-area-prompt').forEach(actions => observer.observe(actions))
     return () => observer.disconnect()
   }, [])
 
@@ -58,7 +64,7 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
     }
   }, [])
 
-  if (!ready || hidden || dismissed || footerVisible || heroActionsVisible || editing || !holidayCampaign.floatingCtaEnabled) return null
+  if (!ready || hidden || dismissed || footerVisible || conversionActionsVisible || editing || !holidayCampaign.floatingCtaEnabled) return null
   return <div className={`holiday-floating-cta${compact ? ' is-compact' : ''}`}>
     <a href={localHref(bookingConfig.path)} onClick={() => { trackBookingCTA('holiday_floating'); onBooking() }} aria-label={t('holiday.bookLabel', { discount: holidayCampaign.discount })}>
       <span className="holiday-floating-icon"><img src="/landing/v2/holiday_floating_calendar.svg" alt="" width="20" height="20" /></span>

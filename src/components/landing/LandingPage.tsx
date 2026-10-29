@@ -29,10 +29,10 @@ function WaitlistButton({ open, joined, variant = 'primary', showArrow = false }
     {joined ? <>{t('waitlist.joinedCheck')}</> : <>{t('waitlist.join')}{showArrow && <Icon name="button-arrow-light" />}</>}
   </button>
 }
-function RequestButton({ onDark = false, primary = false, subtle = false, onNavigate, location }: { onDark?: boolean; primary?: boolean; subtle?: boolean; onNavigate?: () => void; location: BookingLocation }) {
+function RequestButton({ onDark = false, primary = false, onNavigate, location }: { onDark?: boolean; primary?: boolean; onNavigate?: () => void; location: BookingLocation }) {
   const localHref = useLocalizedHref()
   useLocale()
-  return <a className={subtle ? 'landing-booking-link' : 'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} href={localHref(bookingConfig.path)} onClick={() => { trackBookingCTA(location); onNavigate?.() }}>{t('common.requestCleaning')}{primary && <Icon name="button-arrow-light" />}</a>
+  return <a className={'landing-button is-' + (primary ? 'primary' : 'secondary') + (onDark ? ' is-on-dark' : '')} href={localHref(bookingConfig.path)} onClick={() => { trackBookingCTA(location); onNavigate?.() }}>{t('common.requestCleaning')}{primary && <Icon name="button-arrow-light" />}</a>
 }
 function SectionHeading({ eyebrow, title, description, id, center = false }: { eyebrow?: string; title: string; description?: string; id: string; center?: boolean }) {
   useLocale()
@@ -43,7 +43,12 @@ export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: {
   const localHref = useLocalizedHref()
   useLocale()
   const [scrolled, setScrolled] = useState(false)
+  const navigation = useRef<HTMLElement>(null)
+  const menuToggle = useRef<HTMLButtonElement>(null)
   const activeSection = useActiveNavigation()
+  useEffect(() => {
+    if (menuOpen) navigation.current?.querySelector('a')?.focus({ preventScroll: true })
+  }, [menuOpen])
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 32)
     update()
@@ -52,13 +57,14 @@ export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: {
   }, [])
   return <header className={'landing-header' + (scrolled ? ' is-scrolled' : '')}><div className="landing-header-inner landing-container">
     <a href={localHref(homePath + '#top')} aria-label={t('navigation.homeLabel')} className="landing-brand-link"><BrandLogo /></a>
-    <nav id="landing-nav" className={'landing-nav' + (menuOpen ? ' is-open' : '')} aria-label={t('navigation.main')}>
+    <nav ref={navigation} id="landing-nav" className={'landing-nav' + (menuOpen ? ' is-open' : '')} aria-label={t('navigation.main')} onKeyDown={event => {
+      if (event.key === 'Escape' && menuOpen) { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); menuToggle.current?.focus({ preventScroll: true }) }
+    }}>
       {navigationSections.map(({ id, labelKey }) => <a key={id} href={localHref(homePath + '#' + id)} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{t(labelKey)}</a>)}
-      <RequestButton location="header" subtle onNavigate={() => setMenuOpen(false)} />
-      <div className="landing-mobile-action"><WaitlistButton open={() => { setMenuOpen(false); open() }} joined={joined} /></div>
+      <div className="landing-mobile-actions"><WaitlistButton open={() => { setMenuOpen(false); menuToggle.current?.focus({ preventScroll: true }); open() }} joined={joined} /><RequestButton location="header" onNavigate={() => setMenuOpen(false)} /></div>
     </nav>
-    <div className="landing-header-actions"><LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><WaitlistButton open={open} joined={joined} /></div>
-    <button className="landing-menu-toggle" type="button" aria-label={menuOpen ? t('navigation.closeMenu') : t('navigation.openMenu')} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
+    <div className="landing-header-actions"><LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><RequestButton location="header" /><WaitlistButton open={open} joined={joined} /></div>
+    <button ref={menuToggle} className="landing-menu-toggle" type="button" aria-label={menuOpen ? t('navigation.closeMenu') : t('navigation.openMenu')} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
   </div></header>
 }
 

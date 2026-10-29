@@ -1,5 +1,5 @@
 import { initializeRouteLocale } from '../i18n/navigation'
-import { act, fireEvent, render, screen, within, cleanup } from '@testing-library/react'
+import { act, fireEvent, render, screen, within, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToString } from 'react-dom/server'
@@ -7,7 +7,7 @@ import { hydrateRoot } from 'react-dom/client'
 import App from '../App'
 import { i18n, t, resources, formatDateRange } from '../i18n'
 import { bookingLanguageStorageKey, languageStorageKey, locales, localeCodes, readSavedLocale } from '../i18n/config'
-import { setConsent, trackLanguageChange } from '../lib/optionalEvents'
+import { setConsent, trackBookingCTA, trackLanguageChange } from '../lib/optionalEvents'
 import { getServices, getFaqs } from '../components/landing/content'
 import { WaitlistExperience } from '../components/WaitlistExperience'
 import { HiringApplicationForm } from '../components/hiring/HiringApplicationForm'
@@ -110,17 +110,38 @@ describe('language selection and persistence', () => {
 })
 
 describe('accessible language menu', () => {
-  it.each(localeCodes)('keeps the %s header utility immediately before the final primary waitlist action', async code => {
+  it.each(localeCodes)('groups the %s language utility, secondary booking and primary waitlist actions in order', async code => {
     history.replaceState(null, '', locales[code].pathPrefix + '/')
     render(<App />)
     const actions = document.querySelector('.landing-header-actions')!
     const trigger = within(actions as HTMLElement).getByRole('button', { name: t('language.current', { language: locales[code].label }) })
     expect(trigger.querySelector('.language-active-code')).toHaveTextContent(locales[code].shortLabel)
-    expect(trigger.parentElement?.nextElementSibling).toBe(actions.lastElementChild)
+    const booking = within(actions as HTMLElement).getByRole('link', { name: t('common.requestCleaning') })
+    expect(trigger.parentElement?.nextElementSibling).toBe(booking)
+    expect(booking).toHaveClass('landing-button', 'is-secondary')
+    expect(booking).toHaveAttribute('href', locales[code].pathPrefix + '/booking')
+    expect(booking.nextElementSibling).toBe(actions.lastElementChild)
+    expect(document.querySelectorAll('#landing-nav > a')).toHaveLength(4)
     expect(actions.lastElementChild).toHaveClass('landing-button', 'is-primary')
     expect(actions.lastElementChild).toHaveTextContent(t('waitlist.join'))
     await userEvent.click(actions.lastElementChild as HTMLElement)
     expect(screen.getByRole('dialog', { name: t('waitlist.title') })).toBeVisible()
+  })
+  it.each(localeCodes)('keeps %s compact-menu conversion actions distinct and closes navigation when booking', async code => {
+    history.replaceState(null, '', locales[code].pathPrefix + '/')
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: t('navigation.openMenu') }))
+    const actions = document.querySelector('.landing-mobile-actions')!
+    expect(actions.children).toHaveLength(2)
+    expect(actions.firstElementChild).toHaveClass('is-primary')
+    expect(actions.firstElementChild).toHaveTextContent(t('waitlist.join'))
+    const booking = within(actions as HTMLElement).getByRole('link', { name: t('common.requestCleaning') })
+    expect(booking).toHaveClass('landing-button', 'is-secondary')
+    expect(booking).toHaveAttribute('href', locales[code].pathPrefix + '/booking')
+    booking.addEventListener('click', event => event.preventDefault(), { once: true })
+    await userEvent.click(booking)
+    expect(trackBookingCTA).toHaveBeenCalledWith('header')
+    expect(document.querySelector('#landing-nav')).not.toHaveClass('is-open')
   })
   it('supports keyboard arrows, selected state, Home/End, Escape and focus restoration', async () => {
     const user = userEvent.setup(); render(<App />)
@@ -154,6 +175,30 @@ describe('accessible language menu', () => {
     await choose('ht')
     expect(document.querySelector('#landing-nav')).not.toHaveClass('is-open')
     expect(screen.getByRole('button', { name: 'Ouvri meni an' })).toHaveAttribute('aria-expanded', 'false')
+  })
+  it('enters compact navigation in visual order and restores hamburger focus with Escape', async () => {
+    const user = userEvent.setup(); render(<App />)
+    const toggle = screen.getByRole('button', { name: 'Open menu' })
+    await user.click(toggle)
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
+    expect(within(nav).getByRole('link', { name: 'Services' })).toHaveFocus()
+    await user.tab()
+    expect(within(nav).getByRole('link', { name: 'Why Mirembe' })).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(nav).not.toHaveClass('is-open')
+    expect(toggle).toHaveFocus()
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  })
+  it('returns focus to the hamburger after dismissing a waitlist opened from the compact menu', async () => {
+    const user = userEvent.setup(); render(<App />)
+    const toggle = screen.getByRole('button', { name: 'Open menu' })
+    await user.click(toggle)
+    const actions = document.querySelector('.landing-mobile-actions') as HTMLElement
+    await user.click(within(actions).getByRole('button', { name: 'Join the Waitlist' }))
+    expect(screen.getByRole('dialog', { name: t('waitlist.title') })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: t('waitlist.close') }))
+    await waitFor(() => expect(toggle).toHaveFocus())
+    expect(document.querySelector('#landing-nav')).not.toHaveClass('is-open')
   })
 })
 

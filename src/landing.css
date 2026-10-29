@@ -18,6 +18,11 @@
   --radius-xl: 24px;
   --radius-2xl: 32px;
   --radius-pill: 999px;
+  --header-control-height: 3rem;
+  --header-button-padding: 1.25rem;
+  --header-group-gap: 1.25rem;
+  --header-link-gap: 1.5rem;
+  --control-gap: .75rem;
   --shadow-subtle: 0 2px 8px rgb(59 41 79 / 4%), 0 1px 2px rgb(59 41 79 / 4%);
   --shadow-card: 0 16px 40px rgb(59 41 79 / 8%), 0 4px 12px rgb(59 41 79 / 5%);
   --shadow-floating: 0 32px 64px rgb(59 41 79 / 12%), 0 8px 24px rgb(59 41 79 / 6%);
@@ -62,21 +67,20 @@
 
 .landing-header { position: sticky; top: 0; z-index: 40; width: 100%; margin-bottom: -101px; background: transparent; transition: background-color 300ms var(--motion-ease), box-shadow 300ms var(--motion-ease); }
 .landing-header.is-scrolled { background: rgb(255 255 255 / 94%); backdrop-filter: blur(20px); box-shadow: var(--shadow-subtle); }
-.landing-header-inner { display: flex; align-items: center; gap: 12px; min-height: 101px; }
+.landing-header-inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--header-group-gap); min-height: 101px; }
 .landing-brand-link { flex: 0 0 auto; display: inline-block; text-decoration: none; }
 .landing-page .brand-logo { animation: none; opacity: 1; transform: none; gap: 10px; }
 .landing-page .brand-symbol { width: 52px; height: 52px; }
 .landing-page .brand-name { font-size: 28px; line-height: 1.1; }
 .landing-page .brand-subtitle { font-size: 13.5px; color: var(--text-secondary); }
-.landing-nav { display: flex; align-items: center; gap: clamp(12px, 1vw, 16px); margin-left: auto; }
+.landing-nav { display: flex; align-items: center; justify-self: center; gap: var(--header-link-gap); min-width: 0; }
+.landing-nav > a { flex: none; }
 .landing-nav a { color: #4f4b53; font-size: 14px; font-weight: 400; letter-spacing: .01em; text-decoration: none; white-space: nowrap; transition: color 180ms var(--motion-ease); }
 .landing-nav a:hover, .landing-nav a:focus-visible { color: var(--brand-primary); }
-.landing-nav .landing-button { min-height: 48px; padding: 12px 22px; }
 /* Keep brand, navigation and conversion utilities as separate alignment groups. */
-.landing-header-actions { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
-.landing-header-actions > .landing-button { min-height: 48px; max-width: 236px; padding: 12px 20px; }
-.landing-nav .landing-booking-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--brand-primary); font-weight: 500; }
-.landing-mobile-action { display: none; }
+.landing-header-actions { display: flex; align-items: center; justify-self: end; gap: var(--control-gap); min-width: 0; }
+.landing-header-actions > .landing-button { flex: none; height: var(--header-control-height); min-height: var(--header-control-height); padding: 0 var(--header-button-padding); white-space: nowrap; }
+.landing-mobile-actions { display: none; }
 .landing-menu-toggle { display: none; }
 
 .landing-hero { padding: 141px 0 120px; background: linear-gradient(180deg, var(--brand-soft), var(--background) 65%); }
@@ -310,17 +314,16 @@
   .landing-availability-card { flex-direction: column; align-items: stretch; }
   .landing-availability-card > div:first-child { max-width: 100%; }
 }
-@media (max-width: 1279px) {
+/* Full locale labels, including the joined state, need about 1340px plus gutters. */
+@media (max-width: 1439px) {
   .landing-menu-toggle { display: grid; place-items: center; width: 44px; height: 44px; margin-left: 0; flex: 0 0 44px; border: 0; background: transparent; font-size: 26px; color: var(--brand-deep); }
-  .landing-nav { position: absolute; top: 100%; left: 0; right: 0; display: none; flex-direction: column; align-items: stretch; gap: 0; padding: 12px var(--gutter) 24px; max-height: calc(100dvh - 101px); overflow-y: auto; background: #fff; box-shadow: var(--shadow-card); }
+  .landing-nav { position: absolute; top: 100%; left: 0; right: 0; display: none; flex-direction: column; align-items: stretch; justify-self: stretch; gap: 0; padding: 12px var(--gutter) 24px; max-height: calc(100dvh - 101px); overflow-y: auto; background: #fff; box-shadow: var(--shadow-card); }
   .landing-nav.is-open { display: flex; }
-  .landing-nav a { padding: 14px 4px; }
-  .landing-nav .landing-button { align-self: start; margin-top: 10px; }
-  .landing-header-actions { margin-left: auto; }
+  .landing-nav > a { padding: 14px 4px; }
   .landing-header-actions > .landing-button { display: none; }
-  .landing-header-inner { gap: 8px; }
-  .landing-mobile-action { display: block; }
-  .landing-mobile-action .landing-button { width: 100%; }
+  .landing-header-inner { grid-template-columns: auto minmax(0, 1fr) 44px; gap: 8px; }
+  .landing-mobile-actions { display: grid; grid-auto-rows: 1fr; gap: var(--control-gap); margin-top: 12px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .landing-mobile-actions > .landing-button { width: 100%; min-height: var(--header-control-height); padding: 12px var(--header-button-padding); }
 }
 @media (max-width: 1100px) {
   .landing-hero-grid { grid-template-columns: 1fr; }
