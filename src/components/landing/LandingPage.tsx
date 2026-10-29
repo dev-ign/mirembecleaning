@@ -63,8 +63,12 @@ export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: {
       {navigationSections.map(({ id, labelKey }) => <a key={id} href={localHref(homePath + '#' + id)} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{t(labelKey)}</a>)}
       <div className="landing-mobile-actions"><WaitlistButton open={() => { setMenuOpen(false); menuToggle.current?.focus({ preventScroll: true }); open() }} joined={joined} /><RequestButton location="header" onNavigate={() => setMenuOpen(false)} /></div>
     </nav>
-    <div className="landing-header-actions"><LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><RequestButton location="header" /><WaitlistButton open={open} joined={joined} /></div>
-    <button ref={menuToggle} className="landing-menu-toggle" type="button" aria-label={menuOpen ? t('navigation.closeMenu') : t('navigation.openMenu')} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
+    <div className="landing-header-actions">
+      <LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><RequestButton location="header" /><WaitlistButton open={open} joined={joined} />
+      <button ref={menuToggle} className="landing-menu-toggle" type="button" aria-label={menuOpen ? t('navigation.closeMenu') : t('navigation.openMenu')} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true" focusable="false">{menuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 6h16M4 12h16M4 18h16" />}</svg>
+      </button>
+    </div>
   </div></header>
 }
 
@@ -76,14 +80,13 @@ function Hero({ open, joined, campaignActive }: { open: () => void; joined: bool
       <Reveal initial delay={80}><h1 id="hero-heading"><Trans i18nKey="home.hero.title" components={{ accent: <span /> }} /></h1></Reveal>
       <Reveal initial delay={160}><p className="landing-hero-lede">{t('home.hero.lede')}</p></Reveal>
       <Reveal initial delay={240}><div className="landing-hero-actions"><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} showArrow /><RequestButton location="hero" /></div><p className="landing-hero-trust"><span aria-hidden="true">✓</span><span>{t('common.cleanerTrust')}</span></p></div></Reveal>
-      <Reveal initial delay={320} className="landing-hero-pathways"><div className="landing-quick-facts-desktop"><ul className="landing-quick-facts"><li><Icon name="home" />{t('home.hero.homeRental')}</li><li><Icon name="map-pin" />{t('areas.bostonShort')}</li><li><Icon name="map-pin" />{t('areas.hartfordShort')}</li></ul></div><CleaningTeamLink variant="hero" /></Reveal>
+      <Reveal initial delay={320} className="landing-hero-pathways"><div><ul className="landing-quick-facts"><li><Icon name="home" />{t('home.hero.homeRental')}</li><li><Icon name="map-pin" />{t('areas.bostonShort')}</li><li><Icon name="map-pin" />{t('areas.hartfordShort')}</li></ul></div><CleaningTeamLink variant="hero" /></Reveal>
     </div>
     <Reveal initial delay={400} className="landing-hero-visual">
       <picture><source media="(max-width: 767px)" srcSet={photo('hero_mobile')} /><img className="landing-hero-photo" src={photo('hero')} alt={t('home.hero.photoAlt')} width="1672" height="941" fetchPriority="high" /></picture>
       <img className="landing-hero-inset" src={photo('inset')} alt={t('home.hero.insetAlt')} width="1122" height="1402" loading="lazy" />
       <div className="landing-meaning-card"><strong>Mirembe</strong><span>{t('home.hero.meaning')}</span></div>
     </Reveal>
-    <ul className="landing-quick-facts landing-quick-facts-mobile"><li><Icon name="home" />{t('home.hero.homeRental')}</li><li><Icon name="map-pin" />{t('areas.hartfordShort')}</li><li><Icon name="map-pin" />{t('areas.bostonShort')}</li></ul>
   </div></section>
 }
 

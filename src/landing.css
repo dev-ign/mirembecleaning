@@ -314,16 +314,27 @@
   .landing-availability-card { flex-direction: column; align-items: stretch; }
   .landing-availability-card > div:first-child { max-width: 100%; }
 }
-/* Full locale labels, including the joined state, need about 1340px plus gutters. */
+/* Informational links collapse first. Conversion visibility is defined below. */
 @media (max-width: 1439px) {
-  .landing-menu-toggle { display: grid; place-items: center; width: 44px; height: 44px; margin-left: 0; flex: 0 0 44px; border: 0; background: transparent; font-size: 26px; color: var(--brand-deep); }
+  .landing-header { --header-button-padding: 1rem; --control-gap: .5rem; }
+  .landing-menu-toggle { display: grid; place-items: center; width: var(--header-control-height); height: var(--header-control-height); padding: 0; flex: none; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--brand-deep); cursor: pointer; }
   .landing-nav { position: absolute; top: 100%; left: 0; right: 0; display: none; flex-direction: column; align-items: stretch; justify-self: stretch; gap: 0; padding: 12px var(--gutter) 24px; max-height: calc(100dvh - 101px); overflow-y: auto; background: #fff; box-shadow: var(--shadow-card); }
   .landing-nav.is-open { display: flex; }
   .landing-nav > a { padding: 14px 4px; }
-  .landing-header-actions > .landing-button { display: none; }
-  .landing-header-inner { grid-template-columns: auto minmax(0, 1fr) 44px; gap: 8px; }
+  .landing-header-inner { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
   .landing-mobile-actions { display: grid; grid-auto-rows: 1fr; gap: var(--control-gap); margin-top: 12px; padding-top: 20px; border-top: 1px solid var(--border); }
   .landing-mobile-actions > .landing-button { width: 100%; min-height: var(--header-control-height); padding: 12px var(--header-button-padding); }
+}
+/* Budgets include the logo, 48px controls, translated labels and joined state.
+   English needs less room for both CTAs; the other locales share one budget. */
+@media (min-width: 800px) and (max-width: 899px) {
+  .landing-header:lang(en) .landing-header-actions > button.landing-button { display: inline-flex; }
+}
+@media (max-width: 899px) {
+  .landing-header-actions > button.landing-button { display: none; }
+}
+@media (max-width: 539px) {
+  .landing-header-actions > a.landing-button { display: none; }
 }
 @media (max-width: 1100px) {
   .landing-hero-grid { grid-template-columns: 1fr; }
