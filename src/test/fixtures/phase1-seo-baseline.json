@@ -349,7 +349,7 @@
     "src/lib/zenmaid.ts": "644b10749883c185f00da3eddabf262b6b0cf21d300c43d417bcd03caf78b5dd",
     "src/content/terms.txt": "148a41ea68d96cd84417dcb5857a76e531186fce5f9258b075fa6b5efb47dbe4",
     "src/content/privacy.txt": "d06636fec1d4b653c7257fed6df32e5ef2604623104569bc33981997c8defd80",
-    "src/services/waitlistService.ts": "a28071683d2d051574ddb3eed7b178df71a5b465ad5c8ff43d9a38a0e1a4077c"
+    "src/services/waitlistService.ts": "8847e439045e17273f6b0321b78f8442ad6ee59c5ec0a48fe7343a5f89df8b64"
   },
   "translationKeys": [
     "areas.boston.alt",
