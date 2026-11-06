@@ -1,4 +1,5 @@
-import type { CreateWaitlistInput, UpdateWaitlistZipInput, WaitlistRecord } from '../types/waitlist'
+import type { CreateWaitlistInput, UpdateWaitlistZipInput, WaitlistRecord, WaitlistSubmissionRequest } from '../types/waitlist'
+import { getWaitlistAttributionPreview } from '../lib/waitlistAttribution'
 
 export class WaitlistRequestError extends Error {
   constructor(public readonly kind: 'invalid' | 'unavailable' | 'invalid_token' | 'verification') {
@@ -22,10 +23,12 @@ export async function createWaitlistEntry(input: CreateWaitlistInput, turnstileT
   const email = input.email.trim().toLowerCase()
   let response: Response
   try {
+    const attribution = getWaitlistAttributionPreview()
+    const body: WaitlistSubmissionRequest = { email, turnstileToken, ...(attribution ? { attribution } : {}) }
     response = await fetch('/api/waitlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, turnstileToken }),
+      body: JSON.stringify(body),
     })
   } catch {
     throw new WaitlistRequestError('unavailable')

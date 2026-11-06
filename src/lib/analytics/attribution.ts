@@ -1,63 +1,10 @@
 import { resolveSiteRoute } from '../../i18n/routes'
 import { bookingConfig } from '../../config/booking'
+import { campaignFields, readCurrentCampaign, type CampaignField } from '../../shared/campaignAttribution.js'
 
-export type CampaignField = 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_content' | 'utm_term'
-export type Campaign = Partial<Record<CampaignField, string>>
-
-const fields: readonly CampaignField[] = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
-const firstTouchKey = 'mirembe:first-touch:v1'
-const lastTouchKey = 'mirembe:last-touch:v1'
-const clickIdKey = 'mirembe:fbclid:v1'
-
-// Review new campaign labels here; patterns alone cannot exclude personal data.
-const approved: Record<CampaignField, readonly string[]> = {
-  utm_source: ['facebook', 'instagram', 'meta', 'google', 'bing', 'newsletter', 'holiday'],
-  utm_medium: ['paid_social', 'paid-social', 'social', 'cpc', 'email', 'organic', 'referral'],
-  utm_campaign: ['holiday_2026', 'holiday-2026', 'launch_2027', 'autumn'],
-  utm_content: ['hero', 'holiday_modal', 'holiday_floating', 'video', 'image', 'carousel'],
-  utm_term: ['house_cleaning', 'holiday_cleaning', 'boston', 'newington'],
-}
-
-function safeCampaign(value: unknown): Campaign {
-  if (!value || typeof value !== 'object') return {}
-  const result: Campaign = {}
-  for (const field of fields) {
-    const candidate = (value as Record<string, unknown>)[field]
-    if (typeof candidate === 'string' && approved[field].includes(candidate)) {
-      result[field] = candidate
-    }
-  }
-  return result
-}
-
-export function readCurrentCampaign(search: string): Campaign {
-  const params = new URLSearchParams(search)
-  return safeCampaign(Object.fromEntries(fields.map((field) => [field, params.get(field)])))
-}
-
-function readStored(key: string): Campaign {
-  try { return safeCampaign(JSON.parse(sessionStorage.getItem(key) ?? '{}') as unknown) } catch { return {} }
-}
-
-export function captureCampaign(search: string): void {
-  // Call only after consent. Never forward click IDs in custom payloads/links.
-  const fbclid = new URLSearchParams(search).get('fbclid')
-  try { if (fbclid && /^[A-Za-z0-9_-]{10,500}$/.test(fbclid)) sessionStorage.setItem(clickIdKey, fbclid) } catch { /* Optional storage. */ }
-  const current = readCurrentCampaign(search)
-  if (!Object.keys(current).length) return
-  try {
-    if (!sessionStorage.getItem(firstTouchKey)) sessionStorage.setItem(firstTouchKey, JSON.stringify(current))
-    sessionStorage.setItem(lastTouchKey, JSON.stringify(current))
-  } catch { /* Private browsing can disallow storage. */ }
-}
-
-export function getAttribution() {
-  return { firstTouch: readStored(firstTouchKey), lastTouch: readStored(lastTouchKey) }
-}
-
-export function clearAttribution(): void {
-  try { for (const key of [firstTouchKey, lastTouchKey, clickIdKey]) sessionStorage.removeItem(key) } catch { /* Optional storage. */ }
-}
+export type { Campaign, CampaignField } from '../../shared/campaignAttribution.js'
+export { readCurrentCampaign } from '../../shared/campaignAttribution.js'
+export { captureCampaign, clearAttribution, getAttribution } from '../campaignAttribution'
 
 export function safePagePath(): string {
   const route = resolveSiteRoute(window.location.pathname)
@@ -67,7 +14,7 @@ export function safePagePath(): string {
 export function safePageLocation(search: string): string {
   const url = new URL(safePagePath(), window.location.origin)
   const current = readCurrentCampaign(search)
-  for (const field of fields) if (current[field]) url.searchParams.set(field, current[field])
+  for (const field of campaignFields) if (current[field]) url.searchParams.set(field, current[field])
   return url.href
 }
 

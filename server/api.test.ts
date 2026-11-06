@@ -74,6 +74,34 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs())
 
 describe('Vercel submission functions', () => {
+  it.each([
+    { version: 1, consent: { analytics: true, globalPrivacyControl: false, policyVersion: '2026-10-26' }, firstTouch: { utm_source: 'google' }, lastTouch: {} },
+    null, [], { email: 'private@example.test', qualified: true },
+    { version: 1, consent: { analytics: false }, firstTouch: { gclid: 'opaque' }, received_at: 'forged' },
+  ])('accepts optional metadata but never persists or returns it (%#)', async attribution => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    const response = await waitlist.fetch(post('waitlist', { email: 'synthetic@example.test', attribution }))
+    expect(response.status).toBe(201)
+    expect(insertMock).toHaveBeenCalledExactlyOnceWith({ email: 'synthetic@example.test', source: 'landing_page' })
+    expect(await response.json()).not.toHaveProperty('data.attribution')
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('does not update an existing subscriber or re-enqueue jobs when optional metadata accompanies a duplicate', async () => {
+    vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('SUPABASE_SECRET_KEY', 'placeholder-key')
+    vi.stubEnv('VERCEL', '1')
+    singleMock.mockResolvedValueOnce({ data: null, error: { code: '23505' } })
+    const response = await waitlist.fetch(post('waitlist', { email: 'synthetic@example.test', attribution: { qualified: true } }))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true, data: { acknowledged: true } })
+    expect(insertMock).toHaveBeenCalledExactlyOnceWith({ email: 'synthetic@example.test', source: 'landing_page' })
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(processEmailJobs).not.toHaveBeenCalled()
+    expect(processSheetJobs).not.toHaveBeenCalled()
+  })
+
   it('normalizes the actual form values before storage', () => {
     expect(waitlistSchema.parse({ email: '  Person@Example.com  ' })).toEqual({ email: 'person@example.com' })
     expect(waitlistSchema.parse({ email: '  ÉLISE@Example.com  ' })).toEqual({ email: 'élise@example.com' })

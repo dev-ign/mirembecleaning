@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { isValidEmail } from '../src/shared/email.js'
+import { parseWaitlistAttribution } from '../src/shared/campaignAttribution.js'
+import { privacyConfig } from '../src/config/legal.js'
 
 const email = z.string().trim().toLowerCase().max(254).refine(isValidEmail)
 const shortText = (limit: number) => z.string().trim().min(1).max(limit)
@@ -7,7 +9,10 @@ const shortText = (limit: number) => z.string().trim().min(1).max(limit)
 // The source is assigned by the server. It is not a user-supplied form field.
 export const waitlistSchema = z.strictObject({
   email,
-})
+  attribution: z.unknown().optional().transform(value => parseWaitlistAttribution(value, privacyConfig.effectiveAt)),
+}).transform(({ email }) => ({ email }))
+// Attribution is validated then deliberately discarded. The persistence contract
+// stays email-only until live schema, retention and withdrawal are approved.
 
 export const zipUpdateSchema = z.strictObject({
   registration_token: z.string().min(1).max(256),

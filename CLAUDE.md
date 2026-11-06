@@ -6,6 +6,8 @@ Mirembe Cleaning landing page + waitlist/hiring forms: React 19 + TypeScript + V
 
 ## Commands
 
+Follow [AGENTS.md — Risk-Based Testing and Verification Policy](AGENTS.md#risk-based-testing-and-verification-policy) when selecting verification. The commands below are available tools, not a default checklist; documentation-only changes use inspection, and routine code changes start with focused checks. Required CI/release gates and explicit user requests still apply.
+
 ```sh
 npm run lint                 # eslint .
 npm run test                 # vitest run (jsdom, setup in src/test/setup.ts)

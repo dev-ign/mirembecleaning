@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:waitlist:manual": "python3 scripts/manual-waitlist-browser.py",
     "test:seo": "node --import tsx scripts/verify-seo-build.ts",
     "test:http": "node --import tsx scripts/verify-site-http.ts"
   },

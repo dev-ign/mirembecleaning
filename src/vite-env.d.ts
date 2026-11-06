@@ -7,4 +7,5 @@ interface ImportMetaEnv {
   readonly VITE_META_PIXEL_ID?: string
   readonly VITE_ENABLE_MARKETING_IN_DEVELOPMENT?: string
   readonly VITE_ANALYTICS_DEBUG?: string
+  readonly VITE_ENABLE_WAITLIST_ATTRIBUTION_PREVIEW?: string
 }

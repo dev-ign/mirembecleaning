@@ -1,3 +1,5 @@
+import type { WaitlistAttributionInput } from '../shared/campaignAttribution'
+
 export type WaitlistSource = 'landing_page'
 
 export interface WaitlistRecord {
@@ -12,6 +14,12 @@ export interface WaitlistRecord {
 export interface CreateWaitlistInput {
   email: string
   source: WaitlistSource
+}
+
+export interface WaitlistSubmissionRequest {
+  email: string
+  turnstileToken: string
+  attribution?: WaitlistAttributionInput
 }
 
 export interface UpdateWaitlistZipInput {

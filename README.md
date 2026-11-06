@@ -9,7 +9,7 @@ npm install
 node --env-file=.env.local "$(command -v vercel)" dev --listen 3000
 ```
 
-Create an ignored `.env.local` from `.env.example` with the Mirembe project's `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VITE_TURNSTILE_SITE_KEY`, and `TURNSTILE_SECRET_KEY`. Link the Vercel CLI to the existing project, then open `http://localhost:3000` for the complete frontend and API flow. `npm run dev` serves only Vite on `localhost:5173`; it does not serve `/api/*`. `vercel dev` reads Vercel's pulled environment settings; the `node --env-file` invocation above also passes local `.env.local` values to the functions. Never use `VITE_` for either secret. Run `npm run lint`, `npm run test`, and `npm run build` for local checks.
+Create an ignored `.env.local` from `.env.example` with the Mirembe project's `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VITE_TURNSTILE_SITE_KEY`, and `TURNSTILE_SECRET_KEY`. Link the Vercel CLI to the existing project, then open `http://localhost:3000` for the complete frontend and API flow. `npm run dev` serves only Vite on `localhost:5173`; it does not serve `/api/*`. `vercel dev` reads Vercel's pulled environment settings; the `node --env-file` invocation above also passes local `.env.local` values to the functions. Never use `VITE_` for either secret. Select local checks using the [risk-based verification policy](AGENTS.md#risk-based-testing-and-verification-policy); lint, the full test suite, and the production build are not a mandatory sequence for every change.
 
 For local Turnstile testing, Cloudflare provides the public site key `1x00000000000000000000AA` and matching server test secret `1x0000000000000000000000000000000AA`. Put those in `.env.local` only; use the real widget keys in Vercel production. The test pair still calls Cloudflare Siteverify and cannot validate production tokens. The always-pass test secret can accept arbitrary nonempty test input; use Cloudflare's failing test secret for negative-path checks. Cloudflare's dummy verification response may omit the action or return `test`; the server accepts that response only with the official test secret outside production. Production continues to require the matching action and approved hostname, and fails closed if its secret is absent. The widget uses `interaction-only` appearance, so it only becomes visible when Cloudflare needs visitor interaction. Managed mode itself is set in the Cloudflare widget dashboard. Tokens are single-use and reset after failed submissions.
 
@@ -31,9 +31,35 @@ The applicant API maps `first_name` and `last_name` to their own columns and to 
 
 ## Discoverability and measurement
 
+The optional waitlist attribution preview is local-only: `VITE_ENABLE_WAITLIST_ATTRIBUTION_PREVIEW=true` requires Vite development mode and accepted tracking without GPC. It uses only the reviewed UTM catalog. Production-style builds omit the envelope, and the API currently validates then discards it before storage. Retention, withdrawal, storage authorization, and live schema review must be resolved before persistence is implemented. Email-only signup and the existing success/duplicate responses remain the default.
+
+`scripts/test-measurement-browser.py` runs a production-style build, SEO checks, the full unit suite, and network-isolated Playwright browser scenarios in a temporary source copy. It mocks Google, ZenMaid, Turnstile, and waitlist submissions; it does not verify Google-account-created events or live ingestion. Optional Python test tooling is pinned in `scripts/requirements-measurement-browser.txt` and should be installed in a temporary virtual environment, with Playwright Chromium available. Run the script with `--help` first. No Node dependency is added. Generated logs/screenshots go to the ignored `artifacts/measurement-phase0b/` directory.
+
 See [the discoverability launch guide](docs/discoverability-launch.md) for SEO implementation, tracking events, business facts to verify, external setup, and release checks. The production build renders the complete homepage into `index.html`, then the browser hydrates it without replacing the initial content. The build also generates metadata, `robots.txt`, and the sitemap from `src/config/business.ts` and `src/config/seo.ts`. [Image asset notes](docs/asset-optimization.md) record the lossless hero conversion, raster logo export, and visual/performance checks. No new database migration is needed for these SEO, analytics, rendering, and asset changes; campaign attribution remains in browser session storage and analytics events.
 
 The current [GA4 integration report](docs/ga4-integration-report.md) documents consent, booking attribution, configuration, verified local behavior, and remaining account-side release checks. It supersedes the launch guide's older analytics withdrawal and primary-conversion setup notes.
+
+## Manual waitlist testing
+
+With Vite already running at `http://localhost:5173`, run this command from the repository root:
+
+```sh
+npm run test:waitlist:manual
+```
+
+The launcher opens a visible Chromium test window at `/booking` and automatically declines tracking. Click **Join the Waitlist**, enter one of these addresses, then submit. Reload the page and reopen **Join the Waitlist** between cases. The address selects a fixed synthetic response; no earlier registration is needed.
+
+| Test email | Synthetic response | Expected result |
+| --- | --- | --- |
+| `new@example.test` | `201`, fake registration ID and ZIP token | **You’re on the list!** confirmation. |
+| `duplicate@example.test` | `200`, acknowledgment without an ID or ZIP token | Same confirmation; no new-signup conversion. |
+| `failed@example.test` | `503`, service unavailable | **We couldn’t add you right now. Please try again.** Email stays available for retry. |
+
+**Finish by pressing Ctrl+C in the launching terminal, or close the test window.** There is no session time limit. Either action closes the browser context, Chromium and Playwright driver; your existing Vite server stays running.
+
+The launcher reuses `IsolatedSession` and the Phase 0B fixtures without running the harness's build, SEO or test entry point. Turnstile is synthetic. Real submissions, external HTTP requests, redirects and all WebSockets are blocked; no Supabase, Resend, Google Sheets, ZenMaid or production analytics service is contacted. Unsupported addresses simulate failure. Leave the optional ZIP step blank: ZIP saves and hiring submissions are blocked. Even if you change tracking preferences, real analytics requests remain blocked. This exercises UI response handling, not live persistence, notification delivery or provider verification.
+
+Python Playwright is loaded from the active Python environment or the existing `/tmp/mirembe-phase0b-playwright` installation. Nothing is installed automatically. If that temporary installation has been removed, create and activate a temporary Python virtual environment, install `scripts/requirements-measurement-browser.txt` there, and ensure its matching Chromium is available. The launcher needs no production credentials and writes no application files or generated metadata.
 
 ## Privacy and launch copy
 
