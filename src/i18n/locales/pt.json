@@ -378,5 +378,14 @@
   "notFound.title": "Página não encontrada",
   "notFound.description": "Não encontramos essa página. Volte ao início para conhecer nossos serviços de limpeza.",
   "seo.notFound.title": "Página não encontrada | Mirembe Cleaning Company",
-  "language.current": "Mudar idioma, idioma atual: {{language}}"
+  "language.current": "Mudar idioma, idioma atual: {{language}}",
+  "newsletter.title": "Um pouco mais de tranquilidade, direto no seu e-mail.",
+  "newsletter.description": "Receba dicas práticas de limpeza, ofertas sazonais e novidades da Mirembe. Sem excessos, só o que vale a pena.",
+  "newsletter.emailLabel": "Endereço de e-mail",
+  "newsletter.emailPlaceholder": "Seu endereço de e-mail",
+  "newsletter.subscribe": "Inscreva-se",
+  "newsletter.disclosure": "Ao se inscrever, você concorda em receber e-mails de marketing da Mirembe Cleaning. Você pode cancelar a inscrição a qualquer momento. Consulte nossa <privacy>Política de Privacidade</privacy>.",
+  "newsletter.unavailable": "As inscrições ainda não estão disponíveis.",
+  "newsletter.emailRequired": "Informe seu endereço de e-mail.",
+  "newsletter.emailInvalid": "Informe um endereço de e-mail válido."
 }

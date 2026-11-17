@@ -378,5 +378,14 @@
   "notFound.title": "Page not found",
   "notFound.description": "We couldn’t find that page. Return home to explore our cleaning services.",
   "seo.notFound.title": "Page Not Found | Mirembe Cleaning Company",
-  "language.current": "Change language, current language: {{language}}"
+  "language.current": "Change language, current language: {{language}}",
+  "newsletter.title": "A Little More Peace, Straight to Your Inbox.",
+  "newsletter.description": "Get practical cleaning tips, seasonal offers, and updates from Mirembe. No clutter, just the good stuff.",
+  "newsletter.emailLabel": "Email address",
+  "newsletter.emailPlaceholder": "Your email address",
+  "newsletter.subscribe": "Subscribe",
+  "newsletter.disclosure": "By subscribing, you agree to receive marketing emails from Mirembe Cleaning. You can unsubscribe at any time. See our <privacy>Privacy Policy</privacy>.",
+  "newsletter.unavailable": "Signups aren’t available yet.",
+  "newsletter.emailRequired": "Enter your email address.",
+  "newsletter.emailInvalid": "Enter a valid email address."
 }

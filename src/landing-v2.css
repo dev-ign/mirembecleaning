@@ -100,6 +100,34 @@ html { scroll-behavior: smooth; }
 .landing-final-cta h2 { font-size: clamp(40px, 4.5vw, 60px); }
 .landing-final-cta h2 em { color: var(--brand-primary); font-size: 1.16em; }
 .landing-final-cta .landing-cta-group { margin-top: 24px; }
+.landing-newsletter { background: var(--background); }
+.landing-newsletter-panel { padding: 64px 48px; border: 1px solid var(--border); border-radius: var(--radius-2xl); background-color: var(--background); background-image: linear-gradient(90deg, rgb(252 250 248 / 8%), rgb(252 250 248 / 94%) 24%, rgb(252 250 248 / 98%) 50%, rgb(252 250 248 / 94%) 76%, rgb(252 250 248 / 8%)), url('/landing/v2/newsletter-editorial.webp'); background-size: cover; background-position: center; }
+.landing-newsletter-content { max-width: 640px; margin-inline: auto; text-align: center; }
+.landing-newsletter + .landing-faq { padding-top: 96px; }
+.landing-newsletter h2 { margin: 0; font: 500 clamp(28px, 2.5vw, 34px)/1.2 var(--font-montserrat); letter-spacing: -.018em; text-wrap: balance; }
+.landing-newsletter-description { margin: 16px 0 24px; color: var(--text-secondary); font-size: 16px; line-height: 1.6; }
+.landing-newsletter form { text-align: left; }
+.landing-newsletter label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+.landing-newsletter-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 12px; }
+.landing-newsletter-email { min-width: 0; }
+.landing-newsletter input { min-width: 0; width: 100%; min-height: 54px; padding: 14px 18px; border: 1px solid var(--text-muted); border-radius: var(--radius-md); background: var(--surface); color: var(--text-primary); font: 400 16px/1.25 var(--font-inter); }
+.landing-newsletter input::placeholder { color: var(--text-secondary); opacity: 1; }
+.landing-newsletter input:focus { border-color: var(--brand-primary); }
+.landing-newsletter .landing-button:disabled { background: var(--brand-primary); color: var(--surface); box-shadow: none; cursor: not-allowed; }
+.landing-newsletter-status, .landing-newsletter-disclosure, .landing-newsletter-error { margin: 12px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.landing-newsletter-status { text-align: center; }
+.landing-newsletter-error { color: var(--brand-deep); font-weight: 600; }
+.landing-newsletter-disclosure a { color: var(--brand-primary); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 1023px) {
+  .landing-newsletter-panel { background-image: linear-gradient(rgb(252 250 248 / 92%), rgb(252 250 248 / 92%)), url('/landing/v2/newsletter-editorial.webp'); }
+}
+@media (max-width: 767px) {
+  .landing-newsletter > .landing-container { width: 100%; }
+  .landing-newsletter-panel { padding: 48px var(--gutter); border-inline: 0; border-radius: 0; background-image: linear-gradient(rgb(252 250 248 / 94%), rgb(252 250 248 / 94%)), url('/landing/v2/newsletter-editorial-mobile.webp'); background-position: right center; }
+  .landing-newsletter + .landing-faq { padding-top: 64px; }
+  .landing-newsletter-controls { grid-template-columns: minmax(0, 1fr); }
+  .landing-newsletter .landing-button { width: 100%; }
+}
 .landing-footer-grid .team-link-wrap { width: 100%; margin: 4px 0; padding: 0; }
 .landing-footer-grid button.team-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #d9cae8; border-radius: var(--radius-md); background: var(--brand-soft); color: var(--brand-primary); font: 600 14px/1.4 var(--font-inter); text-align: left; text-decoration: none; transition: background-color 220ms ease-in-out, color 220ms ease-in-out, border-color 220ms ease-in-out; }
 .landing-footer-grid button.team-link:hover { border-color: var(--brand-primary); background: #e8ddf2; color: var(--brand-hover); text-decoration: none; }
