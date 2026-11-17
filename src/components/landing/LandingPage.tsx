@@ -39,7 +39,8 @@ function SectionHeading({ eyebrow, title, description, id, center = false }: { e
   return <div className={'landing-section-heading' + (center ? ' is-centered' : '')}>{eyebrow && <p className="landing-eyebrow">{eyebrow}</p>}<h2 id={id}>{title}</h2>{description && <p>{description}</p>}</div>
 }
 
-export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: { homePath?: string; open: () => void; joined: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
+// Retain the waitlist props for shared layouts while its header CTA is temporarily hidden.
+export function Header({ menuOpen, setMenuOpen, homePath = '' }: { homePath?: string; open: () => void; joined: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
   const localHref = useLocalizedHref()
   useLocale()
   const [scrolled, setScrolled] = useState(false)
@@ -61,10 +62,10 @@ export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: {
       if (event.key === 'Escape' && menuOpen) { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); menuToggle.current?.focus({ preventScroll: true }) }
     }}>
       {navigationSections.map(({ id, labelKey }) => <a key={id} href={localHref(homePath + '#' + id)} aria-current={activeSection === id ? 'location' : undefined} onClick={() => setMenuOpen(false)}>{t(labelKey)}</a>)}
-      <div className="landing-mobile-actions"><WaitlistButton open={() => { setMenuOpen(false); menuToggle.current?.focus({ preventScroll: true }); open() }} joined={joined} /><RequestButton location="header" onNavigate={() => setMenuOpen(false)} /></div>
+      <div className="landing-mobile-actions"><CleaningTeamLink variant="navigation" onNavigate={() => setMenuOpen(false)} returnFocusRef={menuToggle} /><RequestButton location="header" primary onNavigate={() => setMenuOpen(false)} /></div>
     </nav>
     <div className="landing-header-actions">
-      <LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><RequestButton location="header" /><WaitlistButton open={open} joined={joined} />
+      <LanguageSelector mobileMenuOpen={menuOpen} onOpen={() => setMenuOpen(false)} /><CleaningTeamLink variant="navigation" /><RequestButton location="header" primary />
       <button ref={menuToggle} className="landing-menu-toggle" type="button" aria-label={menuOpen ? t('navigation.closeMenu') : t('navigation.openMenu')} aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true" focusable="false">{menuOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M4 6h16M4 12h16M4 18h16" />}</svg>
       </button>
@@ -72,15 +73,15 @@ export function Header({ open, joined, menuOpen, setMenuOpen, homePath = '' }: {
   </div></header>
 }
 
-function Hero({ open, joined, campaignActive }: { open: () => void; joined: boolean; campaignActive: boolean }) {
+function Hero({ campaignActive }: { campaignActive: boolean }) {
   useLocale()
   return <section className="landing-hero" id="top" aria-labelledby="hero-heading"><div className="landing-container landing-hero-grid">
     <div className="landing-hero-copy">
       <Reveal initial><p className="landing-availability"><Icon name="leaf" /><span><strong>{t('campaign.launch')}</strong>{campaignActive && <> · <span className="landing-announcement-detail">{t('campaign.availability')}</span></>}</span></p></Reveal>
       <Reveal initial delay={80}><h1 id="hero-heading"><Trans i18nKey="home.hero.title" components={{ accent: <span /> }} /></h1></Reveal>
       <Reveal initial delay={160}><p className="landing-hero-lede">{t('home.hero.lede')}</p></Reveal>
-      <Reveal initial delay={240}><div className="landing-hero-actions"><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} showArrow /><RequestButton location="hero" /></div><p className="landing-hero-trust"><span aria-hidden="true">✓</span><span>{t('common.cleanerTrust')}</span></p></div></Reveal>
-      <Reveal initial delay={320} className="landing-hero-pathways"><div><ul className="landing-quick-facts"><li><Icon name="home" />{t('home.hero.homeRental')}</li><li><Icon name="map-pin" />{t('areas.bostonShort')}</li><li><Icon name="map-pin" />{t('areas.hartfordShort')}</li></ul></div><CleaningTeamLink variant="hero" /></Reveal>
+      <Reveal initial delay={240}><div className="landing-hero-actions"><RequestButton location="hero" primary /><p className="landing-hero-trust"><span aria-hidden="true">✓</span><span>{t('common.cleanerTrust')}</span></p></div></Reveal>
+      <Reveal initial delay={320} className="landing-hero-facts"><ul className="landing-quick-facts"><li><Icon name="home" />{t('home.hero.homeRental')}</li><li><Icon name="map-pin" />{t('areas.bostonShort')}</li><li><Icon name="map-pin" />{t('areas.hartfordShort')}</li></ul></Reveal>
     </div>
     <Reveal initial delay={400} className="landing-hero-visual">
       <picture><source media="(max-width: 767px)" srcSet={photo('hero_mobile')} /><img className="landing-hero-photo" src={photo('hero')} alt={t('home.hero.photoAlt')} width="1672" height="941" fetchPriority="high" /></picture>
@@ -198,5 +199,5 @@ export function LandingPage({ promotionsAllowed }: { promotionsAllowed: boolean 
   function bookHoliday() { holidayBookingClicked.current = true; setHolidayOpen(false) }
   function openService(service: Service) { trackServiceView(service.slug); setSelectedService(service) }
   const dialogOpen = waitlistOpen || Boolean(selectedService) || holidayOpen || anyDialogOpen
-  return <CleaningTeamProvider><div className="landing-page"><Header open={open} joined={joined} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero open={open} joined={joined} campaignActive={campaignActive} /><BrandStory /><Services openService={openService} /><HowItWorks open={open} joined={joined} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading"><Trans i18nKey="home.final.title" components={{ br: <br />, accent: <em /> }} /></h2><p>{t(campaignActive ? 'home.final.campaign' : 'home.final.regular')}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton location="final_cta" /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={getServices().find(service => service.slug === selectedService?.slug) ?? null} onDismiss={() => setSelectedService(null)} />{overlaysEnabled && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen || Boolean(toast)} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{t(toast.message)}</p><button type="button" onClick={() => setToast(null)} aria-label={t('common.dismissNotification')}>×</button></div>}</div></CleaningTeamProvider>
+  return <CleaningTeamProvider><div className="landing-page"><Header open={open} joined={joined} menuOpen={menuOpen} setMenuOpen={setMenuOpen} /><main><Hero campaignActive={campaignActive} /><BrandStory /><Services openService={openService} /><HowItWorks open={open} joined={joined} /><WhyMirembe /><Areas open={open} joined={joined} /><Founders /><Faq campaignActive={campaignActive} /><section className="landing-final-cta" aria-labelledby="final-cta-heading"><div className="landing-container"><Reveal><h2 id="final-cta-heading"><Trans i18nKey="home.final.title" components={{ br: <br />, accent: <em /> }} /></h2><p>{t(campaignActive ? 'home.final.campaign' : 'home.final.regular')}</p><div className="landing-cta-group"><WaitlistButton open={open} joined={joined} /><RequestButton location="final_cta" /></div></Reveal></div></section></main><Footer /><AnalyticsConsent /><WaitlistModal open={waitlistOpen} onDismiss={dismiss} onCreated={created} onFeedback={showToast} /><ServiceDetailDialog service={getServices().find(service => service.slug === selectedService?.slug) ?? null} onDismiss={() => setSelectedService(null)} />{overlaysEnabled && <><HolidayFloatingCTA hidden={dialogOpen || menuOpen || Boolean(toast)} onBooking={bookHoliday} /><HolidayPromoModal open={holidayOpen} onDismiss={() => setHolidayOpen(false)} onBooking={bookHoliday} /></>}{toast && <div className={'landing-toast is-' + toast.kind} role={toast.kind === 'success' ? 'status' : 'alert'}><span aria-hidden="true">{toast.kind === 'success' ? '✓' : '!'}</span><p>{t(toast.message)}</p><button type="button" onClick={() => setToast(null)} aria-label={t('common.dismissNotification')}>×</button></div>}</div></CleaningTeamProvider>
 }

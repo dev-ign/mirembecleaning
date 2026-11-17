@@ -74,10 +74,10 @@ def run_session(Error, sync_playwright, finished):
             # Python requests shutdown; Chromium must not handle Ctrl+C itself.
             browser = playwright.chromium.launch(headless=False, handle_sigint=False)
             session = ManualWaitlistSession(browser)
-            session.goto('/booking')
+            session.goto('/#areas')
             session.page.get_by_role('button', name='Decline', exact=True).click()
             print('\nManual waitlist testing — synthetic responses only; tracking declined.', flush=True)
-            print('Click Join the Waitlist. Use new@example.test, duplicate@example.test, or failed@example.test.', flush=True)
+            print('Click Join the Waitlist in Areas We Serve (dismiss any holiday promotion). Use new@example.test, duplicate@example.test, or failed@example.test.', flush=True)
             print('Reload the page between cases. Leave the optional ZIP step blank.', flush=True)
             print('FINISH: press Ctrl+C in this terminal, or close the test window. There is no time limit.\n', flush=True)
             # Pump events without an idle timeout. A signal only sets the flag,

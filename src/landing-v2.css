@@ -9,20 +9,13 @@ html { scroll-behavior: smooth; }
 .landing-page a.landing-text-link:hover { text-decoration: underline; }
 .landing-hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(420px, 0.9fr); }
 .landing-hero h1 span { color: var(--brand-accent); }
-.landing-hero .landing-cta-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+.landing-hero-actions { justify-items: start; }
 .landing-hero .landing-button { padding-inline: 20px; min-width: 0; }
 .landing-hero-photo { object-position: 65% center; }
 .landing-hero-visual picture { display: block; height: 100%; }
 .landing-hero-actions p { max-width: 550px; }
 .landing-hero-actions .landing-hero-trust { display: flex; align-items: start; gap: 8px; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
 .landing-hero-trust > span:first-child { flex: none; color: var(--brand-primary); }
-.landing-hero-pathways { display: grid; gap: 8px; }
-.landing-hiring-link { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 44px; padding: 8px 0; border: 0; border-radius: 4px; background: transparent; color: var(--text-secondary); font: 400 13px/1.5 var(--font-inter); text-align: left; cursor: pointer; transition: color 220ms ease-in-out; }
-.landing-hiring-link strong { color: var(--brand-primary); font-weight: 500; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color 220ms ease-in-out, text-decoration-color 220ms ease-in-out; }
-.landing-hiring-link img { flex: 0 0 16px; width: 16px; height: 16px; transition: transform 220ms ease-in-out; }
-.landing-hiring-link:hover, .landing-hiring-link:hover strong { color: var(--brand-hover); }
-.landing-hiring-link:hover strong { text-decoration-color: currentColor; }
-.landing-hiring-link:hover img { transform: translateX(3px); }
 .landing-hero .landing-availability { max-width: 100%; font-size: 13px; }
 .landing-availability > span { min-width: 0; text-wrap: balance; }
 .landing-availability strong { font-weight: 500; white-space: normal; }
@@ -224,15 +217,11 @@ html { scroll-behavior: smooth; }
   .landing-hero-lede { margin-inline: auto; max-width: 32rem; line-height: 1.6; text-wrap: pretty; }
   .landing-hero .landing-button { min-height: 54px; padding: 12px 16px; white-space: nowrap; }
   .landing-hero-copy > .landing-reveal:has(.landing-hero-actions) { padding-top: 8px; }
-  .landing-hero-actions { gap: 20px; }
+  .landing-hero-actions { justify-items: stretch; gap: 20px; }
   .landing-hero-actions .landing-hero-trust { justify-content: center; max-width: 24rem; margin-inline: auto; text-align: left; }
-  .landing-hero .landing-cta-group { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .landing-hero-pathways { gap: 12px; }
-  .landing-hero-pathways .landing-quick-facts { display: flex; justify-content: center; gap: 8px 16px; padding: 0; }
-  .landing-hero-pathways .landing-quick-facts li:first-child { flex-basis: 100%; justify-content: center; }
-  .landing-hero-pathways .landing-quick-facts li { align-items: start; text-align: left; }
-  .landing-hero-hiring { display: flex; justify-content: center; }
-  .landing-hero-hiring .landing-hiring-link { text-align: center; }
+  .landing-hero-facts .landing-quick-facts { display: flex; justify-content: center; gap: 8px 16px; padding: 0; }
+  .landing-hero-facts .landing-quick-facts li:first-child { flex-basis: 100%; justify-content: center; }
+  .landing-hero-facts .landing-quick-facts li { align-items: start; text-align: left; }
   .landing-hero h1 { font-size: clamp(30px, 8cqi, 38px); line-height: 1.15; }
   .landing-hero h1 span { font-size: clamp(42px, 13cqi, 54px); }
   .landing-hero-visual { width: 100%; aspect-ratio: 6 / 5; height: auto; }
@@ -299,7 +288,6 @@ html { scroll-behavior: smooth; }
   .holiday-modal-footer > small { font-size: 11px; }
 }
 @media (max-width: 480px) {
-  .landing-hero .landing-cta-group { grid-template-columns: minmax(0, 1fr); }
   .landing-hero .landing-button, .landing-final-cta .landing-button { width: 100%; }
   .landing-final-cta .landing-cta-group { display: grid; }
   .holiday-modal-dates span { min-width: 0; flex: 1 1 135px; }
@@ -318,8 +306,6 @@ html { scroll-behavior: smooth; }
   .holiday-modal-photo { height: 120px; min-height: 120px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .landing-hiring-link, .landing-hiring-link strong, .landing-hiring-link img { transition: none; }
-  .landing-hiring-link:hover img { transform: none; }
   html { scroll-behavior: auto; }
   .service-detail-dialog .landing-button, .holiday-modal .landing-button { transition: none; }
   .service-detail-dialog, .holiday-modal, .holiday-floating-cta, .landing-faq-item [role="region"]:not([hidden]) { animation: none !important; }

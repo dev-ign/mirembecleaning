@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { bookingConfig } from '../config/booking'
@@ -51,5 +51,22 @@ describe('landing navigation and booking actions', () => {
     const holiday = screen.getByRole('link', { name: /Book a holiday cleaning/ })
     expect(holiday).toHaveAttribute('href', bookingConfig.path)
     expect(holiday).not.toHaveAttribute('target')
+  })
+
+  it('keeps one primary hero action, availability and supporting content without recruitment or waitlist promotions', () => {
+    render(<App />)
+    const hero = document.querySelector('.landing-hero') as HTMLElement
+    expect(within(hero).getByRole('heading', { level: 1 })).toHaveTextContent('A Cleaner Home, More Peace.')
+    const booking = within(hero).getByRole('link', { name: 'Request a Cleaning' })
+    expect(booking).toHaveClass('landing-button', 'is-primary')
+    expect(booking).toHaveAttribute('href', bookingConfig.path)
+    expect(hero.querySelectorAll('.landing-button')).toHaveLength(1)
+    expect(within(hero).queryByRole('button')).not.toBeInTheDocument()
+    expect(hero).not.toHaveTextContent('Looking for cleaning work?')
+    expect(hero.querySelector('.landing-cta-group, .landing-hero-pathways, .landing-hero-hiring')).toBeNull()
+    expect(hero.querySelector('.landing-availability')).toHaveTextContent('January 2027')
+    expect(hero.querySelector('.landing-hero-lede')).not.toBeEmptyDOMElement()
+    expect(hero.querySelector('.landing-hero-trust')).not.toBeEmptyDOMElement()
+    expect(hero.querySelectorAll('.landing-quick-facts li')).toHaveLength(3)
   })
 })

@@ -53,7 +53,8 @@ def navigation_check(browser, origin):
         value.accept()
         paths = ['/privacy']
         expect_views(value, paths)
-        value.page.get_by_role('link', name='Request a Cleaning', exact=True).first.click()
+        value.page.get_by_role('button', name='Open menu', exact=True).click()
+        value.page.locator('.landing-mobile-actions').get_by_role('link', name='Request a Cleaning', exact=True).click()
         value.page.wait_for_load_state('networkidle')
         paths += ['/booking']
         expect_views(value, paths)
@@ -141,9 +142,9 @@ def direct_and_withdrawal_check(browser, origin):
 def gpc_waitlist_check(browser, origin):
     value = session(browser, origin, gpc=True)
     try:
-        value.goto('/booking')
+        value.goto('/#areas')
         assert value.page.get_by_role('button', name='Allow tracking', exact=True).count() == 0
-        value.page.get_by_role('button', name='Join the Waitlist', exact=True).first.click()
+        value.page.locator('.landing-area-prompt').get_by_role('button', name='Join the Waitlist', exact=True).click()
         dialog = value.page.locator('dialog.waitlist-dialog')
         dialog.get_by_label('Email address', exact=True).fill('synthetic@example.test')
         dialog.get_by_role('button', name='Join the Waitlist', exact=True).click()
