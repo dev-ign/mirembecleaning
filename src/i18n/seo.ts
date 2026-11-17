@@ -21,7 +21,7 @@ export function pageMetadata(route: SiteRoute, preview = false) {
     : route.kind === 'booking' ? english ? 'Request your holiday cleaning with Mirembe Cleaning Company. Our team will follow up to confirm availability.' : text('booking.intro')
     : route.kind === 'confirmation' ? english ? 'Thank you for requesting a cleaning. Our team will review your request and contact you to confirm availability.' : text('booking.thankYou.message')
     : route.basePath === '/terms' ? english ? 'Read the Mirembe Cleaning Company Terms of Service for residential and rental property cleaning services. Last updated October 25, 2026.' : text('seo.terms.description')
-    : route.basePath === '/privacy' ? english ? 'Read the Mirembe Cleaning Company Privacy Policy, effective October 26, 2026, covering service requests, applications, communications, and optional tracking.' : text('seo.privacy.description')
+    : route.basePath === '/privacy' ? english ? 'Read the Mirembe Cleaning Company Privacy Policy, effective November 17, 2026, covering newsletter subscriptions, service requests, applications, communications, and optional tracking.' : text('seo.privacy.description')
     : text('notFound.description')
   const indexable = route.indexable && (route.basePath !== privacyConfig.path || privacyConfig.approved) && !preview
   return {

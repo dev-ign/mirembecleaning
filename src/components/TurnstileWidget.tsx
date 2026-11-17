@@ -26,7 +26,7 @@ export type TurnstileStatus = 'loading' | 'ready' | 'verified' | 'expired' | 'er
 export interface TurnstileWidgetHandle { reset: () => void }
 
 interface TurnstileWidgetProps {
-  action: 'waitlist' | 'applicants'
+  action: 'waitlist' | 'applicants' | 'newsletter'
   onStatusChange: (status: TurnstileStatus, token?: string) => void
 }
 

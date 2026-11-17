@@ -377,5 +377,22 @@
   "notFound.title": "Página não encontrada",
   "notFound.description": "Não encontramos essa página. Volte ao início para conhecer nossos serviços de limpeza.",
   "seo.notFound.title": "Página não encontrada | Mirembe Cleaning Company",
-  "language.current": "Mudar idioma, idioma atual: {{language}}"
+  "language.current": "Mudar idioma, idioma atual: {{language}}",
+  "newsletter.title": "Um pouco mais de tranquilidade, direto no seu e-mail.",
+  "newsletter.description": "Receba dicas práticas de limpeza, ofertas sazonais e novidades da Mirembe. Sem excessos, só o que vale a pena.",
+  "newsletter.emailLabel": "Endereço de e-mail",
+  "newsletter.emailPlaceholder": "Seu endereço de e-mail",
+  "newsletter.subscribe": "Inscreva-se",
+  "newsletter.disclosure": "Ao se inscrever, você concorda em receber e-mails de marketing da Mirembe Cleaning. Você pode cancelar a inscrição a qualquer momento. Consulte nossa <privacy>Política de Privacidade</privacy>.",
+  "newsletter.emailRequired": "Informe seu endereço de e-mail.",
+  "newsletter.emailInvalid": "Informe um endereço de e-mail válido.",
+  "newsletter.ready": "Inscreva-se para receber dicas de limpeza e novidades da Mirembe.",
+  "newsletter.verifying": "Concluindo uma rápida verificação de segurança…",
+  "newsletter.submitting": "Enviando…",
+  "newsletter.acknowledged": "Obrigado! Se o seu e-mail for elegível, você receberá novidades da Mirembe Cleaning.",
+  "newsletter.verificationError": "Conclua a verificação de segurança e tente novamente.",
+  "newsletter.retryVerification": "Repetir verificação de segurança",
+  "newsletter.rateLimited": "Aguarde um momento e tente novamente.",
+  "newsletter.invalidRequest": "Confira seu endereço de e-mail e tente novamente.",
+  "newsletter.requestError": "Não foi possível processar sua solicitação. Tente novamente."
 }

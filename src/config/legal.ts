@@ -10,5 +10,5 @@ export const privacyConfig = {
   path: '/privacy',
   title: 'Mirembe Cleaning Company Privacy Policy',
   approved: true,
-  effectiveAt: '2026-10-26',
+  effectiveAt: '2026-11-17',
 }

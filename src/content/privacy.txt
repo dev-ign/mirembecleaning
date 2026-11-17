@@ -1,11 +1,12 @@
 Mirembe Cleaning Company Privacy Policy
-Effective date: October 26, 2026
+Effective date: November 17, 2026
 1. Who we are
 Mirembe Cleaning Company LLC (“Mirembe,” “we,” or “us”) is a family-owned Connecticut limited liability company providing home and rental property cleaning in Greater Hartford, Connecticut, and Greater Boston, Massachusetts.
-This policy explains how we collect, use, share, and protect personal information when you visit mirembecleaning.com, join our waitlist, request or book a cleaning, apply to work with us, communicate with us, or receive our services in your home.
+This policy explains how we collect, use, share, and protect personal information when you visit mirembecleaning.com, join our waitlist, subscribe to our newsletter, request or book a cleaning, apply to work with us, communicate with us, or receive our services in your home.
 2. Information we collect
 Information you give us
 •     Waitlist: your email address and, if you choose, your ZIP code.
+•     Newsletter: your email address and a record of your affirmative subscription consent, including the date and time, signup source, consent-disclosure version, and selected language. Newsletter subscriptions are separate from our cleaning-service waitlist; joining the waitlist does not subscribe you to the newsletter.
 •     Cleaning requests and bookings: your name, email, phone number, service address, home details (such as bedrooms and bathrooms), selected services and add-ons, preferred dates, and any notes you share. Payment details are entered only in our payment provider’s secure fields.
 •     Home and service details: information that helps us care for your home, such as entry instructions, keys, alarm or lockbox codes, parking, pets, priorities, surfaces needing special care, allergies or fragrance sensitivities, and, if you arrange cleaning for a loved one, a family contact who receives visit updates.
 •     Cleaner applications: your name, email, phone number, city and state, access to a vehicle, cleaning experience, languages spoken, travel distance, and availability.
@@ -29,6 +30,7 @@ Information from other sources
 •     Process payments, send receipts, and handle billing questions
 •     Check and improve the quality of our work, including follow-up after a clean and our clean guarantee
 •     Send waitlist updates, booking announcements, and occasional promotions, which you can opt out of anytime
+•     Send newsletter updates, cleaning tips, promotions, and business news to people who explicitly subscribe, with the option to unsubscribe anytime
 •     Review job applications, schedule interviews and paid trial cleans, and complete hiring steps
 •     Protect our website and forms from spam, abuse, and errors
 •     With your consent, understand how our website is used and measure our advertising
@@ -56,12 +58,11 @@ You can also clear cookies and site data in your browser settings. Clearing data
 We use trusted service providers to run our website and business. They may process your information only to provide their services to us:
 •     Vercel: website hosting and processing of form submissions
 •     Supabase: secure storage of waitlist and applicant records
-•     Resend: confirmation emails and internal notifications
+•     Resend: confirmation emails and internal notifications, and managing newsletter subscribers, consent records, and unsubscribes
 •     Google Workspace and Google Sheets: business email and organizing waitlist and applicant follow-up
 •     ZenMaid: booking requests, scheduling, client records, and appointment messages
 •     Square: payment processing
 •     Cloudflare Turnstile: security checks that help tell people apart from automated spam
-•     Mailchimp: sending our email updates and managing unsubscribes
 •     Indeed: job postings and applications
 •     Checkr: background checks for candidates with a conditional offer
 •     Google Analytics and Meta: optional analytics and advertising measurement, only with your consent

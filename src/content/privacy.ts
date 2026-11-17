@@ -4,7 +4,7 @@ export type PrivacyBlock =
   | { type: 'paragraph' | 'subheading'; text: string }
   | { type: 'list'; items: string[] }
 
-// privacy.txt is the exact approved attachment. Only blank lines and the bullet
+// privacy.txt is the exact founder-approved policy revision. Only blank lines and the bullet
 // marker/indentation are normalized; wording, punctuation and order stay intact.
 const lines = source.trim().split(/\r?\n/).map(line => line.trim()).filter(Boolean)
 const headings = lines.flatMap((line, index) => /^\d+\. /.test(line) ? [index] : [])

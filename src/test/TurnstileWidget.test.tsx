@@ -9,7 +9,7 @@ afterEach(() => {
 })
 
 describe('Turnstile widget', () => {
-  it('renders the managed challenge, clears expired tokens, and resets after a request', async () => {
+  it.each(['waitlist', 'applicants', 'newsletter'] as const)('renders the %s challenge, clears expired tokens, and resets after a request', async action => {
     vi.stubEnv('VITE_TURNSTILE_SITE_KEY', 'public-test-key')
     const renderWidget = vi.fn((container: HTMLElement, options: Record<string, unknown>) => {
       expect(container).toBeInstanceOf(HTMLElement)
@@ -21,11 +21,11 @@ describe('Turnstile widget', () => {
     vi.stubGlobal('turnstile', { render: renderWidget, reset, remove })
     const onStatusChange = vi.fn()
     const ref = createRef<TurnstileWidgetHandle>()
-    const view = render(<TurnstileWidget ref={ref} action="waitlist" onStatusChange={onStatusChange} />)
+    const view = render(<TurnstileWidget ref={ref} action={action} onStatusChange={onStatusChange} />)
 
     await waitFor(() => expect(renderWidget).toHaveBeenCalledTimes(1))
     const options = renderWidget.mock.calls[0][1]
-    expect(options).toMatchObject({ sitekey: 'public-test-key', action: 'waitlist', appearance: 'interaction-only' })
+    expect(options).toMatchObject({ sitekey: 'public-test-key', action, appearance: 'interaction-only' })
     const solve = options.callback as (token: string) => void
     solve('fresh-token')
     expect(onStatusChange).toHaveBeenCalledWith('verified', 'fresh-token')

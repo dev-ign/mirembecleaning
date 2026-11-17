@@ -13,8 +13,8 @@ import { HiringApplicationForm } from '../components/hiring/HiringApplicationFor
 vi.mock('../lib/zenmaid', () => ({ loadZenMaid: vi.fn().mockResolvedValue(undefined) }))
 vi.mock('../components/TurnstileWidget', () => ({ TurnstileWidget: () => null }))
 
-// Independently pinned to the founder-supplied attachment, not the old draft.
-const approvedHash = 'd06636fec1d4b653c7257fed6df32e5ef2604623104569bc33981997c8defd80'
+// Pinned to the founder-approved November 17 newsletter corrections.
+const approvedHash = '51dce497c266894653e71a1d965e3dc5573977bc7e87c9107ed48c1386746efb'
 const source = readFileSync('src/content/privacy.txt', 'utf8')
 const sourceLines = source.trim().split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => line.replace(/^•\s*/, ''))
 const renderedLines = (article: Element) => [...article.querySelectorAll('h1, h2, h3, p, li')].map(element => element.textContent?.trim())
@@ -33,10 +33,10 @@ beforeEach(() => {
 })
 
 describe('founder-approved Privacy Policy', () => {
-  it('keeps the public source byte-identical to the approved attachment', () => {
+  it('keeps the public source byte-identical to the approved policy revision', () => {
     expect(createHash('sha256').update(source).digest('hex')).toBe(approvedHash)
     expect(privacyDocument.title).toBe('Mirembe Cleaning Company Privacy Policy')
-    expect(privacyDocument.effectiveDate).toBe('Effective date: October 26, 2026')
+    expect(privacyDocument.effectiveDate).toBe('Effective date: November 17, 2026')
     expect(privacyDocument.sections.map(section => section.heading)).toEqual(headings)
   })
 
@@ -49,7 +49,7 @@ describe('founder-approved Privacy Policy', () => {
     expect(article.querySelectorAll('h1')).toHaveLength(1)
     expect(article.querySelectorAll('h3')).toHaveLength(4)
     expect(article.querySelectorAll('li')).toHaveLength(source.split(/\r?\n/).filter(line => line.trim().startsWith('•')).length)
-    expect(article.querySelector('time')).toHaveAttribute('datetime', '2026-10-26')
+    expect(article.querySelector('time')).toHaveAttribute('datetime', '2026-11-17')
     expect(article).toHaveTextContent('Mirembe Cleaning Company LLC')
     expect(article).toHaveTextContent('We will respond within 30 days.')
     expect(article).toHaveTextContent('Payment and accounting records: 7 years, as required for tax purposes')
@@ -63,7 +63,7 @@ describe('founder-approved Privacy Policy', () => {
 
   it('approves the policy without treating approval as visitor consent', () => {
     expect(privacyConfig.approved).toBe(true)
-    expect(privacyConfig.effectiveAt).toBe('2026-10-26')
+    expect(privacyConfig.effectiveAt).toBe('2026-11-17')
     startAnalytics()
     expect(document.querySelector('#mirembe-meta-pixel,#mirembe-ga4')).toBeNull()
   })

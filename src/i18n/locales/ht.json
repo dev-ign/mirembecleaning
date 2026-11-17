@@ -377,5 +377,22 @@
   "notFound.title": "Nou pa jwenn paj sa a",
   "notFound.description": "Nou pa jwenn paj sa a. Retounen nan paj dakèy la pou w gade sèvis netwayaj nou yo.",
   "seo.notFound.title": "Nou pa jwenn paj sa a | Mirembe Cleaning Company",
-  "language.current": "Chanje lang, lang aktyèl: {{language}}"
+  "language.current": "Chanje lang, lang aktyèl: {{language}}",
+  "newsletter.title": "Yon ti lapè anplis, dirèk nan bwat imèl ou.",
+  "newsletter.description": "Resevwa konsèy pratik pou netwayaj, òf pou chak sezon ak nouvèl Mirembe. Pa gen mesaj initil, sèlman sa ki itil.",
+  "newsletter.emailLabel": "Adrès imèl",
+  "newsletter.emailPlaceholder": "Adrès imèl ou",
+  "newsletter.subscribe": "Abòne",
+  "newsletter.disclosure": "Lè ou abòne, ou dakò resevwa imèl maketing nan men Mirembe Cleaning. Ou ka dezabòne nenpòt ki lè. Gade <privacy>Règleman sou vi prive</privacy> nou an.",
+  "newsletter.emailRequired": "Antre adrès imèl ou.",
+  "newsletter.emailInvalid": "Antre yon adrès imèl ki valab.",
+  "newsletter.ready": "Abòne pou resevwa konsèy netwayaj ak nouvèl Mirembe detanzantan.",
+  "newsletter.verifying": "N ap fè yon ti verifikasyon sekirite…",
+  "newsletter.submitting": "N ap voye…",
+  "newsletter.acknowledged": "Mèsi! Si adrès imèl ou kalifye, w ap resevwa nouvèl Mirembe Cleaning.",
+  "newsletter.verificationError": "Tanpri fè verifikasyon sekirite a epi eseye ankò.",
+  "newsletter.retryVerification": "Refè verifikasyon sekirite a",
+  "newsletter.rateLimited": "Tanpri tann yon ti moman, epi eseye ankò.",
+  "newsletter.invalidRequest": "Tanpri verifye adrès imèl ou epi eseye ankò.",
+  "newsletter.requestError": "Nou pa t kapab trete demann ou an. Tanpri eseye ankò."
 }
