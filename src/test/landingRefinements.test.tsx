@@ -1,8 +1,9 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { bookingConfig } from '../config/booking'
-import { i18n, t } from '../i18n'
+import { i18n, resources, t } from '../i18n'
+import { localeCodes, locales } from '../i18n/config'
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }) })
@@ -73,7 +74,20 @@ describe('landing navigation and booking actions', () => {
     expect(hero.querySelectorAll('.landing-quick-facts li')).toHaveLength(3)
   })
 
-
+  it.each(localeCodes)('keeps one primary closing booking action and waitlist access elsewhere in %s', async locale => {
+    await act(() => i18n.changeLanguage(locale))
+    render(<App path={locales[locale].pathPrefix || '/'} />)
+    const closing = document.querySelector('.landing-final-cta') as HTMLElement
+    expect(within(closing).getByRole('heading', { level: 2 })).toHaveTextContent(resources[locale]['home.final.title'].replace(/<[^>]*>/g, ''))
+    expect(closing.querySelector('p')).toHaveTextContent(resources[locale]['home.final.description'])
+    const booking = within(closing).getByRole('link', { name: t('common.requestCleaning') })
+    expect(booking).toHaveClass('landing-button', 'is-primary')
+    expect(booking).toHaveAttribute('href', locales[locale].pathPrefix + bookingConfig.path)
+    expect(booking).not.toHaveAttribute('target')
+    expect(closing.querySelectorAll('.landing-button')).toHaveLength(1)
+    expect(within(closing).queryByRole('button')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: t('waitlist.join') }).length).toBeGreaterThan(0)
+  })
 })
 
 

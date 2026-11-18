@@ -313,8 +313,6 @@
   "home.story.familyTitle": "Criada com cuidado.<br/><accent>Com raízes na família.</accent>",
   "home.founders.title": "Da nossa casa para a <accent>sua.</accent>",
   "home.final.title": "Que tal uma casa mais limpa<br/><accent>e mais tranquilidade?</accent>",
-  "home.final.campaign": "Entre na lista de espera para o lançamento em janeiro de 2027 ou confira as vagas limitadas de limpeza para as festas.",
-  "home.final.regular": "Entre na lista de espera para o lançamento em janeiro de 2027.",
   "campaign.launch": "Lançamento em janeiro de 2027",
   "campaign.availability": "Agendamentos disponíveis para as festas",
   "campaign.regular": "Planejamos abrir os agendamentos regulares em janeiro de 2027. Entre na lista de espera para receber novidades.",
@@ -394,5 +392,6 @@
   "newsletter.rateLimited": "Aguarde um momento e tente novamente.",
   "newsletter.invalidRequest": "Confira seu endereço de e-mail e tente novamente.",
   "newsletter.requestError": "Não foi possível processar sua solicitação. Tente novamente.",
-  "hiring.joinTeam": "Junte-se à nossa equipe"
+  "hiring.joinTeam": "Junte-se à nossa equipe",
+  "home.final.description": "Desfrute de uma casa mais limpa e de mais tranquilidade. Deixe a Mirembe cuidar da limpeza para você se concentrar no que mais importa."
 }

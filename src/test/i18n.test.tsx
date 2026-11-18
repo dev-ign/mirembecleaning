@@ -96,7 +96,7 @@ describe('language selection and persistence', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked') })
     await choose('pt')
     expect(document.documentElement.lang).toBe('pt-BR')
-    expect(screen.getByRole('status')).toHaveTextContent(t('language.saveFailed'))
+    expect(screen.getByText(t('language.saveFailed'))).toHaveAttribute('role', 'status')
   })
   it('does not override an explicit language URL when another tab changes or clears its preference', async () => {
     render(<App />)

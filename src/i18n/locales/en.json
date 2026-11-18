@@ -313,8 +313,6 @@
   "home.story.familyTitle": "Built With Care.<br/><accent>Rooted in Family.</accent>",
   "home.founders.title": "Built from our home to <accent>yours.</accent>",
   "home.final.title": "Ready for a cleaner home<br/><accent>and more peace?</accent>",
-  "home.final.campaign": "Join our waitlist for the January 2027 launch, or explore our limited holiday cleaning availability.",
-  "home.final.regular": "Join our waitlist for the January 2027 launch.",
   "campaign.launch": "Launching January 2027",
   "campaign.availability": "Holiday bookings available",
   "campaign.regular": "We plan to open for regular bookings in January 2027. Join the waitlist for launch updates.",
@@ -394,5 +392,6 @@
   "newsletter.rateLimited": "Please wait a moment, then try again.",
   "newsletter.invalidRequest": "Please check your email address and try again.",
   "newsletter.requestError": "We couldn’t process your request. Please try again.",
-  "hiring.joinTeam": "Join Our Team"
+  "hiring.joinTeam": "Join Our Team",
+  "home.final.description": "Experience a cleaner home and more peace of mind. Let Mirembe take care of the cleaning, so you can focus on what matters most."
 }
