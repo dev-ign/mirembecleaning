@@ -393,5 +393,6 @@
   "newsletter.retryVerification": "Refè verifikasyon sekirite a",
   "newsletter.rateLimited": "Tanpri tann yon ti moman, epi eseye ankò.",
   "newsletter.invalidRequest": "Tanpri verifye adrès imèl ou epi eseye ankò.",
-  "newsletter.requestError": "Nou pa t kapab trete demann ou an. Tanpri eseye ankò."
+  "newsletter.requestError": "Nou pa t kapab trete demann ou an. Tanpri eseye ankò.",
+  "hiring.joinTeam": "Vin fè pati ekip nou an"
 }

@@ -57,7 +57,7 @@ With Vite already running at `http://localhost:5173`, run this command from the 
 npm run test:waitlist:manual
 ```
 
-The launcher opens a visible Chromium test window at `/booking` and automatically declines tracking. Click **Join the Waitlist**, enter one of these addresses, then submit. Reload the page and reopen **Join the Waitlist** between cases. The address selects a fixed synthetic response; no earlier registration is needed.
+The launcher opens a visible Chromium test window at `/#how-it-works` and automatically declines tracking. Dismiss any holiday promotion, then click **Join the Waitlist** in How It Works, enter one of these addresses, then submit. Reload the page and reopen **Join the Waitlist** between cases. The address selects a fixed synthetic response; no earlier registration is needed.
 
 | Test email | Synthetic response | Expected result |
 | --- | --- | --- |

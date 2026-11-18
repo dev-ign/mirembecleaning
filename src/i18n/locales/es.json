@@ -393,5 +393,6 @@
   "newsletter.retryVerification": "Reintentar verificación de seguridad",
   "newsletter.rateLimited": "Espera un momento e inténtalo de nuevo.",
   "newsletter.invalidRequest": "Revisa tu dirección de correo e inténtalo de nuevo.",
-  "newsletter.requestError": "No pudimos procesar tu solicitud. Inténtalo de nuevo."
+  "newsletter.requestError": "No pudimos procesar tu solicitud. Inténtalo de nuevo.",
+  "hiring.joinTeam": "Únete a nuestro equipo"
 }

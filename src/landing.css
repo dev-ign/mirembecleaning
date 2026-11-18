@@ -314,7 +314,7 @@
   .landing-availability-card { flex-direction: column; align-items: stretch; }
   .landing-availability-card > div:first-child { max-width: 100%; }
 }
-/* Informational links collapse first. Conversion visibility is defined below. */
+/* Collapse the complete navigation together, including both translated CTAs. */
 @media (max-width: 1439px) {
   .landing-header { --header-button-padding: 1rem; --control-gap: .5rem; }
   .landing-menu-toggle { display: grid; place-items: center; width: var(--header-control-height); height: var(--header-control-height); padding: 0; flex: none; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--brand-deep); cursor: pointer; }
@@ -322,19 +322,9 @@
   .landing-nav.is-open { display: flex; }
   .landing-nav > a { padding: 14px 4px; }
   .landing-header-inner { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+  .landing-header-actions > .landing-button { display: none; }
   .landing-mobile-actions { display: grid; grid-auto-rows: 1fr; gap: var(--control-gap); margin-top: 12px; padding-top: 20px; border-top: 1px solid var(--border); }
   .landing-mobile-actions > .landing-button { width: 100%; min-height: var(--header-control-height); padding: 12px var(--header-button-padding); }
-}
-/* Budgets include the logo, 48px controls, translated labels and joined state.
-   English needs less room for both CTAs; the other locales share one budget. */
-@media (min-width: 800px) and (max-width: 899px) {
-  .landing-header:lang(en) .landing-header-actions > button.landing-button { display: inline-flex; }
-}
-@media (max-width: 899px) {
-  .landing-header-actions > button.landing-button { display: none; }
-}
-@media (max-width: 539px) {
-  .landing-header-actions > a.landing-button { display: none; }
 }
 @media (max-width: 1100px) {
   .landing-hero-grid { grid-template-columns: 1fr; }
@@ -433,7 +423,7 @@
 @media (max-width: 480px) {
   .landing-final-cta h2 { font-size: clamp(34px, 9vw, 42px); }
   .landing-hero-actions .landing-button, .landing-availability-card .landing-button, .landing-cta-banner .landing-button { width: 100%; }
-  .landing-hero-actions .landing-cta-group, .landing-final-cta .landing-cta-group { display: grid; width: 100%; }
+  .landing-final-cta .landing-cta-group { display: grid; width: 100%; }
   .waitlist-dialog-inner { padding: 28px 20px; }
   .waitlist-dialog h2 { font-size: 28px; }
   .waitlist-dialog-close { top: 12px; right: 12px; }

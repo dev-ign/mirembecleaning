@@ -393,5 +393,6 @@
   "newsletter.retryVerification": "Retry security check",
   "newsletter.rateLimited": "Please wait a moment, then try again.",
   "newsletter.invalidRequest": "Please check your email address and try again.",
-  "newsletter.requestError": "We couldn’t process your request. Please try again."
+  "newsletter.requestError": "We couldn’t process your request. Please try again.",
+  "hiring.joinTeam": "Join Our Team"
 }

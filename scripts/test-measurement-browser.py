@@ -262,12 +262,12 @@ def waitlist_check(browser, origin, *, response='new', consent=True, preview=Fal
     session = IsolatedSession(browser, origin, response=response)
     try:
         page = session.page
-        session.goto('/booking?utm_source=google&utm_medium=cpc&utm_campaign=holiday_2026&gclid=opaque')
+        session.goto('/?utm_source=google&utm_medium=cpc&utm_campaign=holiday_2026&gclid=opaque#how-it-works')
         if consent:
             session.accept()
         else:
             page.get_by_role('button', name='Decline', exact=True).click()
-        page.get_by_role('button', name='Join the Waitlist', exact=True).first.click()
+        page.locator('.landing-how .landing-cta-group').get_by_role('button', name='Join the Waitlist', exact=True).click()
         dialog = page.locator('dialog.waitlist-dialog')
         dialog.get_by_label('Email address', exact=True).fill('synthetic@example.test')
         dialog.get_by_role('button', name='Join the Waitlist', exact=True).click()
@@ -304,7 +304,7 @@ def cta_check(browser, origin):
         later = session.page.get_by_role('button', name='Maybe Later', exact=True)
         if later.is_visible():
             later.click()
-        session.page.get_by_role('link', name='Request a Cleaning', exact=True).first.click()
+        session.page.locator('.landing-hero-actions').get_by_role('link', name='Request a Cleaning', exact=True).click()
         session.page.wait_for_load_state('networkidle')
         session.wait_events(['page_view', 'booking_cta_click', 'page_view', 'booking_form_view'])
         return {'case': 'booking-cta-distinct-from-visible-form', 'events': session.names()}
@@ -316,9 +316,9 @@ def pending_withdrawal_check(browser, origin):
     session = IsolatedSession(browser, origin, response='pending')
     try:
         page = session.page
-        session.goto('/booking')
+        session.goto('/#how-it-works')
         session.accept()
-        page.get_by_role('button', name='Join the Waitlist', exact=True).first.click()
+        page.locator('.landing-how .landing-cta-group').get_by_role('button', name='Join the Waitlist', exact=True).click()
         dialog = page.locator('dialog.waitlist-dialog')
         dialog.get_by_label('Email address', exact=True).fill('synthetic@example.test')
         dialog.get_by_role('button', name='Join the Waitlist', exact=True).click()
