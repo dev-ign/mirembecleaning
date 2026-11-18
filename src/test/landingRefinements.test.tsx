@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { bookingConfig } from '../config/booking'
+import { i18n, t } from '../i18n'
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }) })
@@ -51,5 +52,21 @@ describe('landing navigation and booking actions', () => {
     const holiday = screen.getByRole('link', { name: /Book a holiday cleaning/ })
     expect(holiday).toHaveAttribute('href', bookingConfig.path)
     expect(holiday).not.toHaveAttribute('target')
+  })
+})
+
+
+describe('service area cleanup', () => {
+  it('ends at the two service cards while keeping global waitlist entry points', async () => {
+    await i18n.changeLanguage('en')
+    render(<App path="/" />)
+    const section = document.getElementById('areas')!
+    expect(section.querySelectorAll('.landing-area-card')).toHaveLength(2)
+    expect(section.querySelectorAll('.landing-map img')).toHaveLength(2)
+    expect(section.querySelectorAll('.landing-area-badge').length).toBeGreaterThan(2)
+    expect(section.querySelector('.landing-container')?.lastElementChild).toHaveClass('landing-area-grid')
+    expect(section.querySelector('button')).toBeNull()
+    expect(document.querySelector('.landing-area-prompt')).toBeNull()
+    expect(screen.getAllByRole('button', { name: t('waitlist.join') }).length).toBeGreaterThan(0)
   })
 })

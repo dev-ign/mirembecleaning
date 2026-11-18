@@ -38,7 +38,7 @@ export function HolidayFloatingCTA({ hidden, onBooking }: { hidden: boolean; onB
       }
       setConversionActionsVisible(visible.size > 0)
     }, { rootMargin: '16px' })
-    document.querySelectorAll('.landing-hero-actions, .landing-how .landing-cta-group, .landing-final-cta .landing-cta-group, .landing-services-request, .landing-area-prompt').forEach(actions => observer.observe(actions))
+    document.querySelectorAll('.landing-hero-actions, .landing-how .landing-cta-group, .landing-final-cta .landing-cta-group, .landing-services-request').forEach(actions => observer.observe(actions))
     return () => observer.disconnect()
   }, [])
 

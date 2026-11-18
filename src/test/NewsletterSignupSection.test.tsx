@@ -22,10 +22,7 @@ vi.mock('../components/TurnstileWidget', async () => {
   }) }
 })
 
-const preview = vi.hoisted(() => ({ enabled: true }))
-vi.mock('../config/newsletter', () => ({ get newsletterEnabled() { return preview.enabled } }))
-
-afterEach(async () => { cleanup(); preview.enabled = true; await i18n.changeLanguage('en'); vi.restoreAllMocks(); vi.unstubAllGlobals(); widget.status = 'verified'; widget.reset.mockClear(); vi.mocked(subscribeToNewsletter).mockReset() })
+afterEach(async () => { cleanup(); await i18n.changeLanguage('en'); vi.restoreAllMocks(); vi.unstubAllGlobals(); widget.status = 'verified'; widget.reset.mockClear(); vi.mocked(subscribeToNewsletter).mockReset() })
 
 describe('newsletter signup', () => {
   it.each(localeCodes)('renders accessible %s signup copy and a localized privacy link', async code => {
@@ -121,19 +118,15 @@ describe('newsletter signup', () => {
     expect(widget.reset).toHaveBeenCalledTimes(1)
   })
 
-  it.each([true, false])('preserves newsletter → FAQ → closing CTA → footer with preview=%s', enabled => {
-    preview.enabled = enabled
+  it('renders the public newsletter before FAQ without an environment visibility flag', () => {
     vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
     render(<App path="/" />)
     const section = screen.queryByRole('region', { name: t('newsletter.title') })
     const faq = document.getElementById('faq')!
     const closing = document.querySelector('.landing-final-cta')!
     const main = document.querySelector('main')!
-    if (enabled) expect(section?.nextElementSibling).toBe(faq)
-    else {
-      expect(section).not.toBeInTheDocument()
-      expect(faq.previousElementSibling).toHaveClass('landing-founders')
-    }
+    expect(section).toBeInTheDocument()
+    expect(section?.nextElementSibling).toBe(faq)
     expect(faq.nextElementSibling).toBe(closing)
     expect(main.lastElementChild).toBe(closing)
     expect(document.querySelector('.landing-footer')?.previousElementSibling).toBe(main)

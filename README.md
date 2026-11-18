@@ -15,7 +15,7 @@ For local Turnstile testing, Cloudflare provides the public site key `1x00000000
 
 ## Newsletter subscription
 
-The compact newsletter section appears above FAQ in production in all four supported languages. For local development, use `VITE_ENABLE_NEWSLETTER_PREVIEW=true`; use mocked submissions for ordinary UI checks.
+The compact newsletter section appears above FAQ in all four supported languages in both development and production. Run `npm run dev` to view it without any visibility flag. Vite serves the frontend only; use the full-stack Vercel command above for real API routing, and mocked submissions for ordinary UI checks. Visibility does not enable provider writes: the server-only write flag remains off by default locally.
 
 The independent `POST /api/newsletter/subscribe` endpoint requires explicit newsletter consent, the approved disclosure version, locale and a fresh `newsletter` Turnstile token. It uses dedicated server-only `RESEND_NEWSLETTER_API_KEY` and `RESEND_NEWSLETTER_SEGMENT_ID` settings. Writes require the exact opt-in `RESEND_NEWSLETTER_WRITES_ENABLED=true`; missing, false or malformed values fail closed. No transactional credential fallback exists.
 
