@@ -7,7 +7,7 @@ import { NewsletterRequestError, subscribeToNewsletter } from '../../services/ne
 import { isValidEmail } from '../../shared/email'
 import { TurnstileWidget, type TurnstileStatus, type TurnstileWidgetHandle } from '../TurnstileWidget'
 
-export function NewsletterSignupSection() {
+export function NewsletterSignupSection({ variant = 'home' }: { variant?: 'home' | 'booking' }) {
   const locale = useLocale()
   const hydrated = useHydrated()
   const localHref = useLocalizedHref()
@@ -54,17 +54,19 @@ export function NewsletterSignupSection() {
     }
   }
 
+  const isBooking = variant === 'booking'
   const status: MessageKey = state === 'acknowledged' ? 'newsletter.acknowledged'
     : state === 'submitting' ? 'newsletter.submitting'
-    : security === 'verified' ? 'newsletter.ready'
+    : security === 'verified' ? (isBooking ? '' : 'newsletter.ready')
     : security === 'error' || security === 'expired' ? 'newsletter.verificationError' : 'newsletter.verifying'
+  const disclosure = <p id="newsletter-disclosure" className="landing-newsletter-disclosure"><Trans i18nKey="newsletter.disclosure" components={{ privacy: <a href={localHref(privacyConfig.path)} /> }} /></p>
 
   return <section className="landing-newsletter" aria-labelledby="newsletter-heading">
     <div className="landing-container">
       <div className="landing-newsletter-panel">
         <div className="landing-newsletter-content">
-          <h2 id="newsletter-heading">{t('newsletter.title')}</h2>
-          <p className="landing-newsletter-description">{t('newsletter.description')}</p>
+          <h2 id="newsletter-heading">{t(isBooking ? 'newsletter.bookingTitle' : 'newsletter.title')}</h2>
+          <p className="landing-newsletter-description">{t(isBooking ? 'newsletter.bookingDescription' : 'newsletter.description')}</p>
           <form aria-labelledby="newsletter-heading" aria-describedby="newsletter-status newsletter-disclosure" aria-busy={state === 'submitting'} noValidate onSubmit={handleSubmit}>
             <label htmlFor="newsletter-email">{t('newsletter.emailLabel')}</label>
             <div className="landing-newsletter-controls">
@@ -79,11 +81,12 @@ export function NewsletterSignupSection() {
               <button type="submit" className="landing-button is-primary" disabled={security !== 'verified' || state === 'submitting' || state === 'acknowledged'} aria-describedby="newsletter-status">{t(state === 'submitting' ? 'newsletter.submitting' : 'newsletter.subscribe')}</button>
             </div>
             {hydrated && state !== 'acknowledged' && <TurnstileWidget ref={widgetRef} action="newsletter" onStatusChange={onSecurityChange} />}
+            {isBooking && disclosure}
             <p id="newsletter-status" className="landing-newsletter-status" role="status" aria-live="polite">{t(status)}</p>
             {requestError && <p className="landing-newsletter-error" role="alert">{t(requestError)}</p>}
             {(security === 'error' || security === 'expired') && state !== 'acknowledged' && state !== 'submitting'
               && <button type="button" className="landing-newsletter-retry" onClick={() => { setRequestError(''); widgetRef.current?.reset() }}>{t('newsletter.retryVerification')}</button>}
-            <p id="newsletter-disclosure" className="landing-newsletter-disclosure"><Trans i18nKey="newsletter.disclosure" components={{ privacy: <a href={localHref(privacyConfig.path)} /> }} /></p>
+            {!isBooking && disclosure}
           </form>
         </div>
       </div>

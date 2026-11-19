@@ -40,8 +40,16 @@
 .booking-thank-you h1 em { color: var(--brand-primary); font: italic 600 1.15em/1.2 var(--font-cormorant); }
 .booking-thank-you h1:focus { outline: none; }
 .booking-thank-you > p:not(.landing-eyebrow) { max-width: 650px; margin: 20px auto; }
-.booking-thank-you .landing-button { margin-top: 16px; }
+.booking-thank-you-actions .landing-button { margin-top: 16px; }
 .booking-thank-you-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 24px; }
+.booking-thank-you .landing-newsletter { max-width: 680px; margin: clamp(32px, 5vw, 56px) auto 0; padding: 0; }
+.booking-thank-you .landing-newsletter > .landing-container { width: 100%; }
+.booking-thank-you .landing-newsletter-panel { padding: clamp(24px, 4vw, 40px) var(--gutter); border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); }
+.booking-thank-you .landing-newsletter-description { text-wrap: balance; }
+.booking-thank-you .landing-newsletter-status { min-block-size: 1lh; }
+@media (min-width: 768px) {
+  .booking-thank-you .landing-newsletter-controls { grid-template-columns: minmax(0, 1fr) 10rem; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .booking-check { animation: booking-acknowledge .6s ease-out both; }
   @keyframes booking-acknowledge { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; transform: none; } }

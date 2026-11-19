@@ -377,6 +377,8 @@
   "language.current": "Change language, current language: {{language}}",
   "newsletter.title": "A Little More Peace, Straight to Your Inbox.",
   "newsletter.description": "Get practical cleaning tips, seasonal offers, and updates from Mirembe. No clutter, just the good stuff.",
+  "newsletter.bookingTitle": "A cleaner home starts here.",
+  "newsletter.bookingDescription": "Get occasional cleaning tips, exclusive offers, and updates from Mirembe Cleaning.",
   "newsletter.emailLabel": "Email address",
   "newsletter.emailPlaceholder": "Your email address",
   "newsletter.subscribe": "Subscribe",

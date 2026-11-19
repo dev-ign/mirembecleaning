@@ -44,6 +44,34 @@ describe('newsletter signup', () => {
     expect(within(form).queryByRole('checkbox')).not.toBeInTheDocument()
   })
 
+  it.each(localeCodes)('offers the shared newsletter after the booking acknowledgment in %s', async code => {
+    vi.mocked(subscribeToNewsletter).mockResolvedValueOnce()
+    const copy = resources[code]
+    const prefix = locales[code].pathPrefix
+    await i18n.changeLanguage(code)
+    render(<App path={`${prefix}/booking/thankyou`} />)
+
+    const confirmation = screen.getByRole('heading', { level: 1 })
+    const newsletter = screen.getByRole('region', { name: copy['newsletter.bookingTitle'] })
+    const form = within(newsletter).getByRole('form', { name: copy['newsletter.bookingTitle'] })
+    const input = within(form).getByRole('textbox', { name: copy['newsletter.emailLabel'] })
+    expect(confirmation).toHaveFocus()
+    expect(confirmation.compareDocumentPosition(newsletter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByText(copy['booking.thankYou.message'])).toBeInTheDocument()
+    expect(within(newsletter).getByText(copy['newsletter.bookingDescription'])).toBeInTheDocument()
+    expect(within(form).getByRole('link')).toHaveAttribute('href', `${prefix}/privacy`)
+    expect(input).toHaveAccessibleDescription(expect.stringContaining('Mirembe Cleaning'))
+    expect(within(form).getByRole('status')).toBeEmptyDOMElement()
+    expect(input).toHaveValue('')
+    expect(subscribeToNewsletter).not.toHaveBeenCalled()
+
+    fireEvent.change(input, { target: { value: 'synthetic@example.test' } })
+    expect(subscribeToNewsletter).not.toHaveBeenCalled()
+    fireEvent.click(within(form).getByRole('button', { name: copy['newsletter.subscribe'] }))
+    expect(subscribeToNewsletter).toHaveBeenCalledExactlyOnceWith('synthetic@example.test', code, 'synthetic-token')
+    await waitFor(() => expect(within(form).getByRole('status')).toHaveTextContent(copy['newsletter.acknowledged']))
+  })
+
   it('associates localized empty/invalid errors with the input and accepts a valid-looking address', async () => {
     const user = userEvent.setup()
     render(<NewsletterSignupSection />)

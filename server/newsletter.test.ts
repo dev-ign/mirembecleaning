@@ -181,7 +181,9 @@ describe('newsletter subscription boundary', () => {
 
   it('preserves original evidence for eligible duplicates', async () => {
     contact = existing(); member = true
-    expect((await result()).response.status).toBe(200)
+    const { response, payload } = await result()
+    expect(response.status).toBe(200)
+    expect(payload).toEqual({ ok: true, data: { acknowledged: true } })
     expect(contact.properties).toEqual(properties(originalEvidence))
     expect(writes()).toEqual([])
   })

@@ -377,6 +377,8 @@
   "language.current": "Cambiar idioma, idioma actual: {{language}}",
   "newsletter.title": "Un poco más de tranquilidad, directo a tu correo.",
   "newsletter.description": "Recibe consejos prácticos de limpieza, ofertas de temporada y novedades de Mirembe. Sin ruido, solo lo que vale la pena.",
+  "newsletter.bookingTitle": "Un hogar más limpio empieza aquí.",
+  "newsletter.bookingDescription": "Recibe de vez en cuando consejos de limpieza, ofertas exclusivas y novedades de Mirembe Cleaning.",
   "newsletter.emailLabel": "Correo electrónico",
   "newsletter.emailPlaceholder": "Tu correo electrónico",
   "newsletter.subscribe": "Suscribirse",

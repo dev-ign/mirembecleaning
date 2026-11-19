@@ -377,6 +377,8 @@
   "language.current": "Chanje lang, lang aktyèl: {{language}}",
   "newsletter.title": "Yon ti lapè anplis, dirèk nan bwat imèl ou.",
   "newsletter.description": "Resevwa konsèy pratik pou netwayaj, òf pou chak sezon ak nouvèl Mirembe. Pa gen mesaj initil, sèlman sa ki itil.",
+  "newsletter.bookingTitle": "Yon kay ki pi pwòp kòmanse isit la.",
+  "newsletter.bookingDescription": "Resevwa konsèy netwayaj, òf eksklizif ak nouvèl Mirembe Cleaning detanzantan.",
   "newsletter.emailLabel": "Adrès imèl",
   "newsletter.emailPlaceholder": "Adrès imèl ou",
   "newsletter.subscribe": "Abòne",

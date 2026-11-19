@@ -2,6 +2,7 @@ import { useLocalizedHref } from '../../i18n/useLocalizedHref'
 import { t, Trans, useLocale } from '../../i18n'
 import { useEffect, useRef } from 'react'
 import { SiteDocumentLayout } from '../SiteDocumentLayout'
+import { NewsletterSignupSection } from '../landing/NewsletterSignupSection'
 import { ZenMaidEmbed } from './ZenMaidEmbed'
 import { termsConfig } from '../../config/legal'
 import { trackEvent } from '../../lib/optionalEvents'
@@ -35,5 +36,6 @@ export function BookingThankYouPage() {
     <p>{t('booking.thankYou.message')}</p>
     <p>{t('booking.thankYou.welcome')}</p>
     <div className="booking-thank-you-actions"><a className="landing-button" href={localHref("/")}>{t('booking.home')}</a><a className="landing-button is-secondary" href={localHref("/#services")}>{t('booking.explore')}</a></div>
+    <NewsletterSignupSection variant="booking" />
   </div></SiteDocumentLayout>
 }
